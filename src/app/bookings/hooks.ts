@@ -15,9 +15,7 @@ export function useBookings(filters: BookingFilters = {}) {
 }
 
 const fetchBookings = (filters: BookingFilters) =>
-  api
-    .get<Booking[]>("/bookings/", { params: filters })
-    .then((r) => r.data);
+  api.get<Booking[]>("/bookings/", { params: filters }).then((r) => r.data);
 
 export function useBooking(id: string | null) {
   return useQuery({
@@ -40,12 +38,7 @@ export function useUpdateBookingStatus() {
         .patch<Booking>(`/bookings/${id}/status`, { status })
         .then((r) => r.data),
     onSuccess: (updated) => {
-      qc.setQueryData<Booking[]>(
-        BOOKINGS_KEY,
-        (prev = []) =>
-          prev.map((b) => (b.id === updated.id ? updated : b)),
-      );
-      qc.invalidateQueries({ queryKey: [...BOOKINGS_KEY, updated.id] });
+      qc.invalidateQueries({ queryKey: BOOKINGS_KEY });
     },
   });
 }
@@ -54,11 +47,8 @@ export function useDeleteBooking() {
   const qc = useQueryClient();
   return useMutation({
     mutationFn: (id: string) => api.delete(`/bookings/${id}`),
-    onSuccess: (_, id) => {
-      qc.setQueryData<Booking[]>(
-        BOOKINGS_KEY,
-        (prev = []) => prev.filter((b) => b.id !== id),
-      );
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: BOOKINGS_KEY });
     },
   });
 }
