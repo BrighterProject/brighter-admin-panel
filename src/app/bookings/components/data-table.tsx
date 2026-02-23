@@ -126,21 +126,31 @@ export function DataTable({ bookings, loading }: DataTableProps) {
     },
     {
       accessorKey: "venue_id",
-      header: "Venue ID",
-      cell: ({ row }) => (
-        <span className="font-mono text-xs text-muted-foreground">
-          {row.getValue<string>("venue_id").slice(0, 8)}…
-        </span>
-      ),
+      header: "Venue",
+      cell: ({ row }) => {
+        const name = row.original.venue_name;
+        return name ? (
+          <span className="text-sm font-medium">{name}</span>
+        ) : (
+          <span className="font-mono text-xs text-muted-foreground">
+            {row.getValue<string>("venue_id").slice(0, 8)}…
+          </span>
+        );
+      },
     },
     {
       accessorKey: "user_id",
-      header: "Customer ID",
-      cell: ({ row }) => (
-        <span className="font-mono text-xs text-muted-foreground">
-          {row.getValue<string>("user_id").slice(0, 8)}…
-        </span>
-      ),
+      header: "Customer",
+      cell: ({ row }) => {
+        const username = row.original.customer_username;
+        return username ? (
+          <span className="text-sm">@{username}</span>
+        ) : (
+          <span className="font-mono text-xs text-muted-foreground">
+            {row.getValue<string>("user_id").slice(0, 8)}…
+          </span>
+        );
+      },
     },
     {
       accessorKey: "start_datetime",

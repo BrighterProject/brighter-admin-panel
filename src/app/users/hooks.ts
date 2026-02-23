@@ -14,6 +14,14 @@ export function useScopes() {
 const fetchUsers = () => api.get<User[]>("/users").then((r) => r.data);
 const fetchScopes = () => api.get<string[]>("/scopes").then((r) => r.data);
 
+export function useUser(id: string | null) {
+  return useQuery({
+    queryKey: ["users", id],
+    queryFn: () => api.get<User>(`/users/${id}`).then((r) => r.data),
+    enabled: !!id,
+  });
+}
+
 export function useAddUser() {
   const qc = useQueryClient();
   return useMutation({

@@ -18,6 +18,12 @@ export type Booking = {
   currency: string;
   notes: string | null;
   updated_at: string;
+  // Enriched by bookings-ms at query time
+  venue_name: string | null;
+  customer_username: string | null;
+  customer_full_name: string | null;
+  owner_username: string | null;
+  owner_full_name: string | null;
 };
 
 export type BookingStatusUpdate = {
