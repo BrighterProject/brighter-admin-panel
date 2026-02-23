@@ -11,6 +11,7 @@ const Dashboard = lazy(() => import("@/app/dashboard/page"));
 // const Calendar = lazy(() => import("@/app/calendar/page"));
 const Users = lazy(() => import("@/app/users/page"));
 const Venues = lazy(() => import("@/app/venues/page"));
+const Bookings = lazy(() => import("@/app/bookings/page"));
 // const FAQs = lazy(() => import("@/app/faqs/page"));
 // const Pricing = lazy(() => import("@/app/pricing/page"));
 
@@ -98,6 +99,10 @@ export const routes: RouteConfig[] = [
   {
     path: "/venues",
     element: <Venues />,
+  },
+  {
+    path: "/bookings",
+    element: <Bookings />,
   },
   // {
   //   path: "/faqs",

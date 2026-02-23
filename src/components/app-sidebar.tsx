@@ -16,6 +16,7 @@ import {
   LayoutTemplate,
   Users,
   RectangleCircle,
+  CalendarCheck,
 } from "lucide-react";
 import { Link } from "react-router-dom";
 import { Logo } from "@/components/logo";
@@ -84,9 +85,14 @@ const data = {
           icon: Users,
         },
         {
-          title: "Veneus",
+          title: "Venues",
           url: "/venues",
           icon: RectangleCircle,
+        },
+        {
+          title: "Bookings",
+          url: "/bookings",
+          icon: CalendarCheck,
         },
       ],
     },
