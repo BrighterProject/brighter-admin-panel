@@ -20,8 +20,8 @@ export default function VenuesPage() {
 
   return (
     <BaseLayout
-      title="Venues"
-      description="Manage your venues, locations, and facilities"
+      title="Обекти"
+      description="Управлявайте обектите, локациите и съоръженията"
     >
       <div className="flex flex-col gap-4">
         <div className="@container/main px-4 lg:px-6">

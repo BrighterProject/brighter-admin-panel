@@ -24,40 +24,40 @@ export function StatCards({ venues, loading }: StatCardsProps) {
 
   const metrics = [
     {
-      title: "Total Venues",
+      title: "Общо обекти",
       value: loading ? "…" : total,
       icon: Building2,
       badge: null,
     },
     {
-      title: "Active Venues",
+      title: "Активни обекти",
       value: loading ? "…" : active,
       icon: CheckCircle2,
       badge: total > 0 ? `${Math.round((active / total) * 100)}%` : null,
       badgeGreen: true,
     },
     {
-      title: "Pending Approval",
+      title: "Чакащи одобрение",
       value: loading ? "…" : pending,
       icon: Clock,
       badge: total > 0 ? `${Math.round((pending / total) * 100)}%` : null,
       badgeYellow: true,
     },
     {
-      title: "Avg Rating",
+      title: "Средна оценка",
       value: loading ? "…" : avgRating,
       icon: Star,
       badge: null,
     },
     {
-      title: "Indoor Venues",
+      title: "Закрити обекти",
       value: loading ? "…" : indoor,
       icon: Building2,
       badge: total > 0 ? `${Math.round((indoor / total) * 100)}%` : null,
       badgeBlue: true,
     },
     {
-      title: "Outdoor Venues",
+      title: "Открити обекти",
       value: loading ? "…" : outdoor,
       icon: MapPin,
       badge: total > 0 ? `${Math.round((outdoor / total) * 100)}%` : null,

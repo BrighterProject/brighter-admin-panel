@@ -49,14 +49,32 @@ const statusColors: Record<string, string> = {
     "text-orange-600 bg-orange-50 dark:text-orange-400 dark:bg-orange-900/20",
 };
 
+const STATUS_LABELS: Record<string, string> = {
+  active: "Активен",
+  inactive: "Неактивен",
+  maintenance: "Профилактика",
+  pending_approval: "Чака одобрение",
+};
+
+const SPORT_LABELS: Record<string, string> = {
+  football: "Футбол",
+  basketball: "Баскетбол",
+  tennis: "Тенис",
+  volleyball: "Волейбол",
+  swimming: "Плуване",
+  gym: "Фитнес",
+  padel: "Падел",
+  other: "Друго",
+};
+
 const DAY_LABELS: Record<string, string> = {
-  monday: "Mon",
-  tuesday: "Tue",
-  wednesday: "Wed",
-  thursday: "Thu",
-  friday: "Fri",
-  saturday: "Sat",
-  sunday: "Sun",
+  monday: "Пон",
+  tuesday: "Втор",
+  wednesday: "Сряда",
+  thursday: "Четв",
+  friday: "Петък",
+  saturday: "Съб",
+  sunday: "Нед",
 };
 
 function DetailRow({
@@ -108,16 +126,15 @@ export function VenueDetailsDialog({
 
   if (!venue) return null;
 
-  // Use full venue data if available, fall back to list item data
   const v = fullVenue ?? venue;
 
   return (
     <Dialog open={!!venue} onOpenChange={(open) => !open && onClose()}>
       <DialogContent className="sm:max-w-2xl max-h-[90vh]">
         <DialogHeader>
-          <DialogTitle>Venue Details</DialogTitle>
+          <DialogTitle>Детайли за обекта</DialogTitle>
           <DialogDescription>
-            Complete information about this venue.
+            Пълна информация за избрания спортен обект.
           </DialogDescription>
         </DialogHeader>
 
@@ -166,16 +183,11 @@ export function VenueDetailsDialog({
                       {v.city}
                     </span>
                   </div>
-                  {fullVenue?.latitude && fullVenue?.longitude && (
-                    <p className="text-xs text-muted-foreground mt-0.5">
-                      {fullVenue.latitude}, {fullVenue.longitude}
-                    </p>
-                  )}
                   <Badge
                     variant="secondary"
-                    className={`mt-2 capitalize ${statusColors[v.status]}`}
+                    className={`mt-2 ${statusColors[v.status]}`}
                   >
-                    {v.status.replace("_", " ")}
+                    {STATUS_LABELS[v.status] || v.status}
                   </Badge>
                 </div>
               </div>
@@ -184,7 +196,7 @@ export function VenueDetailsDialog({
               <div>
                 <div className="flex items-center justify-between mb-2">
                   <p className="text-sm font-medium flex items-center gap-1.5">
-                    <ImageIcon className="size-4" /> Photos (
+                    <ImageIcon className="size-4" /> Снимки (
                     {fullVenue?.images?.length ?? 0})
                   </p>
                   {onManageImages && (
@@ -195,7 +207,7 @@ export function VenueDetailsDialog({
                       onClick={() => onManageImages(venue)}
                     >
                       <ImagePlus className="size-3.5" />
-                      Manage
+                      Управление
                     </Button>
                   )}
                 </div>
@@ -208,12 +220,12 @@ export function VenueDetailsDialog({
                       >
                         <img
                           src={img.url}
-                          alt={`Venue photo ${i + 1}`}
+                          alt={`Снимка ${i + 1}`}
                           className="h-full w-full object-cover"
                         />
                         {img.is_thumbnail && (
                           <div className="absolute top-1 right-1 bg-primary text-primary-foreground text-[10px] px-1.5 py-0.5 rounded">
-                            Thumb
+                            Основна
                           </div>
                         )}
                       </div>
@@ -222,7 +234,7 @@ export function VenueDetailsDialog({
                 ) : (
                   <div className="text-center py-6 text-muted-foreground border rounded-lg">
                     <ImageIcon className="size-8 mx-auto mb-2 opacity-50" />
-                    <p className="text-sm">No images yet</p>
+                    <p className="text-sm">Няма добавени снимки</p>
                     {onManageImages && (
                       <Button
                         variant="outline"
@@ -231,7 +243,7 @@ export function VenueDetailsDialog({
                         onClick={() => onManageImages(venue)}
                       >
                         <ImagePlus className="size-3.5 mr-1" />
-                        Add Images
+                        Добави снимки
                       </Button>
                     )}
                   </div>
@@ -243,7 +255,7 @@ export function VenueDetailsDialog({
                 <>
                   <Separator />
                   <div className="space-y-1">
-                    <p className="text-sm font-medium">Description</p>
+                    <p className="text-sm font-medium">Описание</p>
                     <p className="text-sm text-muted-foreground leading-relaxed">
                       {fullVenue.description}
                     </p>
@@ -261,56 +273,41 @@ export function VenueDetailsDialog({
                     <span className="font-semibold">{v.rating}</span>
                   </div>
                   <p className="text-xs text-muted-foreground">
-                    {v.total_reviews} reviews
+                    {v.total_reviews} отзива
                   </p>
                 </div>
                 <div className="text-center p-3 rounded-lg bg-muted/50">
                   <div className="flex items-center justify-center gap-1 text-primary mb-1">
-                    <span className="font-semibold">{v.price_per_hour}</span>
+                    <span className="font-semibold">
+                      {v.price_per_hour} {v.currency}
+                    </span>
                   </div>
-                  <p className="text-xs text-muted-foreground">
-                    {v.currency}/hour
-                  </p>
+                  <p className="text-xs text-muted-foreground">на час</p>
                 </div>
                 <div className="text-center p-3 rounded-lg bg-muted/50">
                   <div className="flex items-center justify-center gap-1 text-primary mb-1">
                     <Users className="size-4" />
                     <span className="font-semibold">{v.capacity}</span>
                   </div>
-                  <p className="text-xs text-muted-foreground">Capacity</p>
+                  <p className="text-xs text-muted-foreground">Капацитет</p>
                 </div>
               </div>
-
-              {fullVenue?.total_bookings != null && (
-                <div className="text-center p-3 rounded-lg bg-muted/50">
-                  <span className="font-semibold text-primary">
-                    {fullVenue.total_bookings}
-                  </span>
-                  <p className="text-xs text-muted-foreground mt-0.5">
-                    Total Bookings
-                  </p>
-                </div>
-              )}
 
               <Separator />
 
               {/* Sport Types */}
               <div className="space-y-2">
-                <p className="text-sm font-medium">Sport Types</p>
+                <p className="text-sm font-medium">Видове спорт</p>
                 <div className="flex flex-wrap gap-1">
                   {v.sport_types.length > 0 ? (
                     v.sport_types.map((sport) => (
-                      <Badge
-                        key={sport}
-                        variant="outline"
-                        className="capitalize"
-                      >
-                        {sport}
+                      <Badge key={sport} variant="outline">
+                        {SPORT_LABELS[sport] || sport}
                       </Badge>
                     ))
                   ) : (
                     <span className="text-sm text-muted-foreground">
-                      No sport types specified
+                      Не са посочени спортове
                     </span>
                   )}
                 </div>
@@ -320,53 +317,38 @@ export function VenueDetailsDialog({
 
               {/* Venue Type & Amenities */}
               <div className="space-y-3">
-                <p className="text-sm font-medium">Facilities & Amenities</p>
+                <p className="text-sm font-medium">Удобства и съоръжения</p>
                 <div className="flex flex-wrap gap-2">
                   <AmenityBadge
                     icon={<Building2 className="size-3.5" />}
-                    label={v.is_indoor ? "Indoor" : "Outdoor"}
+                    label={v.is_indoor ? "Закрито" : "Открито"}
                     enabled={true}
                   />
                   {fullVenue && (
                     <>
                       <AmenityBadge
                         icon={<Car className="size-3.5" />}
-                        label="Parking"
+                        label="Паркинг"
                         enabled={fullVenue.has_parking}
                       />
                       <AmenityBadge
                         icon={<Shirt className="size-3.5" />}
-                        label="Changing Rooms"
+                        label="Съблекални"
                         enabled={fullVenue.has_changing_rooms}
                       />
                       <AmenityBadge
                         icon={<ShowerHead className="size-3.5" />}
-                        label="Showers"
+                        label="Душове"
                         enabled={fullVenue.has_showers}
                       />
                       <AmenityBadge
                         icon={<Wrench className="size-3.5" />}
-                        label="Equipment Rental"
+                        label="Екипировка под наем"
                         enabled={fullVenue.has_equipment_rental}
                       />
                     </>
                   )}
                 </div>
-
-                {/* Extra amenities */}
-                {fullVenue?.amenities && fullVenue.amenities.length > 0 && (
-                  <div className="flex flex-wrap gap-1 mt-2">
-                    {fullVenue.amenities.map((amenity) => (
-                      <Badge
-                        key={amenity}
-                        variant="secondary"
-                        className="text-xs capitalize"
-                      >
-                        {amenity}
-                      </Badge>
-                    ))}
-                  </div>
-                )}
               </div>
 
               {/* Working Hours */}
@@ -375,7 +357,7 @@ export function VenueDetailsDialog({
                   <Separator />
                   <div className="space-y-2">
                     <p className="text-sm font-medium flex items-center gap-1.5">
-                      <Clock className="size-4" /> Working Hours
+                      <Clock className="size-4" /> Работно време
                     </p>
                     <div className="grid grid-cols-2 gap-x-6 gap-y-1">
                       {Object.entries(fullVenue.working_hours).map(
@@ -384,7 +366,7 @@ export function VenueDetailsDialog({
                             key={day}
                             className="flex justify-between items-center text-sm py-0.5"
                           >
-                            <span className="text-muted-foreground w-10 shrink-0">
+                            <span className="text-muted-foreground w-12 shrink-0">
                               {DAY_LABELS[day] ?? day}
                             </span>
                             {hours ? (
@@ -393,7 +375,7 @@ export function VenueDetailsDialog({
                               </span>
                             ) : (
                               <span className="text-xs text-muted-foreground">
-                                Closed
+                                Затворено
                               </span>
                             )}
                           </div>
@@ -408,7 +390,7 @@ export function VenueDetailsDialog({
               <div>
                 <div className="flex items-center justify-between mb-2">
                   <p className="text-sm font-medium flex items-center gap-1.5">
-                    <CalendarX className="size-4" /> Unavailable Periods (
+                    <CalendarX className="size-4" /> Неактивни периоди (
                     {fullVenue?.unavailabilities?.length ?? 0})
                   </p>
                   {onManageUnavailability && (
@@ -419,7 +401,7 @@ export function VenueDetailsDialog({
                       onClick={() => onManageUnavailability(venue)}
                     >
                       <CalendarPlus className="size-3.5" />
-                      Manage
+                      Управление
                     </Button>
                   )}
                 </div>
@@ -437,64 +419,43 @@ export function VenueDetailsDialog({
                           }`}
                         >
                           <span className="text-muted-foreground">
-                            {u.reason ?? "Unavailable"}
+                            {u.reason ?? "Недостъпен"}
                           </span>
                           <span className="font-mono text-xs">
-                            {new Date(u.start_datetime).toLocaleDateString()} →{" "}
-                            {new Date(u.end_datetime).toLocaleDateString()}
+                            {new Date(u.start_datetime).toLocaleDateString(
+                              "bg-BG",
+                            )}{" "}
+                            →{" "}
+                            {new Date(u.end_datetime).toLocaleDateString(
+                              "bg-BG",
+                            )}
                           </span>
                         </div>
                       );
                     })}
-                    {fullVenue.unavailabilities.length > 5 && (
-                      <p className="text-xs text-muted-foreground text-center py-1">
-                        +{fullVenue.unavailabilities.length - 5} more periods
-                      </p>
-                    )}
                   </div>
                 ) : (
                   <div className="text-center py-4 text-muted-foreground border rounded-lg">
                     <CalendarX className="size-6 mx-auto mb-1 opacity-50" />
-                    <p className="text-sm">No unavailability periods</p>
-                    {onManageUnavailability && (
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        className="mt-2"
-                        onClick={() => onManageUnavailability(venue)}
-                      >
-                        <CalendarPlus className="size-3.5 mr-1" />
-                        Add Period
-                      </Button>
-                    )}
+                    <p className="text-sm">Няма периоди на недостъпност</p>
                   </div>
                 )}
               </div>
 
               <Separator />
 
-              {/* Owner & Meta */}
+              {/* Meta Details */}
               <div className="space-y-1">
-                <p className="text-sm font-medium">Details</p>
-                {fullVenue?.owner_id && (
-                  <DetailRow
-                    label="Owner ID"
-                    value={
-                      <span className="font-mono text-xs">
-                        {fullVenue.owner_id}
-                      </span>
-                    }
-                  />
-                )}
+                <p className="text-sm font-medium">Системна информация</p>
                 <DetailRow
                   label="Venue ID"
                   value={<span className="font-mono text-xs">{v.id}</span>}
                 />
                 {fullVenue?.updated_at && (
                   <DetailRow
-                    label="Last updated"
+                    label="Последна промяна"
                     value={new Date(fullVenue.updated_at).toLocaleDateString(
-                      undefined,
+                      "bg-BG",
                       {
                         year: "numeric",
                         month: "short",
@@ -516,7 +477,7 @@ export function VenueDetailsDialog({
             onClick={onClose}
             className="cursor-pointer"
           >
-            Close
+            Затвори
           </Button>
           <Button
             onClick={() => {
@@ -526,7 +487,7 @@ export function VenueDetailsDialog({
             className="cursor-pointer"
           >
             <Pencil className="mr-2 size-4" />
-            Edit Venue
+            Редактирай
           </Button>
         </DialogFooter>
       </DialogContent>

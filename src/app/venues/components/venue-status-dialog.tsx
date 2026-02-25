@@ -23,23 +23,23 @@ const statusOptions: {
 }[] = [
   {
     value: "active",
-    label: "Active",
-    description: "Venue is available for bookings",
+    label: "Активен",
+    description: "Обектът е достъпен за резервации",
   },
   {
     value: "inactive",
-    label: "Inactive",
-    description: "Venue is temporarily unavailable",
+    label: "Неактивен",
+    description: "Обектът е временно недостъпен",
   },
   {
     value: "maintenance",
-    label: "Maintenance",
-    description: "Venue is under maintenance",
+    label: "В поддръжка",
+    description: "Обектът е в процес на поддръжка",
   },
   {
     value: "pending_approval",
-    label: "Pending Approval",
-    description: "Venue is awaiting admin approval",
+    label: "Чакащо одобрение",
+    description: "Обектът очаква одобрение от администратор",
   },
 ];
 
@@ -70,11 +70,11 @@ export function VenueStatusDialog({ venue, onClose }: VenueStatusDialogProps) {
     <Dialog open={!!venue} onOpenChange={(open) => !open && onClose()}>
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
-          <DialogTitle>Update Venue Status</DialogTitle>
+          <DialogTitle>Актуализиране на статус</DialogTitle>
           <DialogDescription>
             {venue
-              ? `Change the status for ${venue.name}.`
-              : "Change the venue status."}
+              ? `Промяна на статуса за ${venue.name}.`
+              : "Промяна на статуса на обекта."}
           </DialogDescription>
         </DialogHeader>
 
@@ -117,7 +117,7 @@ export function VenueStatusDialog({ venue, onClose }: VenueStatusDialogProps) {
             onClick={onClose}
             className="cursor-pointer"
           >
-            Cancel
+            Отказ
           </Button>
           <Button
             onClick={handleSave}
@@ -125,7 +125,7 @@ export function VenueStatusDialog({ venue, onClose }: VenueStatusDialogProps) {
             className="cursor-pointer"
           >
             {isPending && <Loader2 className="mr-2 size-4 animate-spin" />}
-            Update Status
+            Актуализирай статус
           </Button>
         </DialogFooter>
       </DialogContent>

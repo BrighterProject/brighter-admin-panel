@@ -93,19 +93,6 @@ export function VenueImagesDialog({ venue, onClose }: VenueImagesDialogProps) {
     });
   };
 
-  // const handleMoveDown = (index: number) => {
-  //   if (!venue || index === images.length - 1) return;
-  //   const newOrder = [...images];
-  //   [newOrder[index], newOrder[index + 1]] = [
-  //     newOrder[index + 1],
-  //     newOrder[index],
-  //   ];
-  //   reorderImages({
-  //     venueId: venue.id,
-  //     imageIds: newOrder.map((img) => img.id),
-  //   });
-  // };
-
   const isPending = isAdding || isUpdating || isDeleting || isReordering;
 
   return (
@@ -114,20 +101,20 @@ export function VenueImagesDialog({ venue, onClose }: VenueImagesDialogProps) {
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <ImageIcon className="size-5" />
-            Manage Images
+            Управление на изображенията
           </DialogTitle>
           <DialogDescription>
             {venue
-              ? `Add, reorder, and manage images for ${venue.name}.`
-              : "Manage venue images."}
+              ? `Добавяне, подреждане и управление на изображения за ${venue.name}.`
+              : "Управление на изображения за обекта."}
           </DialogDescription>
         </DialogHeader>
 
         <ScrollArea className="max-h-[60vh]">
           <div className="space-y-6 pr-4">
-            {/* Add New Image */}
+            {/* Добавяне на ново изображение */}
             <div className="space-y-3 p-4 rounded-lg border bg-muted/30">
-              <h4 className="text-sm font-medium">Add New Image</h4>
+              <h4 className="text-sm font-medium">Добави ново изображение</h4>
               <div className="flex gap-2">
                 <Input
                   placeholder="https://example.com/image.jpg"
@@ -158,14 +145,16 @@ export function VenueImagesDialog({ venue, onClose }: VenueImagesDialogProps) {
                   htmlFor="is-thumbnail"
                   className="text-sm cursor-pointer"
                 >
-                  Set as thumbnail
+                  Задай като заглавна снимка
                 </Label>
               </div>
             </div>
 
-            {/* Images List */}
+            {/* Списък с изображения */}
             <div className="space-y-3">
-              <h4 className="text-sm font-medium">Images ({images.length})</h4>
+              <h4 className="text-sm font-medium">
+                Изображения ({images.length})
+              </h4>
 
               {isLoading ? (
                 <div className="flex items-center justify-center py-8">
@@ -174,8 +163,10 @@ export function VenueImagesDialog({ venue, onClose }: VenueImagesDialogProps) {
               ) : images.length === 0 ? (
                 <div className="text-center py-8 text-muted-foreground">
                   <ImageIcon className="size-12 mx-auto mb-3 opacity-50" />
-                  <p>No images yet.</p>
-                  <p className="text-sm">Add your first image above.</p>
+                  <p>Все още няма изображения.</p>
+                  <p className="text-sm">
+                    Добавете първото изображение по-горе.
+                  </p>
                 </div>
               ) : (
                 <div className="space-y-2">
@@ -188,7 +179,7 @@ export function VenueImagesDialog({ venue, onClose }: VenueImagesDialogProps) {
                           : "bg-background"
                       }`}
                     >
-                      {/* Drag Handle */}
+                      {/* Манипулатор за местене */}
                       <div className="flex flex-col">
                         <button
                           onClick={() => handleMoveUp(index)}
@@ -199,11 +190,11 @@ export function VenueImagesDialog({ venue, onClose }: VenueImagesDialogProps) {
                         </button>
                       </div>
 
-                      {/* Image Preview */}
+                      {/* Преглед на изображението */}
                       <div className="h-16 w-16 rounded-md overflow-hidden bg-muted flex-shrink-0">
                         <img
                           src={image.url}
-                          alt={`Venue image ${index + 1}`}
+                          alt={`Изображение ${index + 1}`}
                           className="h-full w-full object-cover"
                           onError={(e) => {
                             (e.target as HTMLImageElement).src =
@@ -212,13 +203,13 @@ export function VenueImagesDialog({ venue, onClose }: VenueImagesDialogProps) {
                         />
                       </div>
 
-                      {/* Image Info */}
+                      {/* Информация за изображението */}
                       <div className="flex-1 min-w-0">
                         <p className="text-sm font-medium truncate">
-                          Image {index + 1}
+                          Изображение {index + 1}
                           {image.is_thumbnail && (
                             <span className="ml-2 text-xs text-primary">
-                              (Thumbnail)
+                              (Заглавна)
                             </span>
                           )}
                         </p>
@@ -229,7 +220,7 @@ export function VenueImagesDialog({ venue, onClose }: VenueImagesDialogProps) {
                         </p>
                       </div>
 
-                      {/* Actions */}
+                      {/* Действия */}
                       <div className="flex items-center gap-1">
                         <Button
                           variant="ghost"
@@ -245,8 +236,8 @@ export function VenueImagesDialog({ venue, onClose }: VenueImagesDialogProps) {
                           disabled={isPending}
                           title={
                             image.is_thumbnail
-                              ? "Remove as thumbnail"
-                              : "Set as thumbnail"
+                              ? "Премахни като заглавна"
+                              : "Задай като заглавна"
                           }
                         >
                           <Star
@@ -261,7 +252,7 @@ export function VenueImagesDialog({ venue, onClose }: VenueImagesDialogProps) {
                           className="h-8 w-8 text-destructive hover:text-destructive"
                           onClick={() => handleDeleteImage(image.id)}
                           disabled={isPending}
-                          title="Delete image"
+                          title="Изтрий изображението"
                         >
                           <Trash2 className="size-4" />
                         </Button>
@@ -280,7 +271,7 @@ export function VenueImagesDialog({ venue, onClose }: VenueImagesDialogProps) {
             onClick={onClose}
             className="cursor-pointer"
           >
-            Close
+            Затвори
           </Button>
         </DialogFooter>
       </DialogContent>

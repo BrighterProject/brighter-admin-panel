@@ -82,6 +82,24 @@ const statusColors: Record<VenueStatus, string> = {
     "text-orange-600 bg-orange-50 dark:text-orange-400 dark:bg-orange-900/20",
 };
 
+const statusLabels: Record<VenueStatus, string> = {
+  active: "Активен",
+  inactive: "Неактивен",
+  maintenance: "Профилактика",
+  pending_approval: "Чака одобрение",
+};
+
+const sportTypeLabels: Record<string, string> = {
+  football: "Футбол",
+  basketball: "Баскетбол",
+  tennis: "Тенис",
+  volleyball: "Волейбол",
+  swimming: "Плуване",
+  gym: "Фитнес",
+  padel: "Падел",
+  other: "Друго",
+};
+
 const sportTypeIcons: Record<string, string> = {
   football: "⚽",
   basketball: "🏀",
@@ -119,7 +137,7 @@ export function DataTable({ venues, loading, onDeleteVenue }: DataTableProps) {
             onCheckedChange={(value) =>
               table.toggleAllPageRowsSelected(!!value)
             }
-            aria-label="Select all"
+            aria-label="Избери всички"
           />
         </div>
       ),
@@ -128,7 +146,7 @@ export function DataTable({ venues, loading, onDeleteVenue }: DataTableProps) {
           <Checkbox
             checked={row.getIsSelected()}
             onCheckedChange={(value) => row.toggleSelected(!!value)}
-            aria-label="Select row"
+            aria-label="Избери ред"
           />
         </div>
       ),
@@ -138,7 +156,7 @@ export function DataTable({ venues, loading, onDeleteVenue }: DataTableProps) {
     },
     {
       accessorKey: "name",
-      header: "Venue",
+      header: "Обект",
       cell: ({ row }) => {
         const venue = row.original;
         return (
@@ -167,7 +185,7 @@ export function DataTable({ venues, loading, onDeleteVenue }: DataTableProps) {
     },
     {
       accessorKey: "status",
-      header: "Status",
+      header: "Статус",
       cell: ({ row }) => {
         const status = row.getValue("status") as VenueStatus;
         return (
@@ -175,7 +193,7 @@ export function DataTable({ venues, loading, onDeleteVenue }: DataTableProps) {
             variant="secondary"
             className={`capitalize ${statusColors[status]}`}
           >
-            {status.replace("_", " ")}
+            {statusLabels[status]}
           </Badge>
         );
       },
@@ -187,11 +205,11 @@ export function DataTable({ venues, loading, onDeleteVenue }: DataTableProps) {
     },
     {
       accessorKey: "sport_types",
-      header: "Sports",
+      header: "Спортове",
       cell: ({ row }) => {
         const sports = row.getValue("sport_types") as string[];
         if (!sports || sports.length === 0) {
-          return <span className="text-muted-foreground text-sm">None</span>;
+          return <span className="text-muted-foreground text-sm">Няма</span>;
         }
         return (
           <div className="flex flex-wrap gap-1 max-w-[150px]">
@@ -201,34 +219,29 @@ export function DataTable({ venues, loading, onDeleteVenue }: DataTableProps) {
                 variant="outline"
                 className="text-xs capitalize"
               >
-                {sportTypeIcons[sport] || "•"} {sport}
+                {sportTypeIcons[sport] || "•"} {sportTypeLabels[sport] || sport}
               </Badge>
             ))}
-            {sports.length > 3 && (
-              <Badge variant="outline" className="text-xs">
-                +{sports.length - 3}
-              </Badge>
-            )}
           </div>
         );
       },
     },
     {
       accessorKey: "price_per_hour",
-      header: "Price",
+      header: "Цена",
       cell: ({ row }) => {
         const price = row.getValue("price_per_hour") as string;
         const currency = row.original.currency;
         return (
           <span className="font-medium">
-            {price} {currency}/h
+            {price} {currency}/ч
           </span>
         );
       },
     },
     {
       accessorKey: "capacity",
-      header: "Capacity",
+      header: "Капацитет",
       cell: ({ row }) => {
         const capacity = row.getValue("capacity") as number;
         return (
@@ -241,12 +254,12 @@ export function DataTable({ venues, loading, onDeleteVenue }: DataTableProps) {
     },
     {
       accessorKey: "is_indoor",
-      header: "Type",
+      header: "Тип",
       cell: ({ row }) => {
         const isIndoor = row.getValue("is_indoor") as boolean;
         return (
           <Badge variant={isIndoor ? "default" : "outline"}>
-            {isIndoor ? "Indoor" : "Outdoor"}
+            {isIndoor ? "Закрито" : "Открито"}
           </Badge>
         );
       },
@@ -258,7 +271,7 @@ export function DataTable({ venues, loading, onDeleteVenue }: DataTableProps) {
     },
     {
       accessorKey: "rating",
-      header: "Rating",
+      header: "Рейтинг",
       cell: ({ row }) => {
         const rating = row.getValue("rating") as string;
         const totalReviews = row.original.total_reviews;
@@ -275,7 +288,7 @@ export function DataTable({ venues, loading, onDeleteVenue }: DataTableProps) {
     },
     {
       id: "actions",
-      header: "Actions",
+      header: "Действия",
       cell: ({ row }) => {
         const venue = row.original;
         return (
@@ -284,31 +297,31 @@ export function DataTable({ venues, loading, onDeleteVenue }: DataTableProps) {
               variant="ghost"
               size="icon"
               className="h-8 w-8 cursor-pointer"
-              title="Manage Images"
+              title="Управление на снимки"
               onClick={() => setImagesVenue(venue)}
             >
               <ImageIcon className="size-4" />
-              <span className="sr-only">Manage images</span>
+              <span className="sr-only">Управление на снимки</span>
             </Button>
             <Button
               variant="ghost"
               size="icon"
               className="h-8 w-8 cursor-pointer"
-              title="Manage Unavailability"
+              title="Управление на заетост"
               onClick={() => setUnavailabilityVenue(venue)}
             >
               <CalendarX className="size-4" />
-              <span className="sr-only">Manage unavailability</span>
+              <span className="sr-only">Управление на заетост</span>
             </Button>
             <Button
               variant="ghost"
               size="icon"
               className="h-8 w-8 cursor-pointer"
-              title="Change Status"
+              title="Промяна на статус"
               onClick={() => setStatusVenue(venue)}
             >
               <Activity className="size-4" />
-              <span className="sr-only">Change status</span>
+              <span className="sr-only">Промяна на статус</span>
             </Button>
             <Button
               variant="ghost"
@@ -317,7 +330,7 @@ export function DataTable({ venues, loading, onDeleteVenue }: DataTableProps) {
               onClick={() => setDetailsVenue(venue)}
             >
               <Eye className="size-4" />
-              <span className="sr-only">View details</span>
+              <span className="sr-only">Виж детайли</span>
             </Button>
             <Button
               variant="ghost"
@@ -326,7 +339,7 @@ export function DataTable({ venues, loading, onDeleteVenue }: DataTableProps) {
               onClick={() => setEditVenue(venue)}
             >
               <Pencil className="size-4" />
-              <span className="sr-only">Edit venue</span>
+              <span className="sr-only">Редактирай обект</span>
             </Button>
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
@@ -336,7 +349,7 @@ export function DataTable({ venues, loading, onDeleteVenue }: DataTableProps) {
                   className="h-8 w-8 cursor-pointer"
                 >
                   <EllipsisVertical className="size-4" />
-                  <span className="sr-only">More actions</span>
+                  <span className="sr-only">Още действия</span>
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end">
@@ -345,28 +358,28 @@ export function DataTable({ venues, loading, onDeleteVenue }: DataTableProps) {
                   onClick={() => setImagesVenue(venue)}
                 >
                   <ImageIcon className="mr-2 size-4" />
-                  Manage Images
+                  Управление на снимки
                 </DropdownMenuItem>
                 <DropdownMenuItem
                   className="cursor-pointer"
                   onClick={() => setUnavailabilityVenue(venue)}
                 >
                   <CalendarX className="mr-2 size-4" />
-                  Manage Unavailability
+                  Управление на заетост
                 </DropdownMenuItem>
                 <DropdownMenuItem
                   className="cursor-pointer"
                   onClick={() => setStatusVenue(venue)}
                 >
                   <Activity className="mr-2 size-4" />
-                  Change Status
+                  Промяна на статус
                 </DropdownMenuItem>
                 <DropdownMenuItem
                   className="cursor-pointer"
                   onClick={() => setEditVenue(venue)}
                 >
                   <Settings2 className="mr-2 size-4" />
-                  Edit Details
+                  Редактиране на детайли
                 </DropdownMenuItem>
                 <DropdownMenuSeparator />
                 <DropdownMenuItem
@@ -375,7 +388,7 @@ export function DataTable({ venues, loading, onDeleteVenue }: DataTableProps) {
                   onClick={() => onDeleteVenue(venue.id)}
                 >
                   <Trash2 className="mr-2 size-4" />
-                  Delete Venue
+                  Изтрий обекта
                 </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
@@ -411,7 +424,7 @@ export function DataTable({ venues, loading, onDeleteVenue }: DataTableProps) {
 
   return (
     <div className="w-full space-y-4">
-      {/* Dialogs */}
+      {/* Диалози */}
       <VenueStatusDialog
         venue={statusVenue}
         onClose={() => setStatusVenue(null)}
@@ -431,13 +444,13 @@ export function DataTable({ venues, loading, onDeleteVenue }: DataTableProps) {
         onClose={() => setUnavailabilityVenue(null)}
       />
 
-      {/* Toolbar */}
+      {/* Лента с инструменти */}
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div className="flex flex-1 items-center space-x-2">
           <div className="relative flex-1 max-w-sm">
             <Search className="absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
             <Input
-              placeholder="Search venues..."
+              placeholder="Търси обекти..."
               value={globalFilter ?? ""}
               onChange={(e) => setGlobalFilter(String(e.target.value))}
               className="pl-9"
@@ -447,16 +460,16 @@ export function DataTable({ venues, loading, onDeleteVenue }: DataTableProps) {
         <div className="flex items-center space-x-2">
           <Button variant="outline" className="cursor-pointer">
             <Download className="mr-2 size-4" />
-            Export
+            Експорт
           </Button>
           <VenueFormDialog />
         </div>
       </div>
 
-      {/* Filters */}
+      {/* Филтри */}
       <div className="grid gap-2 sm:grid-cols-3 sm:gap-4">
         <div className="space-y-2">
-          <Label className="text-sm font-medium">Status</Label>
+          <Label className="text-sm font-medium">Статус</Label>
           <Select
             value={statusFilter || "all"}
             onValueChange={(value) =>
@@ -464,20 +477,20 @@ export function DataTable({ venues, loading, onDeleteVenue }: DataTableProps) {
             }
           >
             <SelectTrigger className="cursor-pointer w-full">
-              <SelectValue placeholder="All Status" />
+              <SelectValue placeholder="Всички статуси" />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="all">All Status</SelectItem>
-              <SelectItem value="active">Active</SelectItem>
-              <SelectItem value="inactive">Inactive</SelectItem>
-              <SelectItem value="maintenance">Maintenance</SelectItem>
-              <SelectItem value="pending_approval">Pending Approval</SelectItem>
+              <SelectItem value="all">Всички статуси</SelectItem>
+              <SelectItem value="active">Активни</SelectItem>
+              <SelectItem value="inactive">Неактивни</SelectItem>
+              <SelectItem value="maintenance">Профилактика</SelectItem>
+              <SelectItem value="pending_approval">Чакащи одобрение</SelectItem>
             </SelectContent>
           </Select>
         </div>
 
         <div className="space-y-2">
-          <Label className="text-sm font-medium">Type</Label>
+          <Label className="text-sm font-medium">Тип</Label>
           <Select
             value={typeFilter || "all"}
             onValueChange={(value) =>
@@ -485,22 +498,22 @@ export function DataTable({ venues, loading, onDeleteVenue }: DataTableProps) {
             }
           >
             <SelectTrigger className="cursor-pointer w-full">
-              <SelectValue placeholder="All Types" />
+              <SelectValue placeholder="Всички типове" />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="all">All Types</SelectItem>
-              <SelectItem value="indoor">Indoor</SelectItem>
-              <SelectItem value="outdoor">Outdoor</SelectItem>
+              <SelectItem value="all">Всички типове</SelectItem>
+              <SelectItem value="indoor">Закрити</SelectItem>
+              <SelectItem value="outdoor">Открити</SelectItem>
             </SelectContent>
           </Select>
         </div>
 
         <div className="space-y-2">
-          <Label className="text-sm font-medium">Column Visibility</Label>
+          <Label className="text-sm font-medium">Видимост на колоните</Label>
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <Button variant="outline" className="cursor-pointer w-full">
-                Columns <ChevronDown className="ml-2 size-4" />
+                Колони <ChevronDown className="ml-2 size-4" />
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end">
@@ -514,7 +527,21 @@ export function DataTable({ venues, loading, onDeleteVenue }: DataTableProps) {
                     checked={col.getIsVisible()}
                     onCheckedChange={(value) => col.toggleVisibility(!!value)}
                   >
-                    {col.id}
+                    {col.id === "name"
+                      ? "Обект"
+                      : col.id === "status"
+                        ? "Статус"
+                        : col.id === "sport_types"
+                          ? "Спортове"
+                          : col.id === "price_per_hour"
+                            ? "Цена"
+                            : col.id === "capacity"
+                              ? "Капацитет"
+                              : col.id === "is_indoor"
+                                ? "Тип"
+                                : col.id === "rating"
+                                  ? "Рейтинг"
+                                  : col.id}
                   </DropdownMenuCheckboxItem>
                 ))}
             </DropdownMenuContent>
@@ -522,7 +549,7 @@ export function DataTable({ venues, loading, onDeleteVenue }: DataTableProps) {
         </div>
       </div>
 
-      {/* Table */}
+      {/* Таблица */}
       <div className="rounded-md border">
         <Table>
           <TableHeader>
@@ -573,7 +600,7 @@ export function DataTable({ venues, loading, onDeleteVenue }: DataTableProps) {
                   colSpan={columns.length}
                   className="h-24 text-center"
                 >
-                  No results.
+                  Няма намерени резултати.
                 </TableCell>
               </TableRow>
             )}
@@ -581,10 +608,10 @@ export function DataTable({ venues, loading, onDeleteVenue }: DataTableProps) {
         </Table>
       </div>
 
-      {/* Pagination */}
+      {/* Списък със страници (Pagination) */}
       <div className="flex items-center justify-between space-x-2 py-4">
         <div className="flex items-center space-x-2">
-          <Label className="text-sm font-medium">Show</Label>
+          <Label className="text-sm font-medium">Покажи</Label>
           <Select
             value={`${table.getState().pagination.pageSize}`}
             onValueChange={(value) => table.setPageSize(Number(value))}
@@ -602,14 +629,14 @@ export function DataTable({ venues, loading, onDeleteVenue }: DataTableProps) {
           </Select>
         </div>
         <div className="flex-1 text-sm text-muted-foreground hidden sm:block">
-          {table.getFilteredSelectedRowModel().rows.length} of{" "}
-          {table.getFilteredRowModel().rows.length} row(s) selected.
+          Избрани са {table.getFilteredSelectedRowModel().rows.length} от{" "}
+          {table.getFilteredRowModel().rows.length} реда.
         </div>
         <div className="flex items-center space-x-2">
           <p className="text-sm font-medium hidden sm:block">
-            Page{" "}
+            Страница{" "}
             <strong>
-              {table.getState().pagination.pageIndex + 1} of{" "}
+              {table.getState().pagination.pageIndex + 1} от{" "}
               {table.getPageCount()}
             </strong>
           </p>
@@ -620,7 +647,7 @@ export function DataTable({ venues, loading, onDeleteVenue }: DataTableProps) {
             disabled={!table.getCanPreviousPage()}
             className="cursor-pointer"
           >
-            Previous
+            Предишна
           </Button>
           <Button
             variant="outline"
@@ -629,7 +656,7 @@ export function DataTable({ venues, loading, onDeleteVenue }: DataTableProps) {
             disabled={!table.getCanNextPage()}
             className="cursor-pointer"
           >
-            Next
+            Следваща
           </Button>
         </div>
       </div>

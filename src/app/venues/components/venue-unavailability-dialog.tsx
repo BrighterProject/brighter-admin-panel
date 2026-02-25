@@ -31,7 +31,7 @@ interface VenueUnavailabilityDialogProps {
 
 function formatDateTime(isoString: string): string {
   const date = new Date(isoString);
-  return date.toLocaleString(undefined, {
+  return date.toLocaleString("bg-BG", {
     month: "short",
     day: "numeric",
     year: "numeric",
@@ -78,7 +78,6 @@ export function VenueUnavailabilityDialog({
   };
 
   const handleStartAdd = () => {
-    // Set default dates (today and tomorrow)
     const now = new Date();
     const tomorrow = new Date(now);
     tomorrow.setDate(tomorrow.getDate() + 1);
@@ -138,7 +137,6 @@ export function VenueUnavailabilityDialog({
 
   const isPending = isCreating || isUpdating || isDeleting;
 
-  // Sort unavailabilities by start date (newest first)
   const sortedUnavailabilities = [...unavailabilities].sort(
     (a, b) =>
       new Date(b.start_datetime).getTime() -
@@ -151,23 +149,23 @@ export function VenueUnavailabilityDialog({
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <CalendarX className="size-5" />
-            Manage Unavailability
+            Управление на заетостта
           </DialogTitle>
           <DialogDescription>
             {venue
-              ? `Set unavailable time periods for ${venue.name}.`
-              : "Manage venue unavailability periods."}
+              ? `Задайте периоди, в които ${venue.name} няма да бъде на разположение.`
+              : "Управление на периодите на заетост на обекта."}
           </DialogDescription>
         </DialogHeader>
 
         <ScrollArea className="max-h-[60vh]">
           <div className="space-y-6 pr-4">
-            {/* Add/Edit Form */}
+            {/* Форма за Добавяне/Редактиране */}
             {(isAdding || editingId) && (
               <div className="space-y-4 p-4 rounded-lg border bg-muted/30">
                 <div className="flex items-center justify-between">
                   <h4 className="text-sm font-medium">
-                    {editingId ? "Edit Unavailability" : "Add Unavailability"}
+                    {editingId ? "Редактиране на период" : "Добавяне на период"}
                   </h4>
                   <Button
                     variant="ghost"
@@ -181,7 +179,7 @@ export function VenueUnavailabilityDialog({
 
                 <div className="grid grid-cols-2 gap-4">
                   <div className="space-y-2">
-                    <Label htmlFor="start-datetime">Start Date & Time</Label>
+                    <Label htmlFor="start-datetime">Начална дата и час</Label>
                     <Input
                       id="start-datetime"
                       type="datetime-local"
@@ -195,7 +193,7 @@ export function VenueUnavailabilityDialog({
                     />
                   </div>
                   <div className="space-y-2">
-                    <Label htmlFor="end-datetime">End Date & Time</Label>
+                    <Label htmlFor="end-datetime">Крайна дата и час</Label>
                     <Input
                       id="end-datetime"
                       type="datetime-local"
@@ -211,10 +209,10 @@ export function VenueUnavailabilityDialog({
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="reason">Reason (optional)</Label>
+                  <Label htmlFor="reason">Причина (незадължително)</Label>
                   <Textarea
                     id="reason"
-                    placeholder="e.g., Maintenance, Private event, etc."
+                    placeholder="напр. Профилактика, Частно събитие и др."
                     value={formData.reason}
                     onChange={(e) =>
                       setFormData((prev) => ({
@@ -228,7 +226,7 @@ export function VenueUnavailabilityDialog({
 
                 <div className="flex justify-end gap-2">
                   <Button variant="outline" onClick={resetForm}>
-                    Cancel
+                    Отказ
                   </Button>
                   <Button
                     onClick={handleSubmit}
@@ -241,24 +239,24 @@ export function VenueUnavailabilityDialog({
                     {isPending && (
                       <Loader2 className="mr-2 size-4 animate-spin" />
                     )}
-                    {editingId ? "Update" : "Add"}
+                    {editingId ? "Обнови" : "Добави"}
                   </Button>
                 </div>
               </div>
             )}
 
-            {/* Add Button */}
+            {/* Бутон за добавяне */}
             {!isAdding && !editingId && (
               <Button onClick={handleStartAdd} className="w-full">
                 <Plus className="mr-2 size-4" />
-                Add Unavailability Period
+                Добави период на заетост
               </Button>
             )}
 
-            {/* Unavailabilities List */}
+            {/* Списък с периоди */}
             <div className="space-y-3">
               <h4 className="text-sm font-medium">
-                Unavailable Periods ({unavailabilities.length})
+                Периоди на заетост ({unavailabilities.length})
               </h4>
 
               {isLoading ? (
@@ -268,8 +266,8 @@ export function VenueUnavailabilityDialog({
               ) : sortedUnavailabilities.length === 0 ? (
                 <div className="text-center py-8 text-muted-foreground">
                   <CalendarX className="size-12 mx-auto mb-3 opacity-50" />
-                  <p>No unavailability periods set.</p>
-                  <p className="text-sm">The venue is available for booking.</p>
+                  <p>Няма зададени периоди на заетост.</p>
+                  <p className="text-sm">Обектът е свободен за резервации.</p>
                 </div>
               ) : (
                 <div className="space-y-2">
@@ -289,7 +287,7 @@ export function VenueUnavailabilityDialog({
                               variant={isPast ? "secondary" : "default"}
                               className="text-xs"
                             >
-                              {isPast ? "Past" : "Upcoming"}
+                              {isPast ? "Изминал" : "Предстои"}
                             </Badge>
                             {u.reason && (
                               <span className="text-sm font-medium">
@@ -311,7 +309,7 @@ export function VenueUnavailabilityDialog({
                             className="h-8 w-8"
                             onClick={() => handleStartEdit(u)}
                             disabled={isPending}
-                            title="Edit"
+                            title="Редактиране"
                           >
                             <Pencil className="size-4" />
                           </Button>
@@ -321,7 +319,7 @@ export function VenueUnavailabilityDialog({
                             className="h-8 w-8 text-destructive hover:text-destructive"
                             onClick={() => handleDelete(u.id)}
                             disabled={isPending}
-                            title="Delete"
+                            title="Изтриване"
                           >
                             <Trash2 className="size-4" />
                           </Button>
@@ -341,7 +339,7 @@ export function VenueUnavailabilityDialog({
             onClick={onClose}
             className="cursor-pointer"
           >
-            Close
+            Затвори
           </Button>
         </DialogFooter>
       </DialogContent>

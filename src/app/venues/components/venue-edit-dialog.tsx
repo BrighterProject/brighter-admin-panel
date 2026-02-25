@@ -34,6 +34,17 @@ import type { VenueListItem, Venue, SportType, WorkingHours } from "../types";
 
 // ─── Constants ────────────────────────────────────────────────────────────────
 
+const SPORT_LABELS: Record<string, string> = {
+  football: "Футбол",
+  basketball: "Баскетбол",
+  tennis: "Тенис",
+  volleyball: "Волейбол",
+  swimming: "Плуване",
+  gym: "Фитнес",
+  padel: "Падел",
+  other: "Друго",
+};
+
 const sportTypeOptions: SportType[] = [
   "football",
   "basketball",
@@ -46,14 +57,14 @@ const sportTypeOptions: SportType[] = [
 ];
 
 const DAYS = [
-  { key: "0", label: "Monday" },
-  { key: "1", label: "Tuesday" },
-  { key: "2", label: "Wednesday" },
-  { key: "3", label: "Thursday" },
-  { key: "4", label: "Friday" },
-  { key: "5", label: "Saturday" },
-  { key: "6", label: "Sunday" },
-  { key: "default", label: "Default (fallback)" },
+  { key: "0", label: "Понеделник" },
+  { key: "1", label: "Вторник" },
+  { key: "2", label: "Сряда" },
+  { key: "3", label: "Четвъртък" },
+  { key: "4", label: "Петък" },
+  { key: "5", label: "Събота" },
+  { key: "6", label: "Неделя" },
+  { key: "default", label: "По подразбиране" },
 ] as const;
 
 // ─── Schema ───────────────────────────────────────────────────────────────────
@@ -62,21 +73,21 @@ const timeSlotSchema = z.object({
   enabled: z.boolean(),
   open: z
     .string()
-    .regex(/^\d{2}:\d{2}$/, "Use HH:MM")
+    .regex(/^\d{2}:\d{2}$/, "Използвайте формат ЧЧ:ММ")
     .optional()
     .or(z.literal("")),
   close: z
     .string()
-    .regex(/^\d{2}:\d{2}$/, "Use HH:MM")
+    .regex(/^\d{2}:\d{2}$/, "Използвайте формат ЧЧ:ММ")
     .optional()
     .or(z.literal("")),
 });
 
 const editFormSchema = z.object({
-  name: z.string().min(2, "Name must be at least 2 characters.").optional(),
+  name: z.string().min(2, "Името трябва да е поне 2 символа.").optional(),
   description: z
     .string()
-    .min(10, "Description must be at least 10 characters.")
+    .min(10, "Описанието трябва да е поне 10 символа.")
     .optional()
     .or(z.literal("")),
   sport_types: z.array(z.string()).optional(),
@@ -84,20 +95,26 @@ const editFormSchema = z.object({
   city: z.string().optional(),
   latitude: z
     .string()
-    .regex(/^[-+]?\d*\.?\d*$/, "Invalid latitude format.")
+    .regex(/^[-+]?\d*\.?\d*$/, "Невалиден формат за географска ширина.")
     .optional()
     .or(z.literal("")),
   longitude: z
     .string()
-    .regex(/^[-+]?\d*\.?\d*$/, "Invalid longitude format.")
+    .regex(/^[-+]?\d*\.?\d*$/, "Невалиден формат за географска дължина.")
     .optional()
     .or(z.literal("")),
   price_per_hour: z
     .string()
-    .regex(/^\d*\.?\d{0,2}$/, "Invalid price format.")
+    .regex(/^\d*\.?\d{0,2}$/, "Невалиден формат на цената.")
     .optional(),
-  currency: z.string().length(3).optional(),
-  capacity: z.coerce.number().min(1).optional(),
+  currency: z
+    .string()
+    .length(3, "Валутата трябва да е 3 символа (напр. BGN)")
+    .optional(),
+  capacity: z.coerce
+    .number()
+    .min(1, "Капацитетът трябва да е поне 1")
+    .optional(),
   is_indoor: z.boolean().optional(),
   has_parking: z.boolean().optional(),
   has_changing_rooms: z.boolean().optional(),
@@ -156,7 +173,7 @@ function AmenitiesInput({
   const inputRef = useRef<HTMLInputElement>(null);
 
   const add = () => {
-    const trimmed = draft.trim().toLowerCase();
+    const trimmed = draft.trim();
     if (trimmed && !value.includes(trimmed)) {
       onChange([...value, trimmed]);
     }
@@ -172,11 +189,7 @@ function AmenitiesInput({
         onClick={() => inputRef.current?.focus()}
       >
         {value.map((item) => (
-          <Badge
-            key={item}
-            variant="secondary"
-            className="gap-1 pr-1 capitalize h-6"
-          >
+          <Badge key={item} variant="secondary" className="gap-1 pr-1 h-6">
             {item}
             <button
               type="button"
@@ -203,7 +216,9 @@ function AmenitiesInput({
               remove(value[value.length - 1]);
             }
           }}
-          placeholder={value.length === 0 ? "Type and press Enter to add…" : ""}
+          placeholder={
+            value.length === 0 ? "Въведете и натиснете Enter..." : ""
+          }
           className="flex-1 min-w-28 bg-transparent text-sm outline-none placeholder:text-muted-foreground"
         />
       </div>
@@ -216,7 +231,7 @@ function AmenitiesInput({
           onClick={add}
         >
           <Plus className="size-3 mr-1" />
-          Add &ldquo;{draft.trim()}&rdquo;
+          Добави &bdquo;{draft.trim()}&ldquo;
         </Button>
       )}
     </div>
@@ -260,7 +275,6 @@ function WorkingHoursRow({
           : "bg-muted/30"
       }`}
     >
-      {/* Toggle + label */}
       <div className="flex items-center gap-2">
         <Switch
           checked={isEnabled}
@@ -280,9 +294,10 @@ function WorkingHoursRow({
         </span>
       </div>
 
-      {/* Open */}
       <div className="flex items-center gap-2">
-        <span className="text-xs text-muted-foreground w-9 shrink-0">Open</span>
+        <span className="text-xs text-muted-foreground w-11 shrink-0">
+          Отв.
+        </span>
         <Input
           type="time"
           disabled={!isEnabled}
@@ -292,10 +307,9 @@ function WorkingHoursRow({
         />
       </div>
 
-      {/* Close */}
       <div className="flex items-center gap-2">
-        <span className="text-xs text-muted-foreground w-9 shrink-0">
-          Close
+        <span className="text-xs text-muted-foreground w-11 shrink-0">
+          Затв.
         </span>
         <Input
           type="time"
@@ -346,7 +360,7 @@ export function VenueEditDialog({ venue, onClose }: VenueEditDialogProps) {
       latitude: "",
       longitude: "",
       price_per_hour: "",
-      currency: "EUR",
+      currency: "BGN",
       capacity: 1,
       is_indoor: false,
       has_parking: false,
@@ -400,7 +414,6 @@ export function VenueEditDialog({ venue, onClose }: VenueEditDialogProps) {
   const onSubmit = (data: EditFormValues) => {
     if (!venue) return;
     const source = fullVenue ?? venue;
-
     const changed: Record<string, unknown> = {};
 
     for (const [key, val] of Object.entries(data)) {
@@ -436,9 +449,10 @@ export function VenueEditDialog({ venue, onClose }: VenueEditDialogProps) {
     <Dialog open={!!venue} onOpenChange={(open) => !open && onClose()}>
       <DialogContent className="sm:max-w-2xl max-h-[90vh]">
         <DialogHeader>
-          <DialogTitle>Edit Venue</DialogTitle>
+          <DialogTitle>Редактиране на обект</DialogTitle>
           <DialogDescription>
-            Update venue details. Only changed fields will be sent.
+            Актуализирайте данните за обекта. Ще бъдат изпратени само
+            променените полета.
           </DialogDescription>
         </DialogHeader>
 
@@ -451,15 +465,15 @@ export function VenueEditDialog({ venue, onClose }: VenueEditDialogProps) {
                 <div className="space-y-6 pr-4">
                   {/* ── Basic Information ── */}
                   <div className="space-y-4">
-                    <h4 className="text-sm font-semibold text-muted-foreground">
-                      Basic Information
+                    <h4 className="text-sm font-semibold text-muted-foreground uppercase tracking-wider">
+                      Основна информация
                     </h4>
                     <FormField
                       control={form.control}
                       name="name"
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel>Venue Name</FormLabel>
+                          <FormLabel>Име на обекта</FormLabel>
                           <FormControl>
                             <Input {...field} />
                           </FormControl>
@@ -472,11 +486,11 @@ export function VenueEditDialog({ venue, onClose }: VenueEditDialogProps) {
                       name="description"
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel>Description</FormLabel>
+                          <FormLabel>Описание</FormLabel>
                           <FormControl>
                             <Textarea
                               rows={3}
-                              placeholder="Describe the venue…"
+                              placeholder="Опишете обекта..."
                               {...field}
                             />
                           </FormControl>
@@ -490,17 +504,17 @@ export function VenueEditDialog({ venue, onClose }: VenueEditDialogProps) {
 
                   {/* ── Location ── */}
                   <div className="space-y-4">
-                    <h4 className="text-sm font-semibold text-muted-foreground">
-                      Location
+                    <h4 className="text-sm font-semibold text-muted-foreground uppercase tracking-wider">
+                      Локация
                     </h4>
                     <FormField
                       control={form.control}
                       name="address"
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel>Address</FormLabel>
+                          <FormLabel>Адрес</FormLabel>
                           <FormControl>
-                            <Input placeholder="Street address" {...field} />
+                            <Input placeholder="ул. Примерна 123" {...field} />
                           </FormControl>
                           <FormMessage />
                         </FormItem>
@@ -511,7 +525,7 @@ export function VenueEditDialog({ venue, onClose }: VenueEditDialogProps) {
                       name="city"
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel>City</FormLabel>
+                          <FormLabel>Град</FormLabel>
                           <FormControl>
                             <Input {...field} />
                           </FormControl>
@@ -525,9 +539,9 @@ export function VenueEditDialog({ venue, onClose }: VenueEditDialogProps) {
                         name="latitude"
                         render={({ field }) => (
                           <FormItem>
-                            <FormLabel>Latitude</FormLabel>
+                            <FormLabel>Ширина (Lat)</FormLabel>
                             <FormControl>
-                              <Input placeholder="e.g. 48.8566" {...field} />
+                              <Input placeholder="напр. 42.6977" {...field} />
                             </FormControl>
                             <FormMessage />
                           </FormItem>
@@ -538,9 +552,9 @@ export function VenueEditDialog({ venue, onClose }: VenueEditDialogProps) {
                         name="longitude"
                         render={({ field }) => (
                           <FormItem>
-                            <FormLabel>Longitude</FormLabel>
+                            <FormLabel>Дължина (Long)</FormLabel>
                             <FormControl>
-                              <Input placeholder="e.g. 2.3522" {...field} />
+                              <Input placeholder="напр. 23.3219" {...field} />
                             </FormControl>
                             <FormMessage />
                           </FormItem>
@@ -553,8 +567,8 @@ export function VenueEditDialog({ venue, onClose }: VenueEditDialogProps) {
 
                   {/* ── Sport Types ── */}
                   <div className="space-y-4">
-                    <h4 className="text-sm font-semibold text-muted-foreground">
-                      Sport Types
+                    <h4 className="text-sm font-semibold text-muted-foreground uppercase tracking-wider">
+                      Видове спорт
                     </h4>
                     <FormField
                       control={form.control}
@@ -571,10 +585,10 @@ export function VenueEditDialog({ venue, onClose }: VenueEditDialogProps) {
                                       ? "default"
                                       : "outline"
                                   }
-                                  className="cursor-pointer capitalize"
+                                  className="cursor-pointer"
                                   onClick={() => toggleSport(sport)}
                                 >
-                                  {sport}
+                                  {SPORT_LABELS[sport] || sport}
                                 </Badge>
                               ))}
                             </div>
@@ -589,8 +603,8 @@ export function VenueEditDialog({ venue, onClose }: VenueEditDialogProps) {
 
                   {/* ── Pricing & Capacity ── */}
                   <div className="space-y-4">
-                    <h4 className="text-sm font-semibold text-muted-foreground">
-                      Pricing & Capacity
+                    <h4 className="text-sm font-semibold text-muted-foreground uppercase tracking-wider">
+                      Цени и капацитет
                     </h4>
                     <div className="grid grid-cols-2 gap-4">
                       <FormField
@@ -598,7 +612,7 @@ export function VenueEditDialog({ venue, onClose }: VenueEditDialogProps) {
                         name="price_per_hour"
                         render={({ field }) => (
                           <FormItem>
-                            <FormLabel>Price Per Hour</FormLabel>
+                            <FormLabel>Цена на час</FormLabel>
                             <FormControl>
                               <Input {...field} />
                             </FormControl>
@@ -611,7 +625,7 @@ export function VenueEditDialog({ venue, onClose }: VenueEditDialogProps) {
                         name="currency"
                         render={({ field }) => (
                           <FormItem>
-                            <FormLabel>Currency</FormLabel>
+                            <FormLabel>Валута</FormLabel>
                             <FormControl>
                               <Input maxLength={3} {...field} />
                             </FormControl>
@@ -625,7 +639,7 @@ export function VenueEditDialog({ venue, onClose }: VenueEditDialogProps) {
                       name="capacity"
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel>Capacity</FormLabel>
+                          <FormLabel>Макс. капацитет</FormLabel>
                           <FormControl>
                             <Input type="number" min={1} {...field} />
                           </FormControl>
@@ -639,22 +653,22 @@ export function VenueEditDialog({ venue, onClose }: VenueEditDialogProps) {
 
                   {/* ── Facilities ── */}
                   <div className="space-y-4">
-                    <h4 className="text-sm font-semibold text-muted-foreground">
-                      Facilities
+                    <h4 className="text-sm font-semibold text-muted-foreground uppercase tracking-wider">
+                      Оборудване и условия
                     </h4>
-                    <div className="grid grid-cols-2 gap-4">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                       {(
                         [
-                          { name: "is_indoor", label: "Indoor" },
-                          { name: "has_parking", label: "Parking" },
+                          { name: "is_indoor", label: "Закрит обект" },
+                          { name: "has_parking", label: "Паркинг" },
                           {
                             name: "has_changing_rooms",
-                            label: "Changing Rooms",
+                            label: "Съблекални",
                           },
-                          { name: "has_showers", label: "Showers" },
+                          { name: "has_showers", label: "Душове" },
                           {
                             name: "has_equipment_rental",
-                            label: "Equipment Rental",
+                            label: "Наем на екипировка",
                           },
                         ] as const
                       ).map(({ name, label }) => (
@@ -685,12 +699,11 @@ export function VenueEditDialog({ venue, onClose }: VenueEditDialogProps) {
                   {/* ── Amenities ── */}
                   <div className="space-y-4">
                     <div>
-                      <h4 className="text-sm font-semibold text-muted-foreground">
-                        Amenities
+                      <h4 className="text-sm font-semibold text-muted-foreground uppercase tracking-wider">
+                        Допълнителни удобства
                       </h4>
                       <p className="text-xs text-muted-foreground mt-0.5">
-                        Type and press Enter to add. Backspace removes the last
-                        tag.
+                        Въведете текст и натиснете Enter, за да добавите таг.
                       </p>
                     </div>
                     <FormField
@@ -715,13 +728,13 @@ export function VenueEditDialog({ venue, onClose }: VenueEditDialogProps) {
                   {/* ── Working Hours ── */}
                   <div className="space-y-4">
                     <div>
-                      <h4 className="text-sm font-semibold text-muted-foreground">
-                        Working Hours
+                      <h4 className="text-sm font-semibold text-muted-foreground uppercase tracking-wider">
+                        Работно време
                       </h4>
                       <p className="text-xs text-muted-foreground mt-0.5">
-                        Toggle each day to enable it. The{" "}
-                        <span className="font-medium">Default</span> row acts as
-                        a fallback for any unspecified day.
+                        Активирайте всеки ден поотделно. Редът{" "}
+                        <span className="font-medium">По подразбиране</span> се
+                        ползва за непосочени дни.
                       </p>
                     </div>
                     <div className="space-y-2">
@@ -744,7 +757,7 @@ export function VenueEditDialog({ venue, onClose }: VenueEditDialogProps) {
                     onClick={onClose}
                     className="cursor-pointer"
                   >
-                    Cancel
+                    Отказ
                   </Button>
                   <Button
                     type="submit"
@@ -754,7 +767,7 @@ export function VenueEditDialog({ venue, onClose }: VenueEditDialogProps) {
                     {isPending && (
                       <Loader2 className="mr-2 size-4 animate-spin" />
                     )}
-                    Save Changes
+                    Запази промените
                   </Button>
                 </DialogFooter>
               </form>

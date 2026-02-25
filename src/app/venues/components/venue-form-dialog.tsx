@@ -46,14 +46,14 @@ const sportTypeOptions: SportType[] = [
 ];
 
 const DAYS = [
-  { key: "0", label: "Monday" },
-  { key: "1", label: "Tuesday" },
-  { key: "2", label: "Wednesday" },
-  { key: "3", label: "Thursday" },
-  { key: "4", label: "Friday" },
-  { key: "5", label: "Saturday" },
-  { key: "6", label: "Sunday" },
-  { key: "default", label: "Default (fallback)" },
+  { key: "0", label: "Понеделник" },
+  { key: "1", label: "Вторник" },
+  { key: "2", label: "Сряда" },
+  { key: "3", label: "Четвъртък" },
+  { key: "4", label: "Петък" },
+  { key: "5", label: "Събота" },
+  { key: "6", label: "Неделя" },
+  { key: "default", label: "По подразбиране" },
 ] as const;
 
 // ─── Schema ───────────────────────────────────────────────────────────────────
@@ -62,12 +62,12 @@ const timeSlotSchema = z.object({
   enabled: z.boolean(),
   open: z
     .string()
-    .regex(/^\d{2}:\d{2}$/, "Use HH:MM")
+    .regex(/^\d{2}:\d{2}$/, "Използвайте ЧЧ:ММ")
     .optional()
     .or(z.literal("")),
   close: z
     .string()
-    .regex(/^\d{2}:\d{2}$/, "Use HH:MM")
+    .regex(/^\d{2}:\d{2}$/, "Използвайте ЧЧ:ММ")
     .optional()
     .or(z.literal("")),
 });
@@ -200,7 +200,7 @@ function AmenitiesInput({
               remove(value[value.length - 1]);
             }
           }}
-          placeholder={value.length === 0 ? "Type and press Enter to add…" : ""}
+          placeholder={value.length === 0 ? "Въведете и натиснете Enter…" : ""}
           className="flex-1 min-w-28 bg-transparent text-sm outline-none placeholder:text-muted-foreground"
         />
       </div>
@@ -277,7 +277,9 @@ function WorkingHoursRow({
       </div>
 
       <div className="flex items-center gap-2">
-        <span className="text-xs text-muted-foreground w-9 shrink-0">Open</span>
+        <span className="text-xs text-muted-foreground w-9 shrink-0">
+          Отваря
+        </span>
         <Input
           type="time"
           disabled={!isEnabled}
@@ -289,7 +291,7 @@ function WorkingHoursRow({
 
       <div className="flex items-center gap-2">
         <span className="text-xs text-muted-foreground w-9 shrink-0">
-          Close
+          Затваря
         </span>
         <Input
           type="time"
@@ -320,7 +322,7 @@ export function VenueFormDialog() {
       latitude: "",
       longitude: "",
       price_per_hour: "",
-      currency: "EUR",
+      currency: "BGN",
       capacity: 1,
       is_indoor: false,
       has_parking: false,
@@ -375,15 +377,16 @@ export function VenueFormDialog() {
       <DialogTrigger asChild>
         <Button className="cursor-pointer">
           <Plus className="mr-2 size-4" />
-          Add New Venue
+          Добави обект
         </Button>
       </DialogTrigger>
 
       <DialogContent className="sm:max-w-2xl max-h-[90vh]">
         <DialogHeader>
-          <DialogTitle>Add New Venue</DialogTitle>
+          <DialogTitle>Добави обект</DialogTitle>
           <DialogDescription>
-            Create a new venue. Fill in all required fields and click save.
+            Създайте нов обект. Попълнете всички задължителни полета и натиснете
+            запази.
           </DialogDescription>
         </DialogHeader>
 
@@ -394,17 +397,17 @@ export function VenueFormDialog() {
                 {/* ── Basic Information ── */}
                 <div className="space-y-4">
                   <h4 className="text-sm font-semibold text-muted-foreground">
-                    Basic Information
+                    Основна информация
                   </h4>
                   <FormField
                     control={form.control}
                     name="name"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Venue Name</FormLabel>
+                        <FormLabel>Наименование</FormLabel>
                         <FormControl>
                           <Input
-                            placeholder="Central Sports Arena"
+                            placeholder="Централна спортна арена"
                             {...field}
                           />
                         </FormControl>
@@ -417,11 +420,11 @@ export function VenueFormDialog() {
                     name="description"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Description</FormLabel>
+                        <FormLabel>Описание</FormLabel>
                         <FormControl>
                           <Textarea
                             rows={3}
-                            placeholder="Describe the venue…"
+                            placeholder="Опишете обекта…"
                             {...field}
                           />
                         </FormControl>
@@ -436,14 +439,14 @@ export function VenueFormDialog() {
                 {/* ── Sport Types ── */}
                 <div className="space-y-4">
                   <h4 className="text-sm font-semibold text-muted-foreground">
-                    Sport Types
+                    Видове спорт
                   </h4>
                   <FormField
                     control={form.control}
                     name="sport_types"
                     render={() => (
                       <FormItem>
-                        <FormLabel>Select Sports</FormLabel>
+                        <FormLabel>Изберете спортове</FormLabel>
                         <FormControl>
                           <div className="flex flex-wrap gap-2">
                             {sportTypeOptions.map((sport) => (
@@ -473,16 +476,16 @@ export function VenueFormDialog() {
                 {/* ── Location ── */}
                 <div className="space-y-4">
                   <h4 className="text-sm font-semibold text-muted-foreground">
-                    Location
+                    Местоположение
                   </h4>
                   <FormField
                     control={form.control}
                     name="address"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Address</FormLabel>
+                        <FormLabel>Адрес</FormLabel>
                         <FormControl>
-                          <Input placeholder="123 Main Street" {...field} />
+                          <Input placeholder="ул. Витоша 1" {...field} />
                         </FormControl>
                         <FormMessage />
                       </FormItem>
@@ -493,9 +496,9 @@ export function VenueFormDialog() {
                     name="city"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>City</FormLabel>
+                        <FormLabel>Град</FormLabel>
                         <FormControl>
-                          <Input placeholder="New York" {...field} />
+                          <Input placeholder="София" {...field} />
                         </FormControl>
                         <FormMessage />
                       </FormItem>
@@ -507,7 +510,7 @@ export function VenueFormDialog() {
                       name="latitude"
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel>Latitude (optional)</FormLabel>
+                          <FormLabel>Географска ширина (по избор)</FormLabel>
                           <FormControl>
                             <Input placeholder="40.7128" {...field} />
                           </FormControl>
@@ -520,7 +523,7 @@ export function VenueFormDialog() {
                       name="longitude"
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel>Longitude (optional)</FormLabel>
+                          <FormLabel>Географска дължина (по избор)</FormLabel>
                           <FormControl>
                             <Input placeholder="-74.0060" {...field} />
                           </FormControl>
@@ -536,7 +539,7 @@ export function VenueFormDialog() {
                 {/* ── Pricing & Capacity ── */}
                 <div className="space-y-4">
                   <h4 className="text-sm font-semibold text-muted-foreground">
-                    Pricing & Capacity
+                    Цени и капацитет
                   </h4>
                   <div className="grid grid-cols-2 gap-4">
                     <FormField
@@ -544,7 +547,7 @@ export function VenueFormDialog() {
                       name="price_per_hour"
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel>Price Per Hour</FormLabel>
+                          <FormLabel>Цена на час</FormLabel>
                           <FormControl>
                             <Input placeholder="50.00" {...field} />
                           </FormControl>
@@ -557,9 +560,9 @@ export function VenueFormDialog() {
                       name="currency"
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel>Currency</FormLabel>
+                          <FormLabel>Валута</FormLabel>
                           <FormControl>
-                            <Input placeholder="EUR" maxLength={3} {...field} />
+                            <Input placeholder="BGN" maxLength={3} {...field} />
                           </FormControl>
                           <FormMessage />
                         </FormItem>
@@ -571,7 +574,7 @@ export function VenueFormDialog() {
                     name="capacity"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Capacity</FormLabel>
+                        <FormLabel>Капацитет</FormLabel>
                         <FormControl>
                           <Input type="number" min={1} {...field} />
                         </FormControl>
@@ -586,18 +589,18 @@ export function VenueFormDialog() {
                 {/* ── Facilities ── */}
                 <div className="space-y-4">
                   <h4 className="text-sm font-semibold text-muted-foreground">
-                    Facilities
+                    Съоръжения
                   </h4>
                   <div className="grid grid-cols-2 gap-4">
                     {(
                       [
-                        { name: "is_indoor", label: "Indoor" },
-                        { name: "has_parking", label: "Parking" },
-                        { name: "has_changing_rooms", label: "Changing Rooms" },
-                        { name: "has_showers", label: "Showers" },
+                        { name: "is_indoor", label: "Закрит" },
+                        { name: "has_parking", label: "Паркинг" },
+                        { name: "has_changing_rooms", label: "Съблекални" },
+                        { name: "has_showers", label: "Душове" },
                         {
                           name: "has_equipment_rental",
-                          label: "Equipment Rental",
+                          label: "Наем на екипировка",
                         },
                       ] as const
                     ).map(({ name, label }) => (
@@ -629,11 +632,11 @@ export function VenueFormDialog() {
                 <div className="space-y-4">
                   <div>
                     <h4 className="text-sm font-semibold text-muted-foreground">
-                      Amenities
+                      Удобства
                     </h4>
                     <p className="text-xs text-muted-foreground mt-0.5">
-                      Type and press Enter to add. Backspace removes the last
-                      tag.
+                      Въведете и натиснете Enter. Backspace премахва последния
+                      таг.
                     </p>
                   </div>
                   <FormField
@@ -659,12 +662,12 @@ export function VenueFormDialog() {
                 <div className="space-y-4">
                   <div>
                     <h4 className="text-sm font-semibold text-muted-foreground">
-                      Working Hours
+                      Работно време
                     </h4>
                     <p className="text-xs text-muted-foreground mt-0.5">
-                      Toggle each day to enable it. The{" "}
-                      <span className="font-medium">Default</span> row acts as a
-                      fallback for any unspecified day.
+                      Включете всеки ден поотделно. Редът{" "}
+                      <span className="font-medium">по подразбиране</span> важи
+                      за неуточнени дни.
                     </p>
                   </div>
                   <div className="space-y-2">
@@ -687,7 +690,7 @@ export function VenueFormDialog() {
                   onClick={handleClose}
                   className="cursor-pointer"
                 >
-                  Cancel
+                  Отказ
                 </Button>
                 <Button
                   type="submit"
@@ -697,7 +700,7 @@ export function VenueFormDialog() {
                   {isPending && (
                     <Loader2 className="mr-2 size-4 animate-spin" />
                   )}
-                  Save Venue
+                  Запази обект
                 </Button>
               </DialogFooter>
             </form>
