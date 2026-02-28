@@ -23,7 +23,7 @@ import { Input } from "@/components/ui/input";
 import { Switch } from "@/components/ui/switch";
 import { Plus } from "lucide-react";
 import { useForm, type Resolver } from "react-hook-form";
-import { z } from "zod";
+import { z, regexes } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import type { UserFormValues } from "../types";
 
@@ -33,10 +33,8 @@ const userFormSchema = z.object({
     .min(2, { message: "Потребителското име трябва да е поне 2 символа." }),
   full_name: z.string().optional().default(""),
   email: z
-    .email({ message: "Моля, въведете валиден имейл адрес." })
-    .or(z.literal(""))
-    .optional()
-    .default(""),
+    .string()
+    .regex(regexes.unicodeEmail, { message: "Моля, въведете валиден имейл" }),
   password: z
     .string()
     .min(6, { message: "Паролата трябва да е поне 6 символа." }),

@@ -8,7 +8,7 @@ import { Label } from "@/components/ui/label";
 import { useLogin } from "@/app/auth/api/hooks.ts";
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import z from "zod";
+import { z, regexes } from "zod";
 
 export function LoginForm({
   className,
@@ -20,8 +20,9 @@ export function LoginForm({
 
   const loginSchema = z.object({
     username: z
-      .email("Моля, въведете валиден имейл")
-      .min(1, "Потребителското име е задължително"),
+      .string()
+      .min(1, "Email is required")
+      .regex(regexes.unicodeEmail, { message: "Моля, въведете валиден имейл" }),
     password: z
       .string()
       .min(1, "Паролата е задължителна")

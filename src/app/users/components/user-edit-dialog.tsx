@@ -1,6 +1,6 @@
 import { useEffect } from "react";
 import { useForm } from "react-hook-form";
-import { z } from "zod";
+import { z, regexes } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -32,7 +32,8 @@ const editFormSchema = z.object({
     .optional(),
   full_name: z.string().optional(),
   email: z
-    .email({ message: "Моля, въведете валиден имейл адрес." })
+    .string()
+    .regex(regexes.unicodeEmail, { message: "Моля, въведете валиден имейл" })
     .or(z.literal(""))
     .optional(),
   password: z
