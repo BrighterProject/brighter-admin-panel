@@ -46,7 +46,7 @@ const navGroups = [
       },
       {
         title: "Обекти",
-        url: "/venues",
+        url: "/properties",
         icon: Building2,
       },
       {
@@ -73,7 +73,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
                   <MapPin className="size-4.5" strokeWidth={2.5} />
                 </div>
                 <div className="grid flex-1 text-left text-sm leading-tight">
-                  <span className="truncate font-semibold">Ploshtadka.BG</span>
+                  <span className="truncate font-semibold">Brighter.BG</span>
                   <span className="truncate text-xs text-muted-foreground">
                     Административен панел
                   </span>

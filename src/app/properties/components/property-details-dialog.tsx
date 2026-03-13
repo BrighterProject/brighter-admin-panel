@@ -13,8 +13,8 @@ import {
 import { Separator } from "@/components/ui/separator";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Skeleton } from "@/components/ui/skeleton";
-import type { VenueListItem } from "../types";
-import { useVenue } from "../hooks";
+import type { PropertyListItem } from "../types";
+import { useProperty } from "../hooks";
 import {
   MapPin,
   Users,
@@ -32,12 +32,12 @@ import {
   CalendarPlus,
 } from "lucide-react";
 
-interface VenueDetailsDialogProps {
-  venue: VenueListItem | null;
+interface PropertyDetailsDialogProps {
+  property: PropertyListItem | null;
   onClose: () => void;
-  onEditClick: (venue: VenueListItem) => void;
-  onManageImages?: (venue: VenueListItem) => void;
-  onManageUnavailability?: (venue: VenueListItem) => void;
+  onEditClick: (property: PropertyListItem) => void;
+  onManageImages?: (property: PropertyListItem) => void;
+  onManageUnavailability?: (property: PropertyListItem) => void;
 }
 
 const statusColors: Record<string, string> = {
@@ -115,21 +115,21 @@ function AmenityBadge({
   );
 }
 
-export function VenueDetailsDialog({
-  venue,
+export function PropertyDetailsDialog({
+  property,
   onClose,
   onEditClick,
   onManageImages,
   onManageUnavailability,
-}: VenueDetailsDialogProps) {
-  const { data: fullVenue, isLoading } = useVenue(venue?.id ?? null);
+}: PropertyDetailsDialogProps) {
+  const { data: fullProperty, isLoading } = useProperty(property?.id ?? null);
 
-  if (!venue) return null;
+  if (!property) return null;
 
-  const v = fullVenue ?? venue;
+  const v = fullProperty ?? property;
 
   return (
-    <Dialog open={!!venue} onOpenChange={(open) => !open && onClose()}>
+    <Dialog open={!!property} onOpenChange={(open) => !open && onClose()}>
       <DialogContent className="sm:max-w-2xl max-h-[90vh]">
         <DialogHeader>
           <DialogTitle>Детайли за обекта</DialogTitle>
@@ -158,15 +158,15 @@ export function VenueDetailsDialog({
               {/* Header with images */}
               <div className="flex items-start gap-4">
                 <div className="h-20 w-20 rounded-lg bg-muted flex items-center justify-center flex-shrink-0 overflow-hidden">
-                  {fullVenue?.images?.[0]?.url ? (
+                  {fullProperty?.images?.[0]?.url ? (
                     <img
-                      src={fullVenue.images[0].url}
+                      src={fullProperty.images[0].url}
                       alt={v.name}
                       className="h-full w-full object-cover"
                     />
-                  ) : (venue as any).thumbnail ? (
+                  ) : (property as any).thumbnail ? (
                     <img
-                      src={(venue as any).thumbnail}
+                      src={(property as any).thumbnail}
                       alt={v.name}
                       className="h-full w-full object-cover"
                     />
@@ -179,7 +179,7 @@ export function VenueDetailsDialog({
                   <div className="flex items-center gap-1.5 text-sm text-muted-foreground mt-1">
                     <MapPin className="size-3.5" />
                     <span>
-                      {fullVenue?.address ? `${fullVenue.address}, ` : ""}
+                      {fullProperty?.address ? `${fullProperty.address}, ` : ""}
                       {v.city}
                     </span>
                   </div>
@@ -197,23 +197,23 @@ export function VenueDetailsDialog({
                 <div className="flex items-center justify-between mb-2">
                   <p className="text-sm font-medium flex items-center gap-1.5">
                     <ImageIcon className="size-4" /> Снимки (
-                    {fullVenue?.images?.length ?? 0})
+                    {fullProperty?.images?.length ?? 0})
                   </p>
                   {onManageImages && (
                     <Button
                       variant="ghost"
                       size="sm"
                       className="h-7 gap-1"
-                      onClick={() => onManageImages(venue)}
+                      onClick={() => onManageImages(property)}
                     >
                       <ImagePlus className="size-3.5" />
                       Управление
                     </Button>
                   )}
                 </div>
-                {fullVenue?.images && fullVenue.images.length > 0 ? (
+                {fullProperty?.images && fullProperty.images.length > 0 ? (
                   <div className="grid grid-cols-4 gap-2">
-                    {fullVenue.images.slice(0, 8).map((img, i) => (
+                    {fullProperty.images.slice(0, 8).map((img, i) => (
                       <div
                         key={img.id ?? i}
                         className="aspect-square rounded-md overflow-hidden bg-muted relative"
@@ -240,7 +240,7 @@ export function VenueDetailsDialog({
                         variant="outline"
                         size="sm"
                         className="mt-2"
-                        onClick={() => onManageImages(venue)}
+                        onClick={() => onManageImages(property)}
                       >
                         <ImagePlus className="size-3.5 mr-1" />
                         Добави снимки
@@ -251,13 +251,13 @@ export function VenueDetailsDialog({
               </div>
 
               {/* Description */}
-              {fullVenue?.description && (
+              {fullProperty?.description && (
                 <>
                   <Separator />
                   <div className="space-y-1">
                     <p className="text-sm font-medium">Описание</p>
                     <p className="text-sm text-muted-foreground leading-relaxed">
-                      {fullVenue.description}
+                      {fullProperty.description}
                     </p>
                   </div>
                 </>
@@ -315,7 +315,7 @@ export function VenueDetailsDialog({
 
               <Separator />
 
-              {/* Venue Type & Amenities */}
+              {/* Property Type & Amenities */}
               <div className="space-y-3">
                 <p className="text-sm font-medium">Удобства и съоръжения</p>
                 <div className="flex flex-wrap gap-2">
@@ -324,27 +324,27 @@ export function VenueDetailsDialog({
                     label={v.is_indoor ? "Закрито" : "Открито"}
                     enabled={true}
                   />
-                  {fullVenue && (
+                  {fullProperty && (
                     <>
                       <AmenityBadge
                         icon={<Car className="size-3.5" />}
                         label="Паркинг"
-                        enabled={fullVenue.has_parking}
+                        enabled={fullProperty.has_parking}
                       />
                       <AmenityBadge
                         icon={<Shirt className="size-3.5" />}
                         label="Съблекални"
-                        enabled={fullVenue.has_changing_rooms}
+                        enabled={fullProperty.has_changing_rooms}
                       />
                       <AmenityBadge
                         icon={<ShowerHead className="size-3.5" />}
                         label="Душове"
-                        enabled={fullVenue.has_showers}
+                        enabled={fullProperty.has_showers}
                       />
                       <AmenityBadge
                         icon={<Wrench className="size-3.5" />}
                         label="Екипировка под наем"
-                        enabled={fullVenue.has_equipment_rental}
+                        enabled={fullProperty.has_equipment_rental}
                       />
                     </>
                   )}
@@ -352,7 +352,7 @@ export function VenueDetailsDialog({
               </div>
 
               {/* Working Hours */}
-              {fullVenue?.working_hours && (
+              {fullProperty?.working_hours && (
                 <>
                   <Separator />
                   <div className="space-y-2">
@@ -360,7 +360,7 @@ export function VenueDetailsDialog({
                       <Clock className="size-4" /> Работно време
                     </p>
                     <div className="grid grid-cols-2 gap-x-6 gap-y-1">
-                      {Object.entries(fullVenue.working_hours).map(
+                      {Object.entries(fullProperty.working_hours).map(
                         ([day, hours]) => (
                           <div
                             key={day}
@@ -391,24 +391,24 @@ export function VenueDetailsDialog({
                 <div className="flex items-center justify-between mb-2">
                   <p className="text-sm font-medium flex items-center gap-1.5">
                     <CalendarX className="size-4" /> Неактивни периоди (
-                    {fullVenue?.unavailabilities?.length ?? 0})
+                    {fullProperty?.unavailabilities?.length ?? 0})
                   </p>
                   {onManageUnavailability && (
                     <Button
                       variant="ghost"
                       size="sm"
                       className="h-7 gap-1"
-                      onClick={() => onManageUnavailability(venue)}
+                      onClick={() => onManageUnavailability(property)}
                     >
                       <CalendarPlus className="size-3.5" />
                       Управление
                     </Button>
                   )}
                 </div>
-                {fullVenue?.unavailabilities &&
-                fullVenue.unavailabilities.length > 0 ? (
+                {fullProperty?.unavailabilities &&
+                fullProperty.unavailabilities.length > 0 ? (
                   <div className="space-y-1">
-                    {fullVenue.unavailabilities.slice(0, 5).map((u, i) => {
+                    {fullProperty.unavailabilities.slice(0, 5).map((u, i) => {
                       const isPast =
                         new Date(u.end_datetime).getTime() < Date.now();
                       return (
@@ -448,13 +448,13 @@ export function VenueDetailsDialog({
               <div className="space-y-1">
                 <p className="text-sm font-medium">Системна информация</p>
                 <DetailRow
-                  label="Venue ID"
+                  label="Property ID"
                   value={<span className="font-mono text-xs">{v.id}</span>}
                 />
-                {fullVenue?.updated_at && (
+                {fullProperty?.updated_at && (
                   <DetailRow
                     label="Последна промяна"
-                    value={new Date(fullVenue.updated_at).toLocaleDateString(
+                    value={new Date(fullProperty.updated_at).toLocaleDateString(
                       "bg-BG",
                       {
                         year: "numeric",
@@ -482,7 +482,7 @@ export function VenueDetailsDialog({
           <Button
             onClick={() => {
               onClose();
-              onEditClick(venue);
+              onEditClick(property);
             }}
             className="cursor-pointer"
           >

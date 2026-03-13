@@ -63,23 +63,23 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { VenueFormDialog } from "./venue-form-dialog";
-import { VenueDetailsDialog } from "./venue-details-dialog";
-import { VenueEditDialog } from "./venue-edit-dialog";
-import { VenueStatusDialog } from "./venue-status-dialog";
-import { VenueImagesDialog } from "./venue-images-dialog";
-import { VenueUnavailabilityDialog } from "./venue-unavailability-dialog";
-import type { VenueListItem, VenueStatus } from "../types";
+import { PropertyFormDialog } from "./property-form-dialog";
+import { PropertyDetailsDialog } from "./property-details-dialog";
+import { PropertyEditDialog } from "./property-edit-dialog";
+import { PropertyStatusDialog } from "./property-status-dialog";
+import { PropertyImagesDialog } from "./property-images-dialog";
+import { PropertyUnavailabilityDialog } from "./property-unavailability-dialog";
+import type { PropertyListItem, PropertyStatus } from "../types";
 import { Eye, Pencil } from "lucide-react";
 
 interface DataTableProps {
-  venues: VenueListItem[];
+  properties: PropertyListItem[];
   loading: boolean;
-  onDeleteVenue: (id: string) => void;
+  onDeleteProperty: (id: string) => void;
   isAdmin: boolean;
 }
 
-const statusColors: Record<VenueStatus, string> = {
+const statusColors: Record<PropertyStatus, string> = {
   active: "text-green-600 bg-green-50 dark:text-green-400 dark:bg-green-900/20",
   inactive: "text-gray-600 bg-gray-50 dark:text-gray-400 dark:bg-gray-900/20",
   maintenance:
@@ -88,14 +88,14 @@ const statusColors: Record<VenueStatus, string> = {
     "text-orange-600 bg-orange-50 dark:text-orange-400 dark:bg-orange-900/20",
 };
 
-const statusLabels: Record<VenueStatus, string> = {
+const statusLabels: Record<PropertyStatus, string> = {
   active: "Активен",
   inactive: "Неактивен",
   maintenance: "Профилактика",
   pending_approval: "Чака одобрение",
 };
 
-const statusTooltips: Record<VenueStatus, string> = {
+const statusTooltips: Record<PropertyStatus, string> = {
   active: "Обектът е публикуван и приема резервации.",
   inactive: "Обектът е деактивиран и не се показва на клиентите.",
   maintenance:
@@ -127,9 +127,9 @@ const sportTypeIcons: Record<string, string> = {
 };
 
 export function DataTable({
-  venues,
+  properties,
   loading,
-  onDeleteVenue,
+  onDeleteProperty,
   isAdmin,
 }: DataTableProps) {
   const [sorting, setSorting] = useState<SortingState>([]);
@@ -137,14 +137,14 @@ export function DataTable({
   const [columnVisibility, setColumnVisibility] = useState<VisibilityState>({});
   const [rowSelection, setRowSelection] = useState({});
   const [globalFilter, setGlobalFilter] = useState("");
-  const [statusVenue, setStatusVenue] = useState<VenueListItem | null>(null);
-  const [detailsVenue, setDetailsVenue] = useState<VenueListItem | null>(null);
-  const [editVenue, setEditVenue] = useState<VenueListItem | null>(null);
-  const [imagesVenue, setImagesVenue] = useState<VenueListItem | null>(null);
-  const [unavailabilityVenue, setUnavailabilityVenue] =
-    useState<VenueListItem | null>(null);
+  const [statusProperty, setStatusProperty] = useState<PropertyListItem | null>(null);
+  const [detailsProperty, setDetailsProperty] = useState<PropertyListItem | null>(null);
+  const [editProperty, setEditProperty] = useState<PropertyListItem | null>(null);
+  const [imagesProperty, setImagesProperty] = useState<PropertyListItem | null>(null);
+  const [unavailabilityProperty, setUnavailabilityProperty] =
+    useState<PropertyListItem | null>(null);
 
-  const columns: ColumnDef<VenueListItem>[] = [
+  const columns: ColumnDef<PropertyListItem>[] = [
     {
       id: "select",
       header: ({ table }) => (
@@ -178,14 +178,14 @@ export function DataTable({
       accessorKey: "name",
       header: "Обект",
       cell: ({ row }) => {
-        const venue = row.original;
+        const property = row.original;
         return (
           <div className="flex items-center gap-3">
             <div className="h-10 w-10 rounded-lg bg-muted flex items-center justify-center flex-shrink-0 overflow-hidden">
-              {venue.thumbnail ? (
+              {property.thumbnail ? (
                 <img
-                  src={venue.thumbnail}
-                  alt={venue.name}
+                  src={property.thumbnail}
+                  alt={property.name}
                   className="h-full w-full object-cover"
                 />
               ) : (
@@ -193,10 +193,10 @@ export function DataTable({
               )}
             </div>
             <div className="flex flex-col min-w-0">
-              <span className="font-medium truncate">{venue.name}</span>
+              <span className="font-medium truncate">{property.name}</span>
               <div className="flex items-center gap-1 text-sm text-muted-foreground">
                 <MapPin className="size-3" />
-                <span className="truncate">{venue.city}</span>
+                <span className="truncate">{property.city}</span>
               </div>
             </div>
           </div>
@@ -207,7 +207,7 @@ export function DataTable({
       accessorKey: "status",
       header: "Статус",
       cell: ({ row }) => {
-        const status = row.getValue("status") as VenueStatus;
+        const status = row.getValue("status") as PropertyStatus;
         return (
           <Tooltip>
             <TooltipTrigger asChild>
@@ -226,7 +226,7 @@ export function DataTable({
       },
       filterFn: (row, columnId, value) => {
         if (value === "" || value === "all") return true;
-        const status = row.getValue(columnId) as VenueStatus;
+        const status = row.getValue(columnId) as PropertyStatus;
         return status === value;
       },
     },
@@ -317,7 +317,7 @@ export function DataTable({
       id: "actions",
       header: "Действия",
       cell: ({ row }) => {
-        const venue = row.original;
+        const property = row.original;
         return (
           <div className="flex items-center gap-1">
             <Button
@@ -325,7 +325,7 @@ export function DataTable({
               size="icon"
               className="h-8 w-8 cursor-pointer"
               title="Управление на снимки"
-              onClick={() => setImagesVenue(venue)}
+              onClick={() => setImagesProperty(property)}
             >
               <ImageIcon className="size-4" />
               <span className="sr-only">Управление на снимки</span>
@@ -335,7 +335,7 @@ export function DataTable({
               size="icon"
               className="h-8 w-8 cursor-pointer"
               title="Управление на заетост"
-              onClick={() => setUnavailabilityVenue(venue)}
+              onClick={() => setUnavailabilityProperty(property)}
             >
               <CalendarX className="size-4" />
               <span className="sr-only">Управление на заетост</span>
@@ -346,7 +346,7 @@ export function DataTable({
                 size="icon"
                 className="h-8 w-8 cursor-pointer"
                 title="Промяна на статус"
-                onClick={() => setStatusVenue(venue)}
+                onClick={() => setStatusProperty(property)}
               >
                 <Activity className="size-4" />
                 <span className="sr-only">Промяна на статус</span>
@@ -356,7 +356,7 @@ export function DataTable({
               variant="ghost"
               size="icon"
               className="h-8 w-8 cursor-pointer"
-              onClick={() => setDetailsVenue(venue)}
+              onClick={() => setDetailsProperty(property)}
             >
               <Eye className="size-4" />
               <span className="sr-only">Виж детайли</span>
@@ -365,7 +365,7 @@ export function DataTable({
               variant="ghost"
               size="icon"
               className="h-8 w-8 cursor-pointer"
-              onClick={() => setEditVenue(venue)}
+              onClick={() => setEditProperty(property)}
             >
               <Pencil className="size-4" />
               <span className="sr-only">Редактирай обект</span>
@@ -384,14 +384,14 @@ export function DataTable({
               <DropdownMenuContent align="end">
                 <DropdownMenuItem
                   className="cursor-pointer"
-                  onClick={() => setImagesVenue(venue)}
+                  onClick={() => setImagesProperty(property)}
                 >
                   <ImageIcon className="mr-2 size-4" />
                   Управление на снимки
                 </DropdownMenuItem>
                 <DropdownMenuItem
                   className="cursor-pointer"
-                  onClick={() => setUnavailabilityVenue(venue)}
+                  onClick={() => setUnavailabilityProperty(property)}
                 >
                   <CalendarX className="mr-2 size-4" />
                   Управление на заетост
@@ -399,7 +399,7 @@ export function DataTable({
                 {isAdmin && (
                   <DropdownMenuItem
                     className="cursor-pointer"
-                    onClick={() => setStatusVenue(venue)}
+                    onClick={() => setStatusProperty(property)}
                   >
                     <Activity className="mr-2 size-4" />
                     Промяна на статус
@@ -407,7 +407,7 @@ export function DataTable({
                 )}
                 <DropdownMenuItem
                   className="cursor-pointer"
-                  onClick={() => setEditVenue(venue)}
+                  onClick={() => setEditProperty(property)}
                 >
                   <Settings2 className="mr-2 size-4" />
                   Редактиране на детайли
@@ -416,7 +416,7 @@ export function DataTable({
                 <DropdownMenuItem
                   variant="destructive"
                   className="cursor-pointer"
-                  onClick={() => onDeleteVenue(venue.id)}
+                  onClick={() => onDeleteProperty(property.id)}
                 >
                   <Trash2 className="mr-2 size-4" />
                   Изтрий обекта
@@ -430,7 +430,7 @@ export function DataTable({
   ];
 
   const table = useReactTable({
-    data: venues,
+    data: properties,
     columns,
     onSortingChange: setSorting,
     onColumnFiltersChange: setColumnFilters,
@@ -456,23 +456,23 @@ export function DataTable({
   return (
     <div className="w-full space-y-4">
       {/* Диалози */}
-      <VenueStatusDialog
-        venue={statusVenue}
-        onClose={() => setStatusVenue(null)}
+      <PropertyStatusDialog
+        property={statusProperty}
+        onClose={() => setStatusProperty(null)}
       />
-      <VenueDetailsDialog
-        venue={detailsVenue}
-        onClose={() => setDetailsVenue(null)}
-        onEditClick={setEditVenue}
+      <PropertyDetailsDialog
+        property={detailsProperty}
+        onClose={() => setDetailsProperty(null)}
+        onEditClick={setEditProperty}
       />
-      <VenueEditDialog venue={editVenue} onClose={() => setEditVenue(null)} />
-      <VenueImagesDialog
-        venue={imagesVenue}
-        onClose={() => setImagesVenue(null)}
+      <PropertyEditDialog property={editProperty} onClose={() => setEditProperty(null)} />
+      <PropertyImagesDialog
+        property={imagesProperty}
+        onClose={() => setImagesProperty(null)}
       />
-      <VenueUnavailabilityDialog
-        venue={unavailabilityVenue}
-        onClose={() => setUnavailabilityVenue(null)}
+      <PropertyUnavailabilityDialog
+        property={unavailabilityProperty}
+        onClose={() => setUnavailabilityProperty(null)}
       />
 
       {/* Лента с инструменти */}
@@ -493,7 +493,7 @@ export function DataTable({
             <Download className="mr-2 size-4" />
             Експорт
           </Button>
-          <VenueFormDialog />
+          <PropertyFormDialog />
         </div>
       </div>
 

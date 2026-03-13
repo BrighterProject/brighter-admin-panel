@@ -99,7 +99,7 @@ export function RecentBookingsTable({ bookings, loading, isAdmin }: Props) {
                 {sorted.map((b) => (
                   <TableRow key={b.id}>
                     <TableCell className="font-medium">
-                      {b.venue_name || b.venue_id.slice(0, 8)}
+                      {b.property_name || b.property_id.slice(0, 8)}
                     </TableCell>
                     <TableCell>
                       {b.customer_full_name ||

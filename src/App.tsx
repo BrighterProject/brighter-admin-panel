@@ -14,7 +14,7 @@ function App() {
   }, []);
 
   return (
-    <ThemeProvider defaultTheme="dark" storageKey="ploshtadka-theme">
+    <ThemeProvider defaultTheme="dark" storageKey="brighter-theme">
       <QueryClientProvider client={queryClient}>
         <Router basename={basename}>
           <AppRouter />

@@ -1,6 +1,6 @@
-# CLAUDE.md — ploshtadka-admin-panel
+# CLAUDE.md — brighter-admin-panel
 
-React SPA admin dashboard for managing users, venues, and platform data (part of PloshtadkaBG).
+React SPA admin dashboard for managing users, properties, and platform data (part of BrighterProject).
 
 ## Running
 
@@ -31,7 +31,7 @@ src/
     auth/               # sign-in, forgot-password + API hooks/types
     dashboard/          # metrics, tables (active)
     users/              # user management (active)
-    venues/             # venue management (active)
+    properties/             # property management (active)
     bookings/           # booking management (active)
     settings/           # account, notifications (active)
     errors/             # 401/403/404/500/maintenance pages
@@ -81,24 +81,24 @@ Auth hooks live in `src/app/auth/api/hooks.ts`. The pattern for other domains:
 
 ### Role-based access
 
-Two roles access the admin panel: **admins** (full access) and **venue owners** (restricted).
+Two roles access the admin panel: **admins** (full access) and **property owners** (restricted).
 
-| Page | Admin | Venue Owner |
+| Page | Admin | Property Owner |
 |---|---|---|
 | Dashboard | ✓ | ✓ |
 | Users | ✓ | hidden |
-| Venues | ✓ (all) | ✓ (own only) |
+| Properties | ✓ (all) | ✓ (own only) |
 | Bookings | ✓ (all) | ✓ (own only) |
 | Settings | ✓ | ✓ |
 
-Role detection uses `src/lib/scopes.ts` — helpers that inspect the current user's `scopes` array (loaded from `GET /users/@me/get`). The sidebar conditionally hides the Users nav item for venue owners.
+Role detection uses `src/lib/scopes.ts` — helpers that inspect the current user's `scopes` array (loaded from `GET /users/@me/get`). The sidebar conditionally hides the Users nav item for property owners.
 
 ```ts
 isAdmin(scopes: string[])       // true if any scope starts with "admin:"
-isVenueOwner(scopes: string[])  // true if has "venues:me" and is NOT admin
+isPropertyOwner(scopes: string[])  // true if has "properties:me" and is NOT admin
 ```
 
-Venue owners cannot change venue status (button hidden). Admins can escalate any user to venue owner via the Users page scope management UI.
+Property owners cannot change property status (button hidden). Admins can escalate any user to property owner via the Users page scope management UI.
 
 ## Adding a shadcn/ui component
 

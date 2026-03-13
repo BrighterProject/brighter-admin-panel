@@ -1,6 +1,6 @@
-# ploshtadka-admin-panel
+# brighter-admin-panel
 
-Admin dashboard for managing users, venues, bookings, and platform settings.
+Admin dashboard for managing users, properties, bookings, and platform settings.
 
 **Runtime:** Vite + Bun | **Served at:** `/admin`
 
@@ -29,7 +29,7 @@ src/
     auth/        # sign-in
     dashboard/   # metrics
     users/       # user management
-    venues/      # venue management
+    properties/      # property management
     bookings/    # booking management
     settings/    # account & notifications
   config/

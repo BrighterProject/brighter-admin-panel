@@ -13,11 +13,11 @@ import {
 } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
-import { useUpdateVenueStatus } from "../hooks";
-import type { VenueListItem, VenueStatus } from "../types";
+import { useUpdatePropertyStatus } from "../hooks";
+import type { PropertyListItem, PropertyStatus } from "../types";
 
 const statusOptions: {
-  value: VenueStatus;
+  value: PropertyStatus;
   label: string;
   description: string;
 }[] = [
@@ -43,37 +43,37 @@ const statusOptions: {
   },
 ];
 
-interface VenueStatusDialogProps {
-  venue: VenueListItem | null;
+interface PropertyStatusDialogProps {
+  property: PropertyListItem | null;
   onClose: () => void;
 }
 
-export function VenueStatusDialog({ venue, onClose }: VenueStatusDialogProps) {
-  const [selectedStatus, setSelectedStatus] = useState<VenueStatus>("active");
-  const { mutate: updateStatus, isPending } = useUpdateVenueStatus();
+export function PropertyStatusDialog({ property, onClose }: PropertyStatusDialogProps) {
+  const [selectedStatus, setSelectedStatus] = useState<PropertyStatus>("active");
+  const { mutate: updateStatus, isPending } = useUpdatePropertyStatus();
 
   useEffect(() => {
-    if (venue) {
-      setSelectedStatus(venue.status);
+    if (property) {
+      setSelectedStatus(property.status);
     }
-  }, [venue]);
+  }, [property]);
 
   const handleSave = () => {
-    if (!venue) return;
+    if (!property) return;
     updateStatus(
-      { id: venue.id, status: selectedStatus },
+      { id: property.id, status: selectedStatus },
       { onSuccess: onClose },
     );
   };
 
   return (
-    <Dialog open={!!venue} onOpenChange={(open) => !open && onClose()}>
+    <Dialog open={!!property} onOpenChange={(open) => !open && onClose()}>
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
           <DialogTitle>Актуализиране на статус</DialogTitle>
           <DialogDescription>
-            {venue
-              ? `Промяна на статуса за ${venue.name}.`
+            {property
+              ? `Промяна на статуса за ${property.name}.`
               : "Промяна на статуса на обекта."}
           </DialogDescription>
         </DialogHeader>
@@ -81,7 +81,7 @@ export function VenueStatusDialog({ venue, onClose }: VenueStatusDialogProps) {
         <div className="py-4">
           <RadioGroup
             value={selectedStatus}
-            onValueChange={(value) => setSelectedStatus(value as VenueStatus)}
+            onValueChange={(value) => setSelectedStatus(value as PropertyStatus)}
             className="space-y-3"
           >
             {statusOptions.map((option) => (
@@ -121,7 +121,7 @@ export function VenueStatusDialog({ venue, onClose }: VenueStatusDialogProps) {
           </Button>
           <Button
             onClick={handleSave}
-            disabled={isPending || selectedStatus === venue?.status}
+            disabled={isPending || selectedStatus === property?.status}
             className="cursor-pointer"
           >
             {isPending && <Loader2 className="mr-2 size-4 animate-spin" />}

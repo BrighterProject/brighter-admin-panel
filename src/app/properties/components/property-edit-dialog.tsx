@@ -29,8 +29,8 @@ import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import { Skeleton } from "@/components/ui/skeleton";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { useUpdateVenue, useVenue } from "../hooks";
-import type { VenueListItem, Venue, SportType, WorkingHours } from "../types";
+import { useUpdateProperty, useProperty } from "../hooks";
+import type { PropertyListItem, Property, SportType, WorkingHours } from "../types";
 
 // ─── Constants ────────────────────────────────────────────────────────────────
 
@@ -341,14 +341,14 @@ function FormSkeleton() {
 
 // ─── Main Component ───────────────────────────────────────────────────────────
 
-interface VenueEditDialogProps {
-  venue: VenueListItem | null;
+interface PropertyEditDialogProps {
+  property: PropertyListItem | null;
   onClose: () => void;
 }
 
-export function VenueEditDialog({ venue, onClose }: VenueEditDialogProps) {
-  const { mutate: updateVenue, isPending } = useUpdateVenue();
-  const { data: fullVenue, isLoading } = useVenue(venue?.id ?? null);
+export function PropertyEditDialog({ property, onClose }: PropertyEditDialogProps) {
+  const { mutate: updateProperty, isPending } = useUpdateProperty();
+  const { data: fullProperty, isLoading } = useProperty(property?.id ?? null);
 
   const form = useForm<EditFormValues>({
     resolver: zodResolver(editFormSchema) as Resolver<EditFormValues>,
@@ -376,7 +376,7 @@ export function VenueEditDialog({ venue, onClose }: VenueEditDialogProps) {
   const selectedSports = form.watch("sport_types") ?? [];
 
   useEffect(() => {
-    const source = fullVenue ?? venue;
+    const source = fullProperty ?? property;
     if (!source) return;
 
     form.reset({
@@ -387,18 +387,18 @@ export function VenueEditDialog({ venue, onClose }: VenueEditDialogProps) {
       capacity: source.capacity,
       is_indoor: source.is_indoor,
       sport_types: source.sport_types,
-      description: (source as Venue).description ?? "",
-      address: (source as Venue).address ?? "",
-      latitude: (source as Venue).latitude ?? "",
-      longitude: (source as Venue).longitude ?? "",
-      has_parking: (source as Venue).has_parking ?? false,
-      has_changing_rooms: (source as Venue).has_changing_rooms ?? false,
-      has_showers: (source as Venue).has_showers ?? false,
-      has_equipment_rental: (source as Venue).has_equipment_rental ?? false,
-      amenities: (source as Venue).amenities ?? [],
-      working_hours: toFormWorkingHours((source as Venue).working_hours),
+      description: (source as Property).description ?? "",
+      address: (source as Property).address ?? "",
+      latitude: (source as Property).latitude ?? "",
+      longitude: (source as Property).longitude ?? "",
+      has_parking: (source as Property).has_parking ?? false,
+      has_changing_rooms: (source as Property).has_changing_rooms ?? false,
+      has_showers: (source as Property).has_showers ?? false,
+      has_equipment_rental: (source as Property).has_equipment_rental ?? false,
+      amenities: (source as Property).amenities ?? [],
+      working_hours: toFormWorkingHours((source as Property).working_hours),
     });
-  }, [fullVenue, venue, form]);
+  }, [fullProperty, property, form]);
 
   const toggleSport = (sport: SportType) => {
     const current = form.getValues("sport_types") ?? [];
@@ -412,8 +412,8 @@ export function VenueEditDialog({ venue, onClose }: VenueEditDialogProps) {
   };
 
   const onSubmit = (data: EditFormValues) => {
-    if (!venue) return;
-    const source = fullVenue ?? venue;
+    if (!property) return;
+    const source = fullProperty ?? property;
     const changed: Record<string, unknown> = {};
 
     for (const [key, val] of Object.entries(data)) {
@@ -431,7 +431,7 @@ export function VenueEditDialog({ venue, onClose }: VenueEditDialogProps) {
 
     if (data.working_hours) {
       const apiWH = toApiWorkingHours(data.working_hours);
-      const originalWH = (source as Venue).working_hours ?? null;
+      const originalWH = (source as Property).working_hours ?? null;
       if (JSON.stringify(apiWH) !== JSON.stringify(originalWH)) {
         changed.working_hours = apiWH;
       }
@@ -442,11 +442,11 @@ export function VenueEditDialog({ venue, onClose }: VenueEditDialogProps) {
       return;
     }
 
-    updateVenue({ id: venue.id, data: changed }, { onSuccess: onClose });
+    updateProperty({ id: property.id, data: changed }, { onSuccess: onClose });
   };
 
   return (
-    <Dialog open={!!venue} onOpenChange={(open) => !open && onClose()}>
+    <Dialog open={!!property} onOpenChange={(open) => !open && onClose()}>
       <DialogContent className="sm:max-w-2xl max-h-[90vh]">
         <DialogHeader>
           <DialogTitle>Редактиране на обект</DialogTitle>

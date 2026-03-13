@@ -39,7 +39,7 @@ export function BookingsTrendChart({ bookings, loading }: Props) {
   const chartData = useMemo(() => {
     const days = range === "7d" ? 7 : range === "30d" ? 30 : 90;
     const now = new Date();
-    const buckets: Record<string, { date: string; bookings: number; revenue: number }> = {};
+    const buckets: Record<string, { date: string; bookings: number; reproperty: number }> = {};
 
     for (let i = days - 1; i >= 0; i--) {
       const d = new Date(now);
@@ -48,7 +48,7 @@ export function BookingsTrendChart({ bookings, loading }: Props) {
       buckets[key] = {
         date: key,
         bookings: 0,
-        revenue: 0,
+        reproperty: 0,
       };
     }
 
@@ -57,7 +57,7 @@ export function BookingsTrendChart({ bookings, loading }: Props) {
       if (buckets[key]) {
         buckets[key].bookings += 1;
         if (b.status === "completed") {
-          buckets[key].revenue += parseFloat(b.total_price || "0");
+          buckets[key].reproperty += parseFloat(b.total_price || "0");
         }
       }
     }

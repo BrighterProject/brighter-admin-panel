@@ -1,4 +1,4 @@
-export type VenueStatus =
+export type PropertyStatus =
   | "active"
   | "inactive"
   | "maintenance"
@@ -14,41 +14,41 @@ export type SportType =
   | "padel"
   | "other";
 
-export type VenueImage = {
+export type PropertyImage = {
   id: string;
-  venue_id: string;
+  property_id: string;
   url: string;
   is_thumbnail: boolean;
   order: number;
 };
 
-export type VenueImageCreate = {
+export type PropertyImageCreate = {
   url: string;
   is_thumbnail?: boolean;
   order?: number;
 };
 
-export type VenueImageUpdate = {
+export type PropertyImageUpdate = {
   url?: string | null;
   is_thumbnail?: boolean | null;
   order?: number | null;
 };
 
-export type VenueUnavailability = {
+export type PropertyUnavailability = {
   id: string;
-  venue_id: string;
+  property_id: string;
   start_datetime: string;
   end_datetime: string;
   reason: string | null;
 };
 
-export type VenueUnavailabilityCreate = {
+export type PropertyUnavailabilityCreate = {
   start_datetime: string;
   end_datetime: string;
   reason?: string | null;
 };
 
-export type VenueUnavailabilityUpdate = {
+export type PropertyUnavailabilityUpdate = {
   start_datetime?: string | null;
   end_datetime?: string | null;
   reason?: string | null;
@@ -69,7 +69,7 @@ export type WorkingHours = {
   sunday?: DayHours;
 };
 
-export type Venue = {
+export type Property = {
   id: string;
   owner_id: string;
   name: string;
@@ -89,21 +89,21 @@ export type Venue = {
   has_equipment_rental: boolean;
   amenities: string[];
   working_hours: WorkingHours | null;
-  status: VenueStatus;
+  status: PropertyStatus;
   rating: string;
   total_reviews: number;
   total_bookings: number;
   updated_at: string;
-  images: VenueImage[];
-  unavailabilities: VenueUnavailability[];
+  images: PropertyImage[];
+  unavailabilities: PropertyUnavailability[];
 };
 
-export type VenueListItem = {
+export type PropertyListItem = {
   id: string;
   name: string;
   city: string;
   sport_types: SportType[];
-  status: VenueStatus;
+  status: PropertyStatus;
   price_per_hour: string;
   currency: string;
   capacity: number;
@@ -113,7 +113,7 @@ export type VenueListItem = {
   thumbnail: string | null;
 };
 
-export type VenueFormValues = {
+export type PropertyFormValues = {
   name: string;
   description: string;
   sport_types: SportType[];
@@ -133,8 +133,8 @@ export type VenueFormValues = {
   working_hours: WorkingHours;
 };
 
-export type VenueUpdate = Partial<VenueFormValues>;
+export type PropertyUpdate = Partial<PropertyFormValues>;
 
-export type VenueStatusUpdate = {
-  status: VenueStatus;
+export type PropertyStatusUpdate = {
+  status: PropertyStatus;
 };

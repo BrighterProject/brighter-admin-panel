@@ -134,15 +134,15 @@ export function DataTable({ bookings, loading, isAdmin }: DataTableProps) {
       size: 50,
     },
     {
-      accessorKey: "venue_id",
+      accessorKey: "property_id",
       header: "Обект",
       cell: ({ row }) => {
-        const name = row.original.venue_name;
+        const name = row.original.property_name;
         return name ? (
           <span className="text-sm font-medium">{name}</span>
         ) : (
           <span className="font-mono text-xs text-muted-foreground">
-            {row.getValue<string>("venue_id").slice(0, 8)}…
+            {row.getValue<string>("property_id").slice(0, 8)}…
           </span>
         );
       },
@@ -350,7 +350,7 @@ export function DataTable({ bookings, loading, isAdmin }: DataTableProps) {
                 .map((col) => {
                   // Превод на имената на колоните в менюто за видимост
                   const columnLabels: Record<string, string> = {
-                    venue_id: "Обект",
+                    property_id: "Обект",
                     user_id: "Клиент",
                     start_datetime: "Начало",
                     end_datetime: "Край",

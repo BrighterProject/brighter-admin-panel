@@ -3,7 +3,7 @@ export function SiteFooter() {
     <footer className="border-t bg-background">
       <div className="px-4 py-4 lg:px-6">
         <p className="text-center text-sm text-muted-foreground">
-          © {new Date().getFullYear()} Ploshtadka.BG
+          © {new Date().getFullYear()} Brighter.BG
         </p>
       </div>
     </footer>

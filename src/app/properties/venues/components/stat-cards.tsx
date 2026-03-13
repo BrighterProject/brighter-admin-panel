@@ -1,24 +1,24 @@
 import { Card, CardContent } from "@/components/ui/card";
 import { Building2, MapPin, Star, CheckCircle2, Clock } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
-import type { VenueListItem } from "../types";
+import type { PropertyListItem } from "../types";
 
 interface StatCardsProps {
-  venues: VenueListItem[];
+  properties: PropertyListItem[];
   loading: boolean;
 }
 
-export function StatCards({ venues, loading }: StatCardsProps) {
-  const total = venues.length;
-  const active = venues.filter((v) => v.status === "active").length;
-  const pending = venues.filter((v) => v.status === "pending_approval").length;
-  const indoor = venues.filter((v) => v.is_indoor).length;
+export function StatCards({ properties, loading }: StatCardsProps) {
+  const total = properties.length;
+  const active = properties.filter((v) => v.status === "active").length;
+  const pending = properties.filter((v) => v.status === "pending_approval").length;
+  const indoor = properties.filter((v) => v.is_indoor).length;
   const outdoor = total - indoor;
 
   const avgRating =
     total > 0
       ? (
-          venues.reduce((sum, v) => sum + parseFloat(v.rating), 0) / total
+          properties.reduce((sum, v) => sum + parseFloat(v.rating), 0) / total
         ).toFixed(1)
       : "0.0";
 

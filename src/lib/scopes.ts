@@ -1,5 +1,5 @@
 export const isAdmin = (scopes: string[]): boolean =>
   scopes.some((s) => s.startsWith("admin:"));
 
-export const isVenueOwner = (scopes: string[]): boolean =>
-  scopes.includes("venues:me") && !isAdmin(scopes);
+export const isPropertyOwner = (scopes: string[]): boolean =>
+  scopes.includes("properties:me") && !isAdmin(scopes);

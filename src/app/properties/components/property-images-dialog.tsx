@@ -23,34 +23,34 @@ import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import {
-  useVenueImages,
-  useAddVenueImage,
-  useUpdateVenueImage,
-  useDeleteVenueImage,
-  useReorderVenueImages,
+  usePropertyImages,
+  useAddPropertyImage,
+  useUpdatePropertyImage,
+  useDeletePropertyImage,
+  useReorderPropertyImages,
 } from "../hooks";
-import type { VenueListItem } from "../types";
+import type { PropertyListItem } from "../types";
 
-interface VenueImagesDialogProps {
-  venue: VenueListItem | null;
+interface PropertyImagesDialogProps {
+  property: PropertyListItem | null;
   onClose: () => void;
 }
 
-export function VenueImagesDialog({ venue, onClose }: VenueImagesDialogProps) {
+export function PropertyImagesDialog({ property, onClose }: PropertyImagesDialogProps) {
   const [newImageUrl, setNewImageUrl] = useState("");
   const [newImageThumbnail, setNewImageThumbnail] = useState(false);
-  const { data: images = [], isLoading } = useVenueImages(venue?.id ?? null);
-  const { mutate: addImage, isPending: isAdding } = useAddVenueImage();
-  const { mutate: updateImage, isPending: isUpdating } = useUpdateVenueImage();
-  const { mutate: deleteImage, isPending: isDeleting } = useDeleteVenueImage();
+  const { data: images = [], isLoading } = usePropertyImages(property?.id ?? null);
+  const { mutate: addImage, isPending: isAdding } = useAddPropertyImage();
+  const { mutate: updateImage, isPending: isUpdating } = useUpdatePropertyImage();
+  const { mutate: deleteImage, isPending: isDeleting } = useDeletePropertyImage();
   const { mutate: reorderImages, isPending: isReordering } =
-    useReorderVenueImages();
+    useReorderPropertyImages();
 
   const handleAddImage = () => {
-    if (!venue || !newImageUrl.trim()) return;
+    if (!property || !newImageUrl.trim()) return;
     addImage(
       {
-        venueId: venue.id,
+        propertyId: property.id,
         data: {
           url: newImageUrl.trim(),
           is_thumbnail: newImageThumbnail,
@@ -67,28 +67,28 @@ export function VenueImagesDialog({ venue, onClose }: VenueImagesDialogProps) {
   };
 
   const handleSetThumbnail = (imageId: string, isThumbnail: boolean) => {
-    if (!venue) return;
+    if (!property) return;
     updateImage({
-      venueId: venue.id,
+      propertyId: property.id,
       imageId,
       data: { is_thumbnail: isThumbnail },
     });
   };
 
   const handleDeleteImage = (imageId: string) => {
-    if (!venue) return;
-    deleteImage({ venueId: venue.id, imageId });
+    if (!property) return;
+    deleteImage({ propertyId: property.id, imageId });
   };
 
   const handleMoveUp = (index: number) => {
-    if (!venue || index === 0) return;
+    if (!property || index === 0) return;
     const newOrder = [...images];
     [newOrder[index - 1], newOrder[index]] = [
       newOrder[index],
       newOrder[index - 1],
     ];
     reorderImages({
-      venueId: venue.id,
+      propertyId: property.id,
       imageIds: newOrder.map((img) => img.id),
     });
   };
@@ -96,7 +96,7 @@ export function VenueImagesDialog({ venue, onClose }: VenueImagesDialogProps) {
   const isPending = isAdding || isUpdating || isDeleting || isReordering;
 
   return (
-    <Dialog open={!!venue} onOpenChange={(open) => !open && onClose()}>
+    <Dialog open={!!property} onOpenChange={(open) => !open && onClose()}>
       <DialogContent className="sm:max-w-2xl max-h-[90vh]">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
@@ -104,8 +104,8 @@ export function VenueImagesDialog({ venue, onClose }: VenueImagesDialogProps) {
             Управление на изображенията
           </DialogTitle>
           <DialogDescription>
-            {venue
-              ? `Добавяне, подреждане и управление на изображения за ${venue.name}.`
+            {property
+              ? `Добавяне, подреждане и управление на изображения за ${property.name}.`
               : "Управление на изображения за обекта."}
           </DialogDescription>
         </DialogHeader>

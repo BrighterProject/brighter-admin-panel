@@ -8,11 +8,11 @@ import {
   DollarSign,
 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
-import type { VenueListItem } from "@/app/venues/types";
+import type { PropertyListItem } from "@/app/properties/types";
 import type { Booking } from "@/app/bookings/types";
 
 interface StatCardsProps {
-  venues: VenueListItem[];
+  properties: PropertyListItem[];
   bookings: Booking[];
   userCount: number;
   loading: boolean;
@@ -31,14 +31,14 @@ const badgeColors = {
 } as const;
 
 export function StatCards({
-  venues,
+  properties,
   bookings,
   userCount,
   loading,
   usersLoading,
   isAdmin,
 }: StatCardsProps) {
-  const activeVenues = venues.filter((v) => v.status === "active").length;
+  const activeProperties = properties.filter((v) => v.status === "active").length;
   const pendingBookings = bookings.filter((b) => b.status === "pending").length;
   const confirmedBookings = bookings.filter(
     (b) => b.status === "confirmed",
@@ -46,7 +46,7 @@ export function StatCards({
   const completedBookings = bookings.filter(
     (b) => b.status === "completed",
   ).length;
-  const revenue = bookings
+  const reproperty = bookings
     .filter((b) => b.status === "completed")
     .reduce((sum, b) => sum + parseFloat(b.total_price || "0"), 0);
 
@@ -61,10 +61,10 @@ export function StatCards({
         },
         {
           title: "Обекти",
-          value: loading ? "…" : `${activeVenues} / ${venues.length}`,
+          value: loading ? "…" : `${activeProperties} / ${properties.length}`,
           icon: Building2,
-          badge: venues.length > 0
-            ? `${Math.round((activeVenues / venues.length) * 100)}% активни`
+          badge: properties.length > 0
+            ? `${Math.round((activeProperties / properties.length) * 100)}% активни`
             : null,
           color: "green" as const,
         },
@@ -95,7 +95,7 @@ export function StatCards({
         },
         {
           title: "Приходи",
-          value: loading ? "…" : `${revenue.toFixed(2)} EUR`,
+          value: loading ? "…" : `${reproperty.toFixed(2)} EUR`,
           icon: DollarSign,
           badge: completedBookings > 0
             ? `${completedBookings} завършени`
@@ -106,10 +106,10 @@ export function StatCards({
     : [
         {
           title: "Моите обекти",
-          value: loading ? "…" : `${activeVenues} / ${venues.length}`,
+          value: loading ? "…" : `${activeProperties} / ${properties.length}`,
           icon: Building2,
-          badge: venues.length > 0
-            ? `${Math.round((activeVenues / venues.length) * 100)}% активни`
+          badge: properties.length > 0
+            ? `${Math.round((activeProperties / properties.length) * 100)}% активни`
             : null,
           color: "green" as const,
         },
@@ -147,7 +147,7 @@ export function StatCards({
         },
         {
           title: "Приходи",
-          value: loading ? "…" : `${revenue.toFixed(2)} лв.`,
+          value: loading ? "…" : `${reproperty.toFixed(2)} лв.`,
           icon: DollarSign,
           badge: completedBookings > 0
             ? `${completedBookings} завършени`

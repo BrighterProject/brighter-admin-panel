@@ -3,7 +3,7 @@ import { Navigate } from "react-router-dom";
 
 const Dashboard = lazy(() => import("@/app/dashboard/page"));
 const Users = lazy(() => import("@/app/users/page"));
-const Venues = lazy(() => import("@/app/venues/page"));
+const Properties = lazy(() => import("@/app/properties/page"));
 const Bookings = lazy(() => import("@/app/bookings/page"));
 
 const Unauthorized = lazy(() => import("@/app/errors/unauthorized/page"));
@@ -32,7 +32,7 @@ export const routes: RouteConfig[] = [
   { path: "/", element: <Navigate to="dashboard" replace /> },
   { path: "/dashboard", element: <Dashboard /> },
   { path: "/users", element: <Users /> },
-  { path: "/venues", element: <Venues /> },
+  { path: "/properties", element: <Properties /> },
   { path: "/bookings", element: <Bookings /> },
   { path: "/errors/unauthorized", element: <Unauthorized /> },
   { path: "/errors/forbidden", element: <Forbidden /> },

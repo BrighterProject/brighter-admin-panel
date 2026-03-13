@@ -5,12 +5,12 @@ import { api } from "@/lib/api";
 
 export const OWNER_SCOPES = [
   "users:me",
-  "venues:read",
-  "venues:me",
-  "venues:write",
-  "venues:delete",
-  "venues:images",
-  "venues:schedule",
+  "properties:read",
+  "properties:me",
+  "properties:write",
+  "properties:delete",
+  "properties:images",
+  "properties:schedule",
   "bookings:read",
   "bookings:write",
   "bookings:cancel",

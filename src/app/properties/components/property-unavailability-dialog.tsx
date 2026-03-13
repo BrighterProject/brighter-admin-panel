@@ -17,15 +17,15 @@ import { Textarea } from "@/components/ui/textarea";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Badge } from "@/components/ui/badge";
 import {
-  useVenueUnavailabilities,
-  useCreateVenueUnavailability,
-  useUpdateVenueUnavailability,
-  useDeleteVenueUnavailability,
+  usePropertyUnavailabilities,
+  useCreatePropertyUnavailability,
+  useUpdatePropertyUnavailability,
+  useDeletePropertyUnavailability,
 } from "../hooks";
-import type { VenueListItem, VenueUnavailability } from "../types";
+import type { PropertyListItem, PropertyUnavailability } from "../types";
 
-interface VenueUnavailabilityDialogProps {
-  venue: VenueListItem | null;
+interface PropertyUnavailabilityDialogProps {
+  property: PropertyListItem | null;
   onClose: () => void;
 }
 
@@ -45,10 +45,10 @@ function formatForInput(isoString: string): string {
   return date.toISOString().slice(0, 16);
 }
 
-export function VenueUnavailabilityDialog({
-  venue,
+export function PropertyUnavailabilityDialog({
+  property,
   onClose,
-}: VenueUnavailabilityDialogProps) {
+}: PropertyUnavailabilityDialogProps) {
   const [isAdding, setIsAdding] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [formData, setFormData] = useState({
@@ -57,15 +57,15 @@ export function VenueUnavailabilityDialog({
     reason: "",
   });
 
-  const { data: unavailabilities = [], isLoading } = useVenueUnavailabilities(
-    venue?.id ?? null,
+  const { data: unavailabilities = [], isLoading } = usePropertyUnavailabilities(
+    property?.id ?? null,
   );
   const { mutate: createUnavailability, isPending: isCreating } =
-    useCreateVenueUnavailability();
+    useCreatePropertyUnavailability();
   const { mutate: updateUnavailability, isPending: isUpdating } =
-    useUpdateVenueUnavailability();
+    useUpdatePropertyUnavailability();
   const { mutate: deleteUnavailability, isPending: isDeleting } =
-    useDeleteVenueUnavailability();
+    useDeletePropertyUnavailability();
 
   const resetForm = () => {
     setFormData({
@@ -91,7 +91,7 @@ export function VenueUnavailabilityDialog({
     setEditingId(null);
   };
 
-  const handleStartEdit = (u: VenueUnavailability) => {
+  const handleStartEdit = (u: PropertyUnavailability) => {
     setFormData({
       start_datetime: formatForInput(u.start_datetime),
       end_datetime: formatForInput(u.end_datetime),
@@ -102,7 +102,7 @@ export function VenueUnavailabilityDialog({
   };
 
   const handleSubmit = () => {
-    if (!venue) return;
+    if (!property) return;
 
     const data = {
       start_datetime: new Date(formData.start_datetime).toISOString(),
@@ -113,7 +113,7 @@ export function VenueUnavailabilityDialog({
     if (editingId) {
       updateUnavailability(
         {
-          venueId: venue.id,
+          propertyId: property.id,
           unavailabilityId: editingId,
           data,
         },
@@ -122,7 +122,7 @@ export function VenueUnavailabilityDialog({
     } else {
       createUnavailability(
         {
-          venueId: venue.id,
+          propertyId: property.id,
           data,
         },
         { onSuccess: resetForm },
@@ -131,8 +131,8 @@ export function VenueUnavailabilityDialog({
   };
 
   const handleDelete = (id: string) => {
-    if (!venue) return;
-    deleteUnavailability({ venueId: venue.id, unavailabilityId: id });
+    if (!property) return;
+    deleteUnavailability({ propertyId: property.id, unavailabilityId: id });
   };
 
   const isPending = isCreating || isUpdating || isDeleting;
@@ -144,7 +144,7 @@ export function VenueUnavailabilityDialog({
   );
 
   return (
-    <Dialog open={!!venue} onOpenChange={(open) => !open && onClose()}>
+    <Dialog open={!!property} onOpenChange={(open) => !open && onClose()}>
       <DialogContent className="sm:max-w-2xl max-h-[90vh]">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
@@ -152,8 +152,8 @@ export function VenueUnavailabilityDialog({
             Управление на заетостта
           </DialogTitle>
           <DialogDescription>
-            {venue
-              ? `Задайте периоди, в които ${venue.name} няма да бъде на разположение.`
+            {property
+              ? `Задайте периоди, в които ${property.name} няма да бъде на разположение.`
               : "Управление на периодите на заетост на обекта."}
           </DialogDescription>
         </DialogHeader>

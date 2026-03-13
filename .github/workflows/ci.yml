@@ -7,7 +7,7 @@ on:
     branches: [main]
 
 env:
-  IMAGE: ghcr.io/ploshtadkabg/ploshtadka-admin-panel
+  IMAGE: ghcr.io/brighterbg/brighter-admin-panel
 
 jobs:
   build-push:

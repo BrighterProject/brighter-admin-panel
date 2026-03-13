@@ -29,8 +29,8 @@ import { Switch } from "@/components/ui/switch";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { useAddVenue } from "@/app/venues/hooks";
-import type { VenueFormValues, SportType } from "../types";
+import { useAddProperty } from "@/app/properties/hooks";
+import type { PropertyFormValues, SportType } from "../types";
 
 // ─── Constants ────────────────────────────────────────────────────────────────
 
@@ -72,7 +72,7 @@ const timeSlotSchema = z.object({
     .or(z.literal("")),
 });
 
-const venueFormSchema = z.object({
+const propertyFormSchema = z.object({
   name: z
     .string()
     .min(2, "Name must be at least 2 characters.")
@@ -111,7 +111,7 @@ const venueFormSchema = z.object({
   working_hours: z.record(z.string(), timeSlotSchema).optional(),
 });
 
-type FormValues = z.infer<typeof venueFormSchema>;
+type FormValues = z.infer<typeof propertyFormSchema>;
 type TimeSlot = z.infer<typeof timeSlotSchema>;
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
@@ -307,12 +307,12 @@ function WorkingHoursRow({
 
 // ─── Main Component ───────────────────────────────────────────────────────────
 
-export function VenueFormDialog() {
+export function PropertyFormDialog() {
   const [open, setOpen] = useState(false);
-  const { mutate: createVenue, isPending } = useAddVenue();
+  const { mutate: createProperty, isPending } = useAddProperty();
 
   const form = useForm<FormValues>({
-    resolver: zodResolver(venueFormSchema) as Resolver<FormValues>,
+    resolver: zodResolver(propertyFormSchema) as Resolver<FormValues>,
     defaultValues: {
       name: "",
       description: "",
@@ -353,16 +353,16 @@ export function VenueFormDialog() {
   };
 
   const onSubmit = (data: FormValues) => {
-    const payload: VenueFormValues = {
+    const payload: PropertyFormValues = {
       ...data,
       latitude: data.latitude || undefined,
       longitude: data.longitude || undefined,
       working_hours: data.working_hours
         ? toApiWorkingHours(data.working_hours)
         : null,
-    } as VenueFormValues;
+    } as PropertyFormValues;
 
-    createVenue(payload, {
+    createProperty(payload, {
       onSuccess: () => {
         handleClose();
       },

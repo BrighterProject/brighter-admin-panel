@@ -184,16 +184,16 @@ export function BookingDetailsDialog({
                   label="Обект"
                   value={
                     <a
-                      href={`http://localhost:3000/venues/${booking.venue_id}`}
+                      href={`http://localhost:3000/properties/${booking.property_id}`}
                       target="_blank"
                       rel="noreferrer"
                       className="text-blue-600 hover:underline dark:text-blue-400 inline-flex items-center gap-1"
                     >
                       <span className="text-right">
-                        {booking.venue_name ?? booking.venue_id}
-                        {booking.venue_name && (
+                        {booking.property_name ?? booking.property_id}
+                        {booking.property_name && (
                           <span className="block font-mono text-xs text-muted-foreground">
-                            {booking.venue_id}
+                            {booking.property_id}
                           </span>
                         )}
                       </span>
@@ -216,10 +216,10 @@ export function BookingDetailsDialog({
                   label="Собственик"
                   value={
                     <UserButton
-                      id={booking.venue_owner_id}
+                      id={booking.property_owner_id}
                       username={booking.owner_username}
                       fullName={booking.owner_full_name}
-                      onClick={() => setViewingUserId(booking.venue_owner_id)}
+                      onClick={() => setViewingUserId(booking.property_owner_id)}
                     />
                   }
                 />
