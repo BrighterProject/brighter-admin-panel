@@ -1,19 +1,16 @@
 import axios from "axios";
 
-export const api = axios.create({ baseURL: window.location.origin + "/api" });
-// export const api = axios.create({ baseURL: "/api" });
-
-api.interceptors.request.use((config) => {
-  const token = localStorage.getItem("access_token");
-  if (token) config.headers.Authorization = `Bearer ${token}`;
-  return config;
+export const api = axios.create({
+  baseURL: window.location.origin + "/api",
+  withCredentials: true, // send httpOnly access_token cookie automatically
 });
 
 api.interceptors.response.use(
   (response) => response,
   (error) => {
-    if (error?.response?.status === 401) {
-      localStorage.removeItem("access_token");
+    const url: string = error?.config?.url ?? "";
+    // Don't redirect on @me — ProtectedRoute handles unauthenticated state
+    if (error?.response?.status === 401 && !url.includes("/@me/")) {
       const basename = import.meta.env.VITE_BASENAME || "";
       if (!window.location.pathname.startsWith(basename + "/auth/")) {
         window.location.href =

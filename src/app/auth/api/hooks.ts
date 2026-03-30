@@ -14,7 +14,6 @@ export const useLogin = () => {
       const response = await apiClient.post<Token>("/auth/token", data, {
         headers: { "Content-Type": "application/x-www-form-urlencoded" },
       });
-      localStorage.setItem("access_token", response.data.access_token);
       return response.data;
     },
   });
@@ -23,8 +22,8 @@ export const useLogin = () => {
 export const useLogout = () => {
   const queryClient = useQueryClient();
 
-  const logout = () => {
-    localStorage.removeItem("access_token");
+  const logout = async () => {
+    await apiClient.post("/auth/logout").catch(() => {});
     queryClient.clear();
   };
 
@@ -50,8 +49,7 @@ export const useMe = () => {
       const { data } = await apiClient.get<UserPublic>("/users/@me/get");
       return data;
     },
-    enabled:
-      typeof window !== "undefined" && !!localStorage.getItem("access_token"),
+    enabled: typeof window !== "undefined",
     retry: false,
     staleTime: Infinity,
   });

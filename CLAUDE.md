@@ -62,22 +62,23 @@ Routes are defined in `src/config/routes.tsx` as a flat array:
 { path: "/auth/sign-in", element: <SignIn />, isPublic: true }  // public
 ```
 
-`AppRouter` wraps all non-public routes in `<ProtectedRoute>`. Auth state is `localStorage.getItem("access_token")`.
+`AppRouter` wraps all non-public routes in `<ProtectedRoute>`. Auth state is determined by `useMe()` — if it returns no user, the route redirects to login.
 
 The app is served under a configurable basename (`VITE_BASENAME` env var, e.g. `/admin` in production). Routes are always written relative to basename.
 
 ### API client
 
-`src/lib/api.ts` — axios instance with base URL `http://localhost:80` (Traefik). Attaches `Authorization: Bearer <token>` from localStorage on every request.
+`src/lib/api.ts` — axios instance with base URL `http://localhost:80` (Traefik), `withCredentials: true`. The httpOnly `access_token` cookie is sent automatically — no manual token attachment. The 401 interceptor redirects to login for all requests **except** `/@me/` (prevents redirect loops on public pages when not logged in).
 
 Auth hooks live in `src/app/auth/api/hooks.ts`. The pattern for other domains:
 - co-locate `api/api-client.ts`, `api/hooks.ts`, `api/types.ts` inside the feature folder
 
 ### Auth flow (frontend side)
 
-1. `POST /auth/token` (form-urlencoded) → stores `access_token` in `localStorage`
-2. `GET /users/@me/get` with `staleTime: Infinity` to hydrate current user on load
-3. Logout: removes token from localStorage + clears QueryClient cache
+1. `POST /auth/token` (form-urlencoded) → server sets httpOnly `access_token` cookie; nothing stored in JS
+2. `GET /users/@me/get` with `staleTime: Infinity`, always enabled — returns user data when authenticated, 401 when not
+3. `ProtectedRoute` reads `useMe()` — redirects to login if unauthenticated
+4. Logout: `POST /auth/logout` clears the cookie server-side + clears QueryClient cache
 
 ### Role-based access
 
