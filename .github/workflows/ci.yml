@@ -7,7 +7,7 @@ on:
     branches: [main]
 
 env:
-  IMAGE: ghcr.io/brighterbg/brighter-admin-panel
+  IMAGE: ghcr.io/brighterproject/brighter-admin-panel
 
 jobs:
   build-push:
