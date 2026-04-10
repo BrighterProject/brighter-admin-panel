@@ -53,7 +53,8 @@ export function BookingsTrendChart({ bookings, loading }: Props) {
     }
 
     for (const b of bookings) {
-      const key = b.start_datetime.slice(0, 10);
+      if (!b.start_date) continue;
+      const key = b.start_date.slice(0, 10);
       if (buckets[key]) {
         buckets[key].bookings += 1;
         if (b.status === "completed") {

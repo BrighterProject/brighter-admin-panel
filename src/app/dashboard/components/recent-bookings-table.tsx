@@ -58,8 +58,8 @@ export function RecentBookingsTable({ bookings, loading, isAdmin }: Props) {
   const sorted = [...bookings]
     .sort(
       (a, b) =>
-        new Date(b.start_datetime).getTime() -
-        new Date(a.start_datetime).getTime(),
+        new Date(b.start_date).getTime() -
+        new Date(a.start_date).getTime(),
     )
     .slice(0, 10);
 
@@ -107,10 +107,10 @@ export function RecentBookingsTable({ bookings, loading, isAdmin }: Props) {
                         b.user_id.slice(0, 8)}
                     </TableCell>
                     <TableCell className="whitespace-nowrap">
-                      {formatDate(b.start_datetime)}
+                      {formatDate(b.start_date)}
                     </TableCell>
                     <TableCell className="whitespace-nowrap">
-                      {formatDate(b.end_datetime)}
+                      {formatDate(b.end_date)}
                     </TableCell>
                     <TableCell className="whitespace-nowrap text-right">
                       {parseFloat(b.total_price).toFixed(2)} {b.currency}

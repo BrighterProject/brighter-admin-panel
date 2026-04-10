@@ -10,8 +10,8 @@ export type Booking = {
   property_id: string;
   property_owner_id: string;
   user_id: string;
-  start_datetime: string;
-  end_datetime: string;
+  start_date: string;
+  end_date: string;
   status: BookingStatus;
   price_per_hour: string;
   total_price: string;

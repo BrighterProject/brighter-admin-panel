@@ -101,10 +101,10 @@ export function BookingDetailsDialog({
       minute: "2-digit",
     });
 
-  const durationHours =
-    (new Date(booking.end_datetime).getTime() -
-      new Date(booking.start_datetime).getTime()) /
-    3600000;
+  const durationNights =
+    (new Date(booking.end_date).getTime() -
+      new Date(booking.start_date).getTime()) /
+    86400000;
 
   return (
     <>
@@ -132,11 +132,11 @@ export function BookingDetailsDialog({
 
               <div className="space-y-1">
                 <p className="text-sm font-medium">График</p>
-                <DetailRow label="Начало" value={fmt(booking.start_datetime)} />
-                <DetailRow label="Край" value={fmt(booking.end_datetime)} />
+                <DetailRow label="Начало" value={fmt(booking.start_date)} />
+                <DetailRow label="Край" value={fmt(booking.end_date)} />
                 <DetailRow
                   label="Продължителност"
-                  value={`${durationHours.toFixed(1)} ч.`}
+                  value={`${durationNights} нощ${durationNights === 1 ? "" : "и"}`}
                 />
               </div>
 

@@ -162,20 +162,20 @@ export function DataTable({ bookings, loading, isAdmin }: DataTableProps) {
       },
     },
     {
-      accessorKey: "start_datetime",
+      accessorKey: "start_date",
       header: "Начало",
       cell: ({ row }) => (
         <div className="flex items-center gap-1.5 text-sm">
           <Calendar className="size-3.5 text-muted-foreground" />
-          {fmt(row.getValue("start_datetime"))}
+          {fmt(row.getValue("start_date"))}
         </div>
       ),
     },
     {
-      accessorKey: "end_datetime",
+      accessorKey: "end_date",
       header: "Край",
       cell: ({ row }) => (
-        <span className="text-sm">{fmt(row.getValue("end_datetime"))}</span>
+        <span className="text-sm">{fmt(row.getValue("end_date"))}</span>
       ),
     },
     {
@@ -352,8 +352,8 @@ export function DataTable({ bookings, loading, isAdmin }: DataTableProps) {
                   const columnLabels: Record<string, string> = {
                     property_id: "Обект",
                     user_id: "Клиент",
-                    start_datetime: "Начало",
-                    end_datetime: "Край",
+                    start_date: "Начало",
+                    end_date: "Край",
                     total_price: "Сума",
                     status: "Статус",
                   };
