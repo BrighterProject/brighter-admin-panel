@@ -93,7 +93,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
       <SidebarContent>
         {navGroups.map((group) => {
           const items = admin
-            ? group.items.filter((item) => !item.adminOnly && !item.ownerOnly)
+            ? group.items.filter((item) => !item.ownerOnly)
             : group.items.filter((item) => !item.adminOnly);
           return (
             <NavMain key={group.label} label={group.label} items={items} />

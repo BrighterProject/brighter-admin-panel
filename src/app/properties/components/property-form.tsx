@@ -149,7 +149,7 @@ export function PropertyForm({ initialValues, onSubmit, isPending }: PropertyFor
             type="button"
             variant="outline"
             disabled={isPending}
-            onClick={() => onSubmit(form.getValues())}
+            onClick={() => form.handleSubmit(onSubmit)()}
           >
             Save Draft
           </Button>

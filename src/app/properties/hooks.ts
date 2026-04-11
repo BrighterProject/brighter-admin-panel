@@ -38,8 +38,14 @@ export function useProperty(id: string | null) {
 export function useAddProperty() {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: (data: PropertyFormSchema) =>
-      api.post<Property>('/properties/', data).then((r) => r.data),
+    mutationFn: (data: PropertyFormSchema) => {
+      const payload = {
+        ...data,
+        lat: data.lat === '' || data.lat === undefined ? null : parseFloat(data.lat as string),
+        lng: data.lng === '' || data.lng === undefined ? null : parseFloat(data.lng as string),
+      };
+      return api.post<Property>('/properties/', payload).then((r) => r.data);
+    },
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: PROPERTIES_KEY });
     },
@@ -49,8 +55,14 @@ export function useAddProperty() {
 export function useUpdateProperty() {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: ({ id, data }: { id: string; data: PropertyUpdate }) =>
-      api.patch<Property>(`/properties/${id}`, data).then((r) => r.data),
+    mutationFn: ({ id, data }: { id: string; data: PropertyUpdate }) => {
+      const payload = {
+        ...data,
+        ...(data.lat !== undefined && { lat: data.lat === '' ? null : parseFloat(data.lat as string) }),
+        ...(data.lng !== undefined && { lng: data.lng === '' ? null : parseFloat(data.lng as string) }),
+      };
+      return api.patch<Property>(`/properties/${id}`, payload).then((r) => r.data);
+    },
     onSuccess: (updated) => {
       qc.invalidateQueries({ queryKey: PROPERTIES_KEY });
       qc.invalidateQueries({ queryKey: [...PROPERTIES_KEY, updated.id] });
