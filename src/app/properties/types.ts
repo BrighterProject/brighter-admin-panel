@@ -1,140 +1,177 @@
+export type PropertyType =
+  | 'apartment' | 'house' | 'villa' | 'hotel'
+  | 'hostel' | 'guesthouse' | 'room' | 'other';
+
 export type PropertyStatus =
-  | "active"
-  | "inactive"
-  | "maintenance"
-  | "pending_approval";
+  | 'active' | 'inactive' | 'maintenance' | 'pending_approval';
 
-export type SportType =
-  | "football"
-  | "basketball"
-  | "tennis"
-  | "volleyball"
-  | "swimming"
-  | "gym"
-  | "padel"
-  | "other";
+export type AmenityType =
+  | 'wifi' | 'air_conditioning' | 'kitchen' | 'washing_machine'
+  | 'fireplace' | 'bbq' | 'mountain_view' | 'ski_storage'
+  | 'breakfast_included' | 'reception_24h' | 'sea_view' | 'balcony'
+  | 'pool' | 'garden' | 'pet_friendly' | 'coffee_machine';
 
-export type PropertyImage = {
+export const AMENITY_LABELS: Record<AmenityType, string> = {
+  wifi: 'Wi-Fi',
+  air_conditioning: 'Климатик',
+  kitchen: 'Кухня',
+  washing_machine: 'Пералня',
+  fireplace: 'Камина',
+  bbq: 'Барбекю',
+  mountain_view: 'Планинска гледка',
+  ski_storage: 'Ски гардероб',
+  breakfast_included: 'Закуска включена',
+  reception_24h: 'Рецепция 24ч',
+  sea_view: 'Морска гледка',
+  balcony: 'Балкон',
+  pool: 'Басейн',
+  garden: 'Градина',
+  pet_friendly: 'Домашни любимци',
+  coffee_machine: 'Кафемашина',
+};
+
+export const ALL_AMENITIES: AmenityType[] = Object.keys(AMENITY_LABELS) as AmenityType[];
+
+export type CancellationPolicy = 'free' | 'moderate' | 'strict';
+
+export type RoomType = 'bedroom' | 'living_room' | 'kitchen' | 'bathroom' | 'studio';
+
+export type BedType = 'single' | 'double' | 'queen' | 'king' | 'sofa_bed' | 'bunk' | 'crib';
+
+export interface BedEntry {
+  bed_type: BedType;
+  count: number;
+}
+
+export interface RoomEntry {
+  room_type: RoomType;
+  count: number;
+  beds: BedEntry[];
+}
+
+export interface PropertyTranslation {
+  id: string;
+  property_id: string;
+  locale: 'bg' | 'en' | 'ru';
+  name: string;
+  description: string;
+  address: string;
+}
+
+export interface PropertyImage {
   id: string;
   property_id: string;
   url: string;
   is_thumbnail: boolean;
   order: number;
-};
+}
 
-export type PropertyImageCreate = {
+export interface PropertyImageCreate {
   url: string;
   is_thumbnail?: boolean;
   order?: number;
-};
+}
 
-export type PropertyImageUpdate = {
+export interface PropertyImageUpdate {
   url?: string | null;
   is_thumbnail?: boolean | null;
   order?: number | null;
-};
+}
 
-export type PropertyUnavailability = {
+export interface PropertyUnavailability {
   id: string;
   property_id: string;
   start_datetime: string;
   end_datetime: string;
   reason: string | null;
-};
+}
 
-export type PropertyUnavailabilityCreate = {
+export interface PropertyUnavailabilityCreate {
   start_datetime: string;
   end_datetime: string;
   reason?: string | null;
-};
+}
 
-export type PropertyUnavailabilityUpdate = {
+export interface PropertyUnavailabilityUpdate {
   start_datetime?: string | null;
   end_datetime?: string | null;
   reason?: string | null;
-};
+}
 
-export type DayHours = {
-  open: string;
-  close: string;
-};
-
-export type WorkingHours = {
-  monday?: DayHours;
-  tuesday?: DayHours;
-  wednesday?: DayHours;
-  thursday?: DayHours;
-  friday?: DayHours;
-  saturday?: DayHours;
-  sunday?: DayHours;
-};
-
-export type Property = {
+export interface Property {
   id: string;
   owner_id: string;
-  name: string;
-  description: string;
-  sport_types: SportType[];
-  address: string;
-  city: string;
-  latitude: string | null;
-  longitude: string | null;
-  price_per_hour: string;
-  currency: string;
-  capacity: number;
-  is_indoor: boolean;
-  has_parking: boolean;
-  has_changing_rooms: boolean;
-  has_showers: boolean;
-  has_equipment_rental: boolean;
-  amenities: string[];
-  working_hours: WorkingHours | null;
+  property_type: PropertyType;
   status: PropertyStatus;
+  city: string;
+  lat: number | null;
+  lng: number | null;
+  price_per_night: string;
+  currency: string;
+  bedrooms: number;
+  bathrooms: number;
+  beds: number;
+  max_guests: number;
+  amenities: AmenityType[];
+  has_parking: boolean;
+  check_in_time: string;
+  check_out_time: string;
+  min_nights: number;
+  max_nights: number | null;
+  cancellation_policy: CancellationPolicy;
   rating: string;
   total_reviews: number;
-  total_bookings: number;
-  updated_at: string;
+  rooms: RoomEntry[];
   images: PropertyImage[];
   unavailabilities: PropertyUnavailability[];
-};
+  translations: PropertyTranslation[];
+}
 
-export type PropertyListItem = {
+export interface PropertyListItem {
   id: string;
-  name: string;
-  city: string;
-  sport_types: SportType[];
+  owner_id: string;
+  property_type: PropertyType;
   status: PropertyStatus;
-  price_per_hour: string;
+  city: string;
+  price_per_night: string;
   currency: string;
-  capacity: number;
-  is_indoor: boolean;
+  max_guests: number;
+  bedrooms: number;
   rating: string;
   total_reviews: number;
   thumbnail: string | null;
-};
+  translations: Pick<PropertyTranslation, 'locale' | 'name'>[];
+}
 
-export type PropertyFormValues = {
-  name: string;
-  description: string;
-  sport_types: SportType[];
-  address: string;
+export interface PropertyFormValues {
+  property_type: PropertyType;
   city: string;
-  latitude: string;
-  longitude: string;
-  price_per_hour: string;
-  currency: string;
-  capacity: number;
-  is_indoor: boolean;
+  lat: string;
+  lng: string;
   has_parking: boolean;
-  has_changing_rooms: boolean;
-  has_showers: boolean;
-  has_equipment_rental: boolean;
-  amenities: string[];
-  working_hours: WorkingHours;
-};
+  price_per_night: string;
+  currency: string;
+  min_nights: number;
+  max_nights: number | null;
+  check_in_time: string;
+  check_out_time: string;
+  cancellation_policy: CancellationPolicy;
+  bedrooms: number;
+  bathrooms: number;
+  beds: number;
+  max_guests: number;
+  rooms: RoomEntry[];
+  amenities: AmenityType[];
+  images: PropertyImageCreate[];
+  translations: {
+    bg: { name: string; description: string; address: string };
+    en: { name: string; description: string; address: string };
+    ru: { name: string; description: string; address: string };
+  };
+}
 
 export type PropertyUpdate = Partial<PropertyFormValues>;
 
-export type PropertyStatusUpdate = {
+export interface PropertyStatusUpdate {
   status: PropertyStatus;
-};
+}
