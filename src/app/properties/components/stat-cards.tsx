@@ -12,8 +12,10 @@ export function StatCards({ properties, loading }: StatCardsProps) {
   const total = properties.length;
   const active = properties.filter((v) => v.status === "active").length;
   const pending = properties.filter((v) => v.status === "pending_approval").length;
-  const indoor = properties.filter((v) => v.is_indoor).length;
-  const outdoor = total - indoor;
+  const apartments = properties.filter((v) => v.property_type === "apartment").length;
+  const villas = properties.filter(
+    (v) => v.property_type === "villa" || v.property_type === "house",
+  ).length;
 
   const avgRating =
     total > 0
@@ -50,17 +52,17 @@ export function StatCards({ properties, loading }: StatCardsProps) {
       badge: null,
     },
     {
-      title: "Закрити обекти",
-      value: loading ? "…" : indoor,
+      title: "Апартаменти",
+      value: loading ? "…" : apartments,
       icon: Building2,
-      badge: total > 0 ? `${Math.round((indoor / total) * 100)}%` : null,
+      badge: total > 0 ? `${Math.round((apartments / total) * 100)}%` : null,
       badgeBlue: true,
     },
     {
-      title: "Открити обекти",
-      value: loading ? "…" : outdoor,
+      title: "Вили / Къщи",
+      value: loading ? "…" : villas,
       icon: MapPin,
-      badge: total > 0 ? `${Math.round((outdoor / total) * 100)}%` : null,
+      badge: total > 0 ? `${Math.round((villas / total) * 100)}%` : null,
       badgeOrange: true,
     },
   ];

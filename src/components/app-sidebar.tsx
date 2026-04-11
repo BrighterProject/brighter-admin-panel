@@ -8,6 +8,7 @@ import {
   CalendarCheck,
   MapPin,
   ExternalLink,
+  CreditCard,
 } from "lucide-react";
 import { Link } from "react-router-dom";
 import { NavMain } from "@/components/nav-main";
@@ -54,6 +55,12 @@ const navGroups = [
         url: "/bookings",
         icon: CalendarCheck,
       },
+      {
+        title: "Плащания",
+        url: "/settings/payments",
+        icon: CreditCard,
+        ownerOnly: true,
+      },
     ],
   },
 ];
@@ -86,7 +93,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
       <SidebarContent>
         {navGroups.map((group) => {
           const items = admin
-            ? group.items
+            ? group.items.filter((item) => !item.adminOnly && !item.ownerOnly)
             : group.items.filter((item) => !item.adminOnly);
           return (
             <NavMain key={group.label} label={group.label} items={items} />

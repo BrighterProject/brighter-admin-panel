@@ -76,6 +76,7 @@ interface DataTableProps {
   properties: PropertyListItem[];
   loading: boolean;
   onDeleteProperty: (id: string) => void;
+  onEditProperty?: (property: PropertyListItem) => void;
   isAdmin: boolean;
 }
 
@@ -130,6 +131,7 @@ export function DataTable({
   properties,
   loading,
   onDeleteProperty,
+  onEditProperty,
   isAdmin,
 }: DataTableProps) {
   const [sorting, setSorting] = useState<SortingState>([]);
@@ -175,17 +177,20 @@ export function DataTable({
       size: 50,
     },
     {
-      accessorKey: "name",
+      id: "name",
       header: "Обект",
       cell: ({ row }) => {
         const property = row.original;
+        const name =
+          property.translations.find((t) => t.locale === "bg")?.name ??
+          property.id;
         return (
           <div className="flex items-center gap-3">
             <div className="h-10 w-10 rounded-lg bg-muted flex items-center justify-center flex-shrink-0 overflow-hidden">
               {property.thumbnail ? (
                 <img
                   src={property.thumbnail}
-                  alt={property.name}
+                  alt={name}
                   className="h-full w-full object-cover"
                 />
               ) : (
@@ -193,7 +198,7 @@ export function DataTable({
               )}
             </div>
             <div className="flex flex-col min-w-0">
-              <span className="font-medium truncate">{property.name}</span>
+              <span className="font-medium truncate">{name}</span>
               <div className="flex items-center gap-1 text-sm text-muted-foreground">
                 <MapPin className="size-3" />
                 <span className="truncate">{property.city}</span>
@@ -231,69 +236,59 @@ export function DataTable({
       },
     },
     {
-      accessorKey: "sport_types",
-      header: "Спортове",
+      accessorKey: "property_type",
+      header: "Тип обект",
       cell: ({ row }) => {
-        const sports = row.getValue("sport_types") as string[];
-        if (!sports || sports.length === 0) {
-          return <span className="text-muted-foreground text-sm">Няма</span>;
-        }
+        const propertyType = row.getValue("property_type") as string;
+        const labels: Record<string, string> = {
+          apartment: "Апартамент",
+          house: "Къща",
+          villa: "Вила",
+          hotel: "Хотел",
+          hostel: "Хостел",
+          guesthouse: "Гостилница",
+          room: "Стая",
+          other: "Друго",
+        };
         return (
-          <div className="flex flex-wrap gap-1 max-w-[150px]">
-            {sports.slice(0, 3).map((sport) => (
-              <Badge
-                key={sport}
-                variant="outline"
-                className="text-xs capitalize"
-              >
-                {sportTypeIcons[sport] || "•"} {sportTypeLabels[sport] || sport}
-              </Badge>
-            ))}
-          </div>
+          <Badge variant="outline" className="text-xs capitalize">
+            {labels[propertyType] ?? propertyType}
+          </Badge>
         );
       },
     },
     {
-      accessorKey: "price_per_hour",
+      accessorKey: "price_per_night",
       header: "Цена",
       cell: ({ row }) => {
-        const price = row.getValue("price_per_hour") as string;
+        const price = row.getValue("price_per_night") as string;
         const currency = row.original.currency;
         return (
           <span className="font-medium">
-            {price} {currency}/ч
+            {price} {currency}/нощ
           </span>
         );
       },
     },
     {
-      accessorKey: "capacity",
-      header: "Капацитет",
+      accessorKey: "max_guests",
+      header: "Макс. гости",
       cell: ({ row }) => {
-        const capacity = row.getValue("capacity") as number;
+        const maxGuests = row.getValue("max_guests") as number;
         return (
           <div className="flex items-center gap-1">
             <Users className="size-4 text-muted-foreground" />
-            <span>{capacity}</span>
+            <span>{maxGuests}</span>
           </div>
         );
       },
     },
     {
-      accessorKey: "is_indoor",
-      header: "Тип",
+      accessorKey: "bedrooms",
+      header: "Спални",
       cell: ({ row }) => {
-        const isIndoor = row.getValue("is_indoor") as boolean;
-        return (
-          <Badge variant={isIndoor ? "default" : "outline"}>
-            {isIndoor ? "Закрито" : "Открито"}
-          </Badge>
-        );
-      },
-      filterFn: (row, columnId, value) => {
-        if (value === "" || value === "all") return true;
-        const isIndoor = row.getValue(columnId) as boolean;
-        return value === "indoor" ? isIndoor : !isIndoor;
+        const bedrooms = row.getValue("bedrooms") as number;
+        return <span>{bedrooms}</span>;
       },
     },
     {
@@ -365,7 +360,9 @@ export function DataTable({
               variant="ghost"
               size="icon"
               className="h-8 w-8 cursor-pointer"
-              onClick={() => setEditProperty(property)}
+              onClick={() =>
+                onEditProperty ? onEditProperty(property) : setEditProperty(property)
+              }
             >
               <Pencil className="size-4" />
               <span className="sr-only">Редактирай обект</span>
@@ -407,7 +404,9 @@ export function DataTable({
                 )}
                 <DropdownMenuItem
                   className="cursor-pointer"
-                  onClick={() => setEditProperty(property)}
+                  onClick={() =>
+                    onEditProperty ? onEditProperty(property) : setEditProperty(property)
+                  }
                 >
                   <Settings2 className="mr-2 size-4" />
                   Редактиране на детайли
@@ -451,7 +450,7 @@ export function DataTable({
   });
 
   const statusFilter = table.getColumn("status")?.getFilterValue() as string;
-  const typeFilter = table.getColumn("is_indoor")?.getFilterValue() as string;
+  const typeFilter = table.getColumn("property_type")?.getFilterValue() as string;
 
   return (
     <div className="w-full space-y-4">
@@ -521,11 +520,11 @@ export function DataTable({
         </div>
 
         <div className="space-y-2">
-          <Label className="text-sm font-medium">Тип</Label>
+          <Label className="text-sm font-medium">Тип обект</Label>
           <Select
             value={typeFilter || "all"}
             onValueChange={(value) =>
-              table.getColumn("is_indoor")?.setFilterValue(value)
+              table.getColumn("property_type")?.setFilterValue(value === "all" ? "" : value)
             }
           >
             <SelectTrigger className="cursor-pointer w-full">
@@ -533,8 +532,14 @@ export function DataTable({
             </SelectTrigger>
             <SelectContent>
               <SelectItem value="all">Всички типове</SelectItem>
-              <SelectItem value="indoor">Закрити</SelectItem>
-              <SelectItem value="outdoor">Открити</SelectItem>
+              <SelectItem value="apartment">Апартамент</SelectItem>
+              <SelectItem value="house">Къща</SelectItem>
+              <SelectItem value="villa">Вила</SelectItem>
+              <SelectItem value="hotel">Хотел</SelectItem>
+              <SelectItem value="hostel">Хостел</SelectItem>
+              <SelectItem value="guesthouse">Гостилница</SelectItem>
+              <SelectItem value="room">Стая</SelectItem>
+              <SelectItem value="other">Друго</SelectItem>
             </SelectContent>
           </Select>
         </div>
@@ -562,14 +567,14 @@ export function DataTable({
                       ? "Обект"
                       : col.id === "status"
                         ? "Статус"
-                        : col.id === "sport_types"
-                          ? "Спортове"
-                          : col.id === "price_per_hour"
+                        : col.id === "property_type"
+                          ? "Тип обект"
+                          : col.id === "price_per_night"
                             ? "Цена"
-                            : col.id === "capacity"
-                              ? "Капацитет"
-                              : col.id === "is_indoor"
-                                ? "Тип"
+                            : col.id === "max_guests"
+                              ? "Макс. гости"
+                              : col.id === "bedrooms"
+                                ? "Спални"
                                 : col.id === "rating"
                                   ? "Рейтинг"
                                   : col.id}
