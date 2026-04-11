@@ -1,11 +1,8 @@
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import type {
   Property,
   PropertyListItem,
-  PropertyFormValues,
   PropertyUpdate,
-  PropertyStatusUpdate,
   PropertyStatus,
   PropertyImage,
   PropertyImageCreate,
@@ -13,57 +10,50 @@ import type {
   PropertyUnavailability,
   PropertyUnavailabilityCreate,
   PropertyUnavailabilityUpdate,
-} from "./types";
-import { api } from "@/lib/api";
+} from './types';
+import type { PropertyFormSchema } from './property-form.schema';
+import { api } from '@/lib/api';
 
-const PROPERTIES_KEY = ["properties"];
+const PROPERTIES_KEY = ['properties'];
 
-// ─── Property Queries & Mutations ────────────────────────────────────────────────
+// ─── Property Queries ─────────────────────────────────────────────────────────
 
 export function useProperties(params?: { owner_id?: string }) {
   return useQuery({
     queryKey: [...PROPERTIES_KEY, params],
-    queryFn: () => fetchProperties(params),
+    queryFn: () => api.get<PropertyListItem[]>('/properties/', { params }).then((r) => r.data),
   });
 }
-
-const fetchProperties = (params?: { owner_id?: string }) =>
-  api.get<PropertyListItem[]>("/properties/", { params }).then((r) => r.data);
 
 export function useProperty(id: string | null) {
   return useQuery({
     queryKey: [...PROPERTIES_KEY, id],
-    queryFn: () => fetchProperty(id!),
+    queryFn: () => api.get<Property>(`/properties/${id}`).then((r) => r.data),
     enabled: !!id,
   });
 }
 
-const fetchProperty = (id: string) =>
-  api.get<Property>(`/properties/${id}`).then((r) => r.data);
+// ─── Property Mutations ───────────────────────────────────────────────────────
 
 export function useAddProperty() {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: (data: PropertyFormValues) =>
-      api.post<Property>("/properties/", data).then((r) => r.data),
-    onSuccess: (newProperty) => {
-      const item: PropertyListItem = {
-        id: newProperty.id,
-        name: newProperty.name,
-        city: newProperty.city,
-        sport_types: newProperty.sport_types,
-        status: newProperty.status,
-        price_per_hour: newProperty.price_per_hour,
-        currency: newProperty.currency,
-        capacity: newProperty.capacity,
-        is_indoor: newProperty.is_indoor,
-        rating: newProperty.rating,
-        total_reviews: newProperty.total_reviews,
-        thumbnail: newProperty.images.find((i) => i.is_thumbnail)?.url ?? null,
-      };
-      qc.setQueriesData<PropertyListItem[]>({ queryKey: PROPERTIES_KEY }, (prev) =>
-        Array.isArray(prev) ? [item, ...prev] : prev,
-      );
+    mutationFn: (data: PropertyFormSchema) =>
+      api.post<Property>('/properties/', data).then((r) => r.data),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: PROPERTIES_KEY });
+    },
+  });
+}
+
+export function useUpdateProperty() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: ({ id, data }: { id: string; data: PropertyUpdate }) =>
+      api.patch<Property>(`/properties/${id}`, data).then((r) => r.data),
+    onSuccess: (updated) => {
+      qc.invalidateQueries({ queryKey: PROPERTIES_KEY });
+      qc.invalidateQueries({ queryKey: [...PROPERTIES_KEY, updated.id] });
     },
   });
 }
@@ -80,43 +70,11 @@ export function useDeleteProperty() {
   });
 }
 
-export function useUpdateProperty() {
-  const qc = useQueryClient();
-  return useMutation({
-    mutationFn: ({ id, data }: { id: string; data: PropertyUpdate }) =>
-      api.patch<Property>(`/properties/${id}`, data).then((r) => r.data),
-    onSuccess: (updatedProperty) => {
-      qc.setQueriesData<PropertyListItem[]>({ queryKey: PROPERTIES_KEY }, (prev) =>
-        Array.isArray(prev)
-          ? prev.map((v) =>
-              v.id === updatedProperty.id
-                ? {
-                    ...v,
-                    name: updatedProperty.name,
-                    city: updatedProperty.city,
-                    sport_types: updatedProperty.sport_types,
-                    status: updatedProperty.status,
-                    price_per_hour: updatedProperty.price_per_hour,
-                    currency: updatedProperty.currency,
-                    capacity: updatedProperty.capacity,
-                    is_indoor: updatedProperty.is_indoor,
-                  }
-                : v,
-            )
-          : prev,
-      );
-      qc.invalidateQueries({ queryKey: [...PROPERTIES_KEY, updatedProperty.id] });
-    },
-  });
-}
-
 export function useUpdatePropertyStatus() {
   const qc = useQueryClient();
   return useMutation({
     mutationFn: ({ id, status }: { id: string; status: PropertyStatus }) =>
-      api
-        .patch<PropertyStatusUpdate>(`/properties/${id}/status`, { status })
-        .then((r) => r.data),
+      api.patch(`/properties/${id}/status`, { status }).then((r) => r.data),
     onSuccess: (_, { id, status }) => {
       qc.setQueriesData<PropertyListItem[]>({ queryKey: PROPERTIES_KEY }, (prev) =>
         Array.isArray(prev)
@@ -127,36 +85,24 @@ export function useUpdatePropertyStatus() {
   });
 }
 
-// ─── Property Image Queries & Mutations ──────────────────────────────────────────
+// ─── Image Mutations ──────────────────────────────────────────────────────────
 
 export function usePropertyImages(propertyId: string | null) {
   return useQuery({
-    queryKey: [...PROPERTIES_KEY, propertyId, "images"],
-    queryFn: () => fetchPropertyImages(propertyId!),
+    queryKey: [...PROPERTIES_KEY, propertyId, 'images'],
+    queryFn: () =>
+      api.get<PropertyImage[]>(`/properties/${propertyId}/images`).then((r) => r.data),
     enabled: !!propertyId,
   });
 }
 
-const fetchPropertyImages = (propertyId: string) =>
-  api.get<PropertyImage[]>(`/properties/${propertyId}/images`).then((r) => r.data);
-
 export function useAddPropertyImage() {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: ({
-      propertyId,
-      data,
-    }: {
-      propertyId: string;
-      data: PropertyImageCreate;
-    }) =>
-      api
-        .post<PropertyImage>(`/properties/${propertyId}/images`, data)
-        .then((r) => r.data),
+    mutationFn: ({ propertyId, data }: { propertyId: string; data: PropertyImageCreate }) =>
+      api.post<PropertyImage>(`/properties/${propertyId}/images`, data).then((r) => r.data),
     onSuccess: (_, { propertyId }) => {
-      qc.invalidateQueries({ queryKey: [...PROPERTIES_KEY, propertyId, "images"] });
       qc.invalidateQueries({ queryKey: [...PROPERTIES_KEY, propertyId] });
-      qc.invalidateQueries({ queryKey: PROPERTIES_KEY });
     },
   });
 }
@@ -165,21 +111,11 @@ export function useUpdatePropertyImage() {
   const qc = useQueryClient();
   return useMutation({
     mutationFn: ({
-      propertyId,
-      imageId,
-      data,
-    }: {
-      propertyId: string;
-      imageId: string;
-      data: PropertyImageUpdate;
-    }) =>
-      api
-        .patch<PropertyImage>(`/properties/${propertyId}/images/${imageId}`, data)
-        .then((r) => r.data),
+      propertyId, imageId, data,
+    }: { propertyId: string; imageId: string; data: PropertyImageUpdate }) =>
+      api.patch<PropertyImage>(`/properties/${propertyId}/images/${imageId}`, data).then((r) => r.data),
     onSuccess: (_, { propertyId }) => {
-      qc.invalidateQueries({ queryKey: [...PROPERTIES_KEY, propertyId, "images"] });
       qc.invalidateQueries({ queryKey: [...PROPERTIES_KEY, propertyId] });
-      qc.invalidateQueries({ queryKey: PROPERTIES_KEY });
     },
   });
 }
@@ -190,9 +126,7 @@ export function useDeletePropertyImage() {
     mutationFn: ({ propertyId, imageId }: { propertyId: string; imageId: string }) =>
       api.delete(`/properties/${propertyId}/images/${imageId}`),
     onSuccess: (_, { propertyId }) => {
-      qc.invalidateQueries({ queryKey: [...PROPERTIES_KEY, propertyId, "images"] });
       qc.invalidateQueries({ queryKey: [...PROPERTIES_KEY, propertyId] });
-      qc.invalidateQueries({ queryKey: PROPERTIES_KEY });
     },
   });
 }
@@ -200,59 +134,40 @@ export function useDeletePropertyImage() {
 export function useReorderPropertyImages() {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: ({
-      propertyId,
-      imageIds,
-    }: {
-      propertyId: string;
-      imageIds: string[];
-    }) =>
+    mutationFn: ({ propertyId, imageIds }: { propertyId: string; imageIds: string[] }) =>
       api
-        .put<
-          PropertyImage[]
-        >(`/properties/${propertyId}/images/reorder`, { image_ids: imageIds })
+        .put<PropertyImage[]>(`/properties/${propertyId}/images/reorder`, { image_ids: imageIds })
         .then((r) => r.data),
     onSuccess: (_, { propertyId }) => {
-      qc.invalidateQueries({ queryKey: [...PROPERTIES_KEY, propertyId, "images"] });
       qc.invalidateQueries({ queryKey: [...PROPERTIES_KEY, propertyId] });
-      qc.invalidateQueries({ queryKey: PROPERTIES_KEY });
     },
   });
 }
 
-// ─── Property Unavailability Queries & Mutations ─────────────────────────────────
+// ─── Unavailability Mutations ─────────────────────────────────────────────────
 
 export function usePropertyUnavailabilities(propertyId: string | null) {
   return useQuery({
-    queryKey: [...PROPERTIES_KEY, propertyId, "unavailabilities"],
-    queryFn: () => fetchPropertyUnavailabilities(propertyId!),
+    queryKey: [...PROPERTIES_KEY, propertyId, 'unavailabilities'],
+    queryFn: () =>
+      api
+        .get<PropertyUnavailability[]>(`/properties/${propertyId}/unavailabilities`)
+        .then((r) => r.data),
     enabled: !!propertyId,
   });
 }
-
-const fetchPropertyUnavailabilities = (propertyId: string) =>
-  api
-    .get<PropertyUnavailability[]>(`/properties/${propertyId}/unavailabilities`)
-    .then((r) => r.data);
 
 export function useCreatePropertyUnavailability() {
   const qc = useQueryClient();
   return useMutation({
     mutationFn: ({
-      propertyId,
-      data,
-    }: {
-      propertyId: string;
-      data: PropertyUnavailabilityCreate;
-    }) =>
+      propertyId, data,
+    }: { propertyId: string; data: PropertyUnavailabilityCreate }) =>
       api
         .post<PropertyUnavailability>(`/properties/${propertyId}/unavailabilities`, data)
         .then((r) => r.data),
     onSuccess: (_, { propertyId }) => {
-      qc.invalidateQueries({
-        queryKey: [...PROPERTIES_KEY, propertyId, "unavailabilities"],
-      });
-      qc.invalidateQueries({ queryKey: [...PROPERTIES_KEY, propertyId] });
+      qc.invalidateQueries({ queryKey: [...PROPERTIES_KEY, propertyId, 'unavailabilities'] });
     },
   });
 }
@@ -261,14 +176,8 @@ export function useUpdatePropertyUnavailability() {
   const qc = useQueryClient();
   return useMutation({
     mutationFn: ({
-      propertyId,
-      unavailabilityId,
-      data,
-    }: {
-      propertyId: string;
-      unavailabilityId: string;
-      data: PropertyUnavailabilityUpdate;
-    }) =>
+      propertyId, unavailabilityId, data,
+    }: { propertyId: string; unavailabilityId: string; data: PropertyUnavailabilityUpdate }) =>
       api
         .patch<PropertyUnavailability>(
           `/properties/${propertyId}/unavailabilities/${unavailabilityId}`,
@@ -276,10 +185,7 @@ export function useUpdatePropertyUnavailability() {
         )
         .then((r) => r.data),
     onSuccess: (_, { propertyId }) => {
-      qc.invalidateQueries({
-        queryKey: [...PROPERTIES_KEY, propertyId, "unavailabilities"],
-      });
-      qc.invalidateQueries({ queryKey: [...PROPERTIES_KEY, propertyId] });
+      qc.invalidateQueries({ queryKey: [...PROPERTIES_KEY, propertyId, 'unavailabilities'] });
     },
   });
 }
@@ -288,17 +194,11 @@ export function useDeletePropertyUnavailability() {
   const qc = useQueryClient();
   return useMutation({
     mutationFn: ({
-      propertyId,
-      unavailabilityId,
-    }: {
-      propertyId: string;
-      unavailabilityId: string;
-    }) => api.delete(`/properties/${propertyId}/unavailabilities/${unavailabilityId}`),
+      propertyId, unavailabilityId,
+    }: { propertyId: string; unavailabilityId: string }) =>
+      api.delete(`/properties/${propertyId}/unavailabilities/${unavailabilityId}`),
     onSuccess: (_, { propertyId }) => {
-      qc.invalidateQueries({
-        queryKey: [...PROPERTIES_KEY, propertyId, "unavailabilities"],
-      });
-      qc.invalidateQueries({ queryKey: [...PROPERTIES_KEY, propertyId] });
+      qc.invalidateQueries({ queryKey: [...PROPERTIES_KEY, propertyId, 'unavailabilities'] });
     },
   });
 }
