@@ -13,10 +13,13 @@ export type Booking = {
   start_date: string;
   end_date: string;
   status: BookingStatus;
-  price_per_hour: string;
+  price_per_night: string;
   total_price: string;
   currency: string;
-  notes: string | null;
+  guest_name: string | null;
+  guest_email: string | null;
+  guest_phone: string | null;
+  special_requests: string | null;
   updated_at: string;
   // Enriched by bookings-ms at query time
   property_name: string | null;

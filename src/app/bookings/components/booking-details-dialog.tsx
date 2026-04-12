@@ -146,7 +146,7 @@ export function BookingDetailsDialog({
                 <p className="text-sm font-medium">Ценообразуване</p>
                 <DetailRow
                   label="Тарифа"
-                  value={`${booking.price_per_hour} ${booking.currency}/ч.`}
+                  value={`${booking.price_per_night} ${booking.currency}/нощ`}
                 />
                 <DetailRow
                   label="Общо"
@@ -160,12 +160,12 @@ export function BookingDetailsDialog({
 
               <Separator />
 
-              {booking.notes && (
+              {booking.special_requests && (
                 <>
                   <div className="space-y-1">
-                    <p className="text-sm font-medium">Бележки</p>
+                    <p className="text-sm font-medium">Специални изисквания</p>
                     <p className="text-sm text-muted-foreground leading-relaxed">
-                      {booking.notes}
+                      {booking.special_requests}
                     </p>
                   </div>
                   <Separator />
