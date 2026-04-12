@@ -8,6 +8,9 @@ import {
   SidebarInset,
   SidebarProvider,
 } from "@/components/ui/sidebar"
+import { useMe } from "@/app/auth/api/hooks"
+import { isPropertyOwner } from "@/lib/scopes"
+import { OwnerStatusBanner } from "@/app/dashboard/components/owner-status-banner"
 
 interface BaseLayoutProps {
   children: React.ReactNode
@@ -16,6 +19,9 @@ interface BaseLayoutProps {
 }
 
 export function BaseLayout({ children, title, description }: BaseLayoutProps) {
+  const { data: me } = useMe();
+  const showBanner = me ? isPropertyOwner(me.scopes) || me.scopes.length === 0 : false;
+
   return (
     <SidebarProvider
       style={
@@ -32,6 +38,11 @@ export function BaseLayout({ children, title, description }: BaseLayoutProps) {
         <div className="flex flex-1 flex-col">
           <div className="@container/main flex flex-1 flex-col gap-2">
             <div className="flex flex-col gap-4 py-4 md:gap-6 md:py-6">
+              {showBanner && me && (
+                <div className="px-4 lg:px-6">
+                  <OwnerStatusBanner scopes={me.scopes} stripeConnected={false} />
+                </div>
+              )}
               {title && (
                 <div className="px-4 lg:px-6">
                   <div className="flex flex-col gap-2">
