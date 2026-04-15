@@ -29,20 +29,22 @@ interface PropertyUnavailabilityDialogProps {
   onClose: () => void;
 }
 
-function formatDateTime(isoString: string): string {
-  const date = new Date(isoString);
-  return date.toLocaleString("bg-BG", {
-    month: "short",
+function formatDate(dateString: string): string {
+  return new Date(dateString).toLocaleDateString("bg-BG", {
     day: "numeric",
+    month: "short",
     year: "numeric",
-    hour: "2-digit",
-    minute: "2-digit",
   });
 }
 
-function formatForInput(isoString: string): string {
-  const date = new Date(isoString);
-  return date.toISOString().slice(0, 16);
+function todayISO(): string {
+  return new Date().toISOString().slice(0, 10);
+}
+
+function tomorrowISO(): string {
+  const d = new Date();
+  d.setDate(d.getDate() + 1);
+  return d.toISOString().slice(0, 10);
 }
 
 export function PropertyUnavailabilityDialog({
@@ -52,8 +54,8 @@ export function PropertyUnavailabilityDialog({
   const [isAdding, setIsAdding] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [formData, setFormData] = useState({
-    start_datetime: "",
-    end_datetime: "",
+    start_date: "",
+    end_date: "",
     reason: "",
   });
 
@@ -68,23 +70,15 @@ export function PropertyUnavailabilityDialog({
     useDeletePropertyUnavailability();
 
   const resetForm = () => {
-    setFormData({
-      start_datetime: "",
-      end_datetime: "",
-      reason: "",
-    });
+    setFormData({ start_date: "", end_date: "", reason: "" });
     setIsAdding(false);
     setEditingId(null);
   };
 
   const handleStartAdd = () => {
-    const now = new Date();
-    const tomorrow = new Date(now);
-    tomorrow.setDate(tomorrow.getDate() + 1);
-
     setFormData({
-      start_datetime: now.toISOString().slice(0, 16),
-      end_datetime: tomorrow.toISOString().slice(0, 16),
+      start_date: todayISO(),
+      end_date: tomorrowISO(),
       reason: "",
     });
     setIsAdding(true);
@@ -93,8 +87,8 @@ export function PropertyUnavailabilityDialog({
 
   const handleStartEdit = (u: PropertyUnavailability) => {
     setFormData({
-      start_datetime: formatForInput(u.start_datetime),
-      end_datetime: formatForInput(u.end_datetime),
+      start_date: u.start_date.slice(0, 10),
+      end_date: u.end_date.slice(0, 10),
       reason: u.reason ?? "",
     });
     setEditingId(u.id);
@@ -105,26 +99,19 @@ export function PropertyUnavailabilityDialog({
     if (!property) return;
 
     const data = {
-      start_datetime: new Date(formData.start_datetime).toISOString(),
-      end_datetime: new Date(formData.end_datetime).toISOString(),
+      start_date: formData.start_date,
+      end_date: formData.end_date,
       reason: formData.reason.trim() || null,
     };
 
     if (editingId) {
       updateUnavailability(
-        {
-          propertyId: property.id,
-          unavailabilityId: editingId,
-          data,
-        },
+        { propertyId: property.id, unavailabilityId: editingId, data },
         { onSuccess: resetForm },
       );
     } else {
       createUnavailability(
-        {
-          propertyId: property.id,
-          data,
-        },
+        { propertyId: property.id, data },
         { onSuccess: resetForm },
       );
     }
@@ -138,9 +125,7 @@ export function PropertyUnavailabilityDialog({
   const isPending = isCreating || isUpdating || isDeleting;
 
   const sortedUnavailabilities = [...unavailabilities].sort(
-    (a, b) =>
-      new Date(b.start_datetime).getTime() -
-      new Date(a.start_datetime).getTime(),
+    (a, b) => new Date(b.start_date).getTime() - new Date(a.start_date).getTime(),
   );
 
   return (
@@ -179,30 +164,24 @@ export function PropertyUnavailabilityDialog({
 
                 <div className="grid grid-cols-2 gap-4">
                   <div className="space-y-2">
-                    <Label htmlFor="start-datetime">Начална дата и час</Label>
+                    <Label htmlFor="start-date">Начална дата</Label>
                     <Input
-                      id="start-datetime"
-                      type="datetime-local"
-                      value={formData.start_datetime}
+                      id="start-date"
+                      type="date"
+                      value={formData.start_date}
                       onChange={(e) =>
-                        setFormData((prev) => ({
-                          ...prev,
-                          start_datetime: e.target.value,
-                        }))
+                        setFormData((prev) => ({ ...prev, start_date: e.target.value }))
                       }
                     />
                   </div>
                   <div className="space-y-2">
-                    <Label htmlFor="end-datetime">Крайна дата и час</Label>
+                    <Label htmlFor="end-date">Крайна дата</Label>
                     <Input
-                      id="end-datetime"
-                      type="datetime-local"
-                      value={formData.end_datetime}
+                      id="end-date"
+                      type="date"
+                      value={formData.end_date}
                       onChange={(e) =>
-                        setFormData((prev) => ({
-                          ...prev,
-                          end_datetime: e.target.value,
-                        }))
+                        setFormData((prev) => ({ ...prev, end_date: e.target.value }))
                       }
                     />
                   </div>
@@ -215,10 +194,7 @@ export function PropertyUnavailabilityDialog({
                     placeholder="напр. Профилактика, Частно събитие и др."
                     value={formData.reason}
                     onChange={(e) =>
-                      setFormData((prev) => ({
-                        ...prev,
-                        reason: e.target.value,
-                      }))
+                      setFormData((prev) => ({ ...prev, reason: e.target.value }))
                     }
                     rows={2}
                   />
@@ -230,15 +206,9 @@ export function PropertyUnavailabilityDialog({
                   </Button>
                   <Button
                     onClick={handleSubmit}
-                    disabled={
-                      !formData.start_datetime ||
-                      !formData.end_datetime ||
-                      isPending
-                    }
+                    disabled={!formData.start_date || !formData.end_date || isPending}
                   >
-                    {isPending && (
-                      <Loader2 className="mr-2 size-4 animate-spin" />
-                    )}
+                    {isPending && <Loader2 className="mr-2 size-4 animate-spin" />}
                     {editingId ? "Обнови" : "Добави"}
                   </Button>
                 </div>
@@ -272,8 +242,8 @@ export function PropertyUnavailabilityDialog({
               ) : (
                 <div className="space-y-2">
                   {sortedUnavailabilities.map((u) => {
-                    const isPast =
-                      new Date(u.end_datetime).getTime() < Date.now();
+                    const today = todayISO();
+                    const isPast = u.end_date < today;
                     return (
                       <div
                         key={u.id}
@@ -290,15 +260,13 @@ export function PropertyUnavailabilityDialog({
                               {isPast ? "Изминал" : "Предстои"}
                             </Badge>
                             {u.reason && (
-                              <span className="text-sm font-medium">
-                                {u.reason}
-                              </span>
+                              <span className="text-sm font-medium">{u.reason}</span>
                             )}
                           </div>
                           <p className="text-sm text-muted-foreground mt-1">
-                            {formatDateTime(u.start_datetime)}
+                            {formatDate(u.start_date)}
                             <span className="mx-2">→</span>
-                            {formatDateTime(u.end_datetime)}
+                            {formatDate(u.end_date)}
                           </p>
                         </div>
 
@@ -334,11 +302,7 @@ export function PropertyUnavailabilityDialog({
         </ScrollArea>
 
         <DialogFooter>
-          <Button
-            variant="outline"
-            onClick={onClose}
-            className="cursor-pointer"
-          >
+          <Button variant="outline" onClick={onClose} className="cursor-pointer">
             Затвори
           </Button>
         </DialogFooter>
