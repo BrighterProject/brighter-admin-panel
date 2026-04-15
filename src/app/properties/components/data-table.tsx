@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import {
   type ColumnDef,
   type ColumnFiltersState,
@@ -28,6 +29,7 @@ import {
   Settings2,
   Image as ImageIcon,
   CalendarX,
+  Plus,
 } from "lucide-react";
 
 import { Badge } from "@/components/ui/badge";
@@ -63,9 +65,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { PropertyFormDialog } from "./property-form-dialog";
 import { PropertyDetailsDialog } from "./property-details-dialog";
-import { PropertyEditDialog } from "./property-edit-dialog";
 import { PropertyStatusDialog } from "./property-status-dialog";
 import { PropertyImagesDialog } from "./property-images-dialog";
 import { PropertyUnavailabilityDialog } from "./property-unavailability-dialog";
@@ -77,6 +77,7 @@ interface DataTableProps {
   loading: boolean;
   onDeleteProperty: (id: string) => void;
   onEditProperty?: (property: PropertyListItem) => void;
+  onAddProperty?: () => void;
   isAdmin: boolean;
 }
 
@@ -132,6 +133,7 @@ export function DataTable({
   loading,
   onDeleteProperty,
   onEditProperty,
+  onAddProperty,
   isAdmin,
 }: DataTableProps) {
   const [sorting, setSorting] = useState<SortingState>([]);
@@ -139,9 +141,9 @@ export function DataTable({
   const [columnVisibility, setColumnVisibility] = useState<VisibilityState>({});
   const [rowSelection, setRowSelection] = useState({});
   const [globalFilter, setGlobalFilter] = useState("");
+  const navigate = useNavigate();
   const [statusProperty, setStatusProperty] = useState<PropertyListItem | null>(null);
   const [detailsProperty, setDetailsProperty] = useState<PropertyListItem | null>(null);
-  const [editProperty, setEditProperty] = useState<PropertyListItem | null>(null);
   const [imagesProperty, setImagesProperty] = useState<PropertyListItem | null>(null);
   const [unavailabilityProperty, setUnavailabilityProperty] =
     useState<PropertyListItem | null>(null);
@@ -181,9 +183,7 @@ export function DataTable({
       header: "Обект",
       cell: ({ row }) => {
         const property = row.original;
-        const name =
-          property.translations.find((t) => t.locale === "bg")?.name ??
-          property.id;
+        const name = property.name || property.id;
         return (
           <div className="flex items-center gap-3">
             <div className="h-10 w-10 rounded-lg bg-muted flex items-center justify-center flex-shrink-0 overflow-hidden">
@@ -462,9 +462,11 @@ export function DataTable({
       <PropertyDetailsDialog
         property={detailsProperty}
         onClose={() => setDetailsProperty(null)}
-        onEditClick={setEditProperty}
+        onEditClick={(property) => {
+          setDetailsProperty(null);
+          navigate(`/properties/${property.id}/edit`);
+        }}
       />
-      <PropertyEditDialog property={editProperty} onClose={() => setEditProperty(null)} />
       <PropertyImagesDialog
         property={imagesProperty}
         onClose={() => setImagesProperty(null)}
@@ -492,7 +494,12 @@ export function DataTable({
             <Download className="mr-2 size-4" />
             Експорт
           </Button>
-          <PropertyFormDialog />
+          {onAddProperty && (
+            <Button className="cursor-pointer" onClick={onAddProperty}>
+              <Plus className="mr-2 size-4" />
+              Добави обект
+            </Button>
+          )}
         </div>
       </div>
 
