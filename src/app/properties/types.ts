@@ -81,20 +81,20 @@ export interface PropertyImageUpdate {
 export interface PropertyUnavailability {
   id: string;
   property_id: string;
-  start_datetime: string;
-  end_datetime: string;
+  start_date: string;
+  end_date: string;
   reason: string | null;
 }
 
 export interface PropertyUnavailabilityCreate {
-  start_datetime: string;
-  end_datetime: string;
+  start_date: string;
+  end_date: string;
   reason?: string | null;
 }
 
 export interface PropertyUnavailabilityUpdate {
-  start_datetime?: string | null;
-  end_datetime?: string | null;
+  start_date?: string | null;
+  end_date?: string | null;
   reason?: string | null;
 }
 
@@ -133,14 +133,16 @@ export interface PropertyListItem {
   property_type: PropertyType;
   status: PropertyStatus;
   city: string;
+  name: string;
+  description: string;
   price_per_night: string;
   currency: string;
   max_guests: number;
   bedrooms: number;
+  rooms: RoomEntry[];
   rating: string;
   total_reviews: number;
   thumbnail: string | null;
-  translations: Pick<PropertyTranslation, 'locale' | 'name'>[];
 }
 
 export interface PropertyFormValues {

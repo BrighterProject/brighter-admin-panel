@@ -4,6 +4,7 @@ const translationLocaleSchema = z.object({
   name: z.string(),
   description: z.string(),
   address: z.string(),
+  house_rules: z.string().optional(),
 });
 
 const bedEntrySchema = z.object({
@@ -58,6 +59,7 @@ export const propertyFormSchema = z.object({
       name: z.string().min(2, 'Name must be at least 2 characters'),
       description: z.string().min(10, 'Description must be at least 10 characters'),
       address: z.string().min(1, 'Address is required'),
+      house_rules: z.string().optional(),
     }),
     en: translationLocaleSchema,
     ru: translationLocaleSchema,
@@ -87,8 +89,8 @@ export const PROPERTY_FORM_DEFAULTS: PropertyFormSchema = {
   amenities: [],
   images: [],
   translations: {
-    bg: { name: '', description: '', address: '' },
-    en: { name: '', description: '', address: '' },
-    ru: { name: '', description: '', address: '' },
+    bg: { name: '', description: '', address: '', house_rules: '' },
+    en: { name: '', description: '', address: '', house_rules: '' },
+    ru: { name: '', description: '', address: '', house_rules: '' },
   },
 };
