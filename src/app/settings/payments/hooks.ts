@@ -14,6 +14,7 @@ export function useStripeStatus() {
       stripeAccountId: data.stripe_account_id,
       chargesEnabled: data.charges_enabled,
       requirementsOutstanding: data.requirements_outstanding,
+      requirementsEventuallyDue: data.requirements_eventually_due,
     }),
     staleTime: 60_000,
   });

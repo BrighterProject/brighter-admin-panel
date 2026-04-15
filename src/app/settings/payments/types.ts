@@ -6,6 +6,7 @@ export type ApiStripeStatus = {
   charges_enabled: boolean;
   stripe_account_id?: string;
   requirements_outstanding: boolean;
+  requirements_eventually_due: boolean;
 };
 
 export type StripeStatus = Camelized<ApiStripeStatus>;
