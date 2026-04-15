@@ -2,9 +2,7 @@
 
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { Plus } from "lucide-react";
 import { BaseLayout } from "@/components/layouts/base-layout";
-import { Button } from "@/components/ui/button";
 import { StatCards } from "./components/stat-cards";
 import { DataTable } from "./components/data-table";
 import { PropertyImagesDialog } from "./components/property-images-dialog";
@@ -33,12 +31,6 @@ export default function PropertiesPage() {
     >
       <div className="flex flex-col gap-4">
         <div className="@container/main px-4 lg:px-6">
-          <div className="flex justify-end mb-4">
-            <Button onClick={() => navigate("/properties/new")}>
-              <Plus className="mr-2 size-4" />
-              Добави обект
-            </Button>
-          </div>
           <StatCards properties={properties} loading={isLoading} />
         </div>
         <div className="@container/main px-4 lg:px-6 mt-8 lg:mt-12">
@@ -49,6 +41,7 @@ export default function PropertiesPage() {
             onEditProperty={(property) =>
               navigate(`/properties/${property.id}/edit`)
             }
+            onAddProperty={() => navigate("/properties/new")}
             isAdmin={!ownerOnly}
           />
         </div>
