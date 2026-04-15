@@ -84,6 +84,20 @@ export function BasicInfoSection({ form }: BasicInfoSectionProps) {
           </FormItem>
         )}
       />
+
+      <FormField
+        control={form.control}
+        name="translations.bg.house_rules"
+        render={({ field }) => (
+          <FormItem>
+            <FormLabel>House Rules (Bulgarian)</FormLabel>
+            <FormControl>
+              <Textarea rows={3} placeholder="Правила на имота (по избор)…" {...field} />
+            </FormControl>
+            <FormMessage />
+          </FormItem>
+        )}
+      />
     </section>
   );
 }

@@ -68,6 +68,19 @@ function LocaleFields({
           </FormItem>
         )}
       />
+      <FormField
+        control={form.control}
+        name={`translations.${locale}.house_rules`}
+        render={({ field }) => (
+          <FormItem>
+            <FormLabel>House Rules</FormLabel>
+            <FormControl>
+              <Textarea rows={3} placeholder={`House rules in ${label}…`} {...field} />
+            </FormControl>
+            <FormMessage />
+          </FormItem>
+        )}
+      />
     </div>
   );
 }
@@ -76,6 +89,7 @@ export function TranslationsSection({ form }: TranslationsSectionProps) {
   const bgName = form.watch('translations.bg.name');
   const bgDescription = form.watch('translations.bg.description');
   const bgAddress = form.watch('translations.bg.address');
+  const bgHouseRules = form.watch('translations.bg.house_rules');
 
   return (
     <section id="section-translations" className="space-y-4 scroll-mt-20">
@@ -94,6 +108,7 @@ export function TranslationsSection({ form }: TranslationsSectionProps) {
         <p><span className="text-muted-foreground">Name:</span> {bgName || <em className="text-muted-foreground">not filled</em>}</p>
         <p><span className="text-muted-foreground">Description:</span> {bgDescription ? `${bgDescription.slice(0, 80)}…` : <em className="text-muted-foreground">not filled</em>}</p>
         <p><span className="text-muted-foreground">Address:</span> {bgAddress || <em className="text-muted-foreground">not filled</em>}</p>
+        <p><span className="text-muted-foreground">House Rules:</span> {bgHouseRules ? `${bgHouseRules.slice(0, 80)}…` : <em className="text-muted-foreground">not filled</em>}</p>
       </div>
 
       <Separator />
