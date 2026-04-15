@@ -1,27 +1,20 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { api } from "@/lib/api";
-
-export interface StripeStatus {
-  connected: boolean;
-  verified: boolean;
-  stripeAccountId: string | null;
-}
+import type { ApiStripeStatus, StripeStatus } from "./types";
 
 const STRIPE_STATUS_KEY = ["stripe", "status"];
 
 export function useStripeStatus() {
-  return useQuery<StripeStatus>({
+  return useQuery<ApiStripeStatus, Error, StripeStatus>({
     queryKey: STRIPE_STATUS_KEY,
-    queryFn: () =>
-      api
-        .get<{ connected: boolean; verified: boolean; stripe_account_id: string | null }>(
-          "/payments/connect/status",
-        )
-        .then((r) => ({
-          connected: r.data.connected,
-          verified: r.data.verified,
-          stripeAccountId: r.data.stripe_account_id,
-        })),
+    queryFn: () => api.get("/payments/connect/status").then((r) => r.data),
+    select: (data) => ({
+      connected: data.connected,
+      verified: data.verified,
+      stripeAccountId: data.stripe_account_id,
+      chargesEnabled: data.charges_enabled,
+      requirementsOutstanding: data.requirements_outstanding,
+    }),
     staleTime: 60_000,
   });
 }

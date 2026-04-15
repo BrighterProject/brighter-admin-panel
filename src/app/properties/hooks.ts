@@ -39,8 +39,22 @@ export function useAddProperty() {
   const qc = useQueryClient();
   return useMutation({
     mutationFn: (data: PropertyFormSchema) => {
+      const translations = Object.entries(data.translations)
+        .filter(([locale, t]) => {
+          if (locale === 'bg') return true;
+          return t.name.trim() !== '' || t.description.trim() !== '' || t.address.trim() !== '';
+        })
+        .map(([locale, t]) => ({
+          locale,
+          name: t.name,
+          description: t.description,
+          address: t.address,
+          house_rules: t.house_rules?.trim() || null,
+        }));
+
       const payload = {
         ...data,
+        translations,
         lat: data.lat === '' || data.lat === undefined ? null : parseFloat(data.lat as string),
         lng: data.lng === '' || data.lng === undefined ? null : parseFloat(data.lng as string),
       };
@@ -56,10 +70,27 @@ export function useUpdateProperty() {
   const qc = useQueryClient();
   return useMutation({
     mutationFn: ({ id, data }: { id: string; data: PropertyUpdate }) => {
+      // Transform dict-keyed translations: filter out empty non-bg locales,
+      // keep only locales that have at least one non-empty field.
+      const translations = data.translations
+        ? Object.fromEntries(
+            Object.entries(data.translations).filter(([locale, t]) => {
+              if (locale === 'bg') return true;
+              const tr = t as Record<string, string | undefined>;
+              return (
+                (tr.name?.trim() ?? '') !== '' ||
+                (tr.description?.trim() ?? '') !== '' ||
+                (tr.address?.trim() ?? '') !== ''
+              );
+            }),
+          )
+        : undefined;
+
       const payload = {
         ...data,
-        ...(data.lat !== undefined && { lat: data.lat === '' ? null : parseFloat(data.lat as string) }),
-        ...(data.lng !== undefined && { lng: data.lng === '' ? null : parseFloat(data.lng as string) }),
+        ...(translations !== undefined && { translations }),
+        ...(data.lat !== undefined && { lat: (data.lat as string) === '' ? null : parseFloat(data.lat as string) }),
+        ...(data.lng !== undefined && { lng: (data.lng as string) === '' ? null : parseFloat(data.lng as string) }),
       };
       return api.patch<Property>(`/properties/${id}`, payload).then((r) => r.data);
     },
