@@ -13,7 +13,8 @@ import {
 import { Separator } from "@/components/ui/separator";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Skeleton } from "@/components/ui/skeleton";
-import type { PropertyListItem } from "../types";
+import type { PropertyListItem, AmenityType, CancellationPolicy } from "../types";
+import { AMENITY_LABELS } from "../types";
 import { useProperty } from "../hooks";
 import {
   MapPin,
@@ -21,9 +22,6 @@ import {
   Star,
   Building2,
   Car,
-  ShowerHead,
-  Shirt,
-  Wrench,
   Clock,
   Image as ImageIcon,
   CalendarX,
@@ -56,25 +54,39 @@ const STATUS_LABELS: Record<string, string> = {
   pending_approval: "Чака одобрение",
 };
 
-const SPORT_LABELS: Record<string, string> = {
-  football: "Футбол",
-  basketball: "Баскетбол",
-  tennis: "Тенис",
-  volleyball: "Волейбол",
-  swimming: "Плуване",
-  gym: "Фитнес",
-  padel: "Падел",
+const PROPERTY_TYPE_LABELS: Record<string, string> = {
+  apartment: "Апартамент",
+  house: "Къща",
+  villa: "Вила",
+  hotel: "Хотел",
+  hostel: "Хостел",
+  guesthouse: "Гостилница",
+  room: "Стая",
   other: "Друго",
 };
 
-const DAY_LABELS: Record<string, string> = {
-  monday: "Пон",
-  tuesday: "Втор",
-  wednesday: "Сряда",
-  thursday: "Четв",
-  friday: "Петък",
-  saturday: "Съб",
-  sunday: "Нед",
+const CANCELLATION_LABELS: Record<CancellationPolicy, string> = {
+  free: "Безплатна",
+  moderate: "Умерена",
+  strict: "Строга",
+};
+
+const ROOM_TYPE_LABELS: Record<string, string> = {
+  bedroom: "Спалня",
+  living_room: "Хол",
+  kitchen: "Кухня",
+  bathroom: "Баня",
+  studio: "Студио",
+};
+
+const BED_TYPE_LABELS: Record<string, string> = {
+  single: "Единично",
+  double: "Двойно",
+  queen: "Queen",
+  king: "King",
+  sofa_bed: "Разтегателен диван",
+  bunk: "Двуетажно",
+  crib: "Бебешко",
 };
 
 function DetailRow({
@@ -92,29 +104,6 @@ function DetailRow({
   );
 }
 
-function AmenityBadge({
-  icon,
-  label,
-  enabled,
-}: {
-  icon: React.ReactNode;
-  label: string;
-  enabled: boolean;
-}) {
-  return (
-    <div
-      className={`flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-medium border ${
-        enabled
-          ? "border-primary/30 bg-primary/5 text-primary"
-          : "border-muted bg-muted/30 text-muted-foreground line-through"
-      }`}
-    >
-      {icon}
-      {label}
-    </div>
-  );
-}
-
 export function PropertyDetailsDialog({
   property,
   onClose,
@@ -126,7 +115,8 @@ export function PropertyDetailsDialog({
 
   if (!property) return null;
 
-  const v = fullProperty ?? property;
+  const bgTranslation = fullProperty?.translations?.find((t) => t.locale === "bg");
+  const address = bgTranslation?.address ?? "";
 
   return (
     <Dialog open={!!property} onOpenChange={(open) => !open && onClose()}>
@@ -134,7 +124,7 @@ export function PropertyDetailsDialog({
         <DialogHeader>
           <DialogTitle>Детайли за обекта</DialogTitle>
           <DialogDescription>
-            Пълна информация за избрания спортен обект.
+            Пълна информация за избрания обект.
           </DialogDescription>
         </DialogHeader>
 
@@ -155,19 +145,19 @@ export function PropertyDetailsDialog({
             </div>
           ) : (
             <div className="space-y-6 pr-4">
-              {/* Header with images */}
+              {/* Header */}
               <div className="flex items-start gap-4">
                 <div className="h-20 w-20 rounded-lg bg-muted flex items-center justify-center flex-shrink-0 overflow-hidden">
                   {fullProperty?.images?.[0]?.url ? (
                     <img
                       src={fullProperty.images[0].url}
-                      alt={v.name}
+                      alt={property.name}
                       className="h-full w-full object-cover"
                     />
-                  ) : (property as any).thumbnail ? (
+                  ) : property.thumbnail ? (
                     <img
-                      src={(property as any).thumbnail}
-                      alt={v.name}
+                      src={property.thumbnail}
+                      alt={property.name}
                       className="h-full w-full object-cover"
                     />
                   ) : (
@@ -175,20 +165,25 @@ export function PropertyDetailsDialog({
                   )}
                 </div>
                 <div className="flex-1 min-w-0">
-                  <h3 className="font-semibold text-lg truncate">{v.name}</h3>
+                  <h3 className="font-semibold text-lg truncate">{property.name}</h3>
                   <div className="flex items-center gap-1.5 text-sm text-muted-foreground mt-1">
                     <MapPin className="size-3.5" />
                     <span>
-                      {fullProperty?.address ? `${fullProperty.address}, ` : ""}
-                      {v.city}
+                      {address ? `${address}, ` : ""}
+                      {property.city}
                     </span>
                   </div>
-                  <Badge
-                    variant="secondary"
-                    className={`mt-2 ${statusColors[v.status]}`}
-                  >
-                    {STATUS_LABELS[v.status] || v.status}
-                  </Badge>
+                  <div className="flex items-center gap-2 mt-2 flex-wrap">
+                    <Badge
+                      variant="secondary"
+                      className={statusColors[property.status]}
+                    >
+                      {STATUS_LABELS[property.status] || property.status}
+                    </Badge>
+                    <Badge variant="outline" className="text-xs">
+                      {PROPERTY_TYPE_LABELS[property.property_type] || property.property_type}
+                    </Badge>
+                  </div>
                 </div>
               </div>
 
@@ -251,13 +246,13 @@ export function PropertyDetailsDialog({
               </div>
 
               {/* Description */}
-              {fullProperty?.description && (
+              {property.description && (
                 <>
                   <Separator />
                   <div className="space-y-1">
                     <p className="text-sm font-medium">Описание</p>
                     <p className="text-sm text-muted-foreground leading-relaxed">
-                      {fullProperty.description}
+                      {property.description}
                     </p>
                   </div>
                 </>
@@ -270,121 +265,147 @@ export function PropertyDetailsDialog({
                 <div className="text-center p-3 rounded-lg bg-muted/50">
                   <div className="flex items-center justify-center gap-1 text-amber-500 mb-1">
                     <Star className="size-4 fill-current" />
-                    <span className="font-semibold">{v.rating}</span>
+                    <span className="font-semibold">{property.rating}</span>
                   </div>
                   <p className="text-xs text-muted-foreground">
-                    {v.total_reviews} отзива
+                    {property.total_reviews} отзива
                   </p>
                 </div>
                 <div className="text-center p-3 rounded-lg bg-muted/50">
                   <div className="flex items-center justify-center gap-1 text-primary mb-1">
                     <span className="font-semibold">
-                      {v.price_per_hour} {v.currency}
+                      {property.price_per_night} {property.currency}
                     </span>
                   </div>
-                  <p className="text-xs text-muted-foreground">на час</p>
+                  <p className="text-xs text-muted-foreground">на нощ</p>
                 </div>
                 <div className="text-center p-3 rounded-lg bg-muted/50">
                   <div className="flex items-center justify-center gap-1 text-primary mb-1">
                     <Users className="size-4" />
-                    <span className="font-semibold">{v.capacity}</span>
+                    <span className="font-semibold">{property.max_guests}</span>
                   </div>
-                  <p className="text-xs text-muted-foreground">Капацитет</p>
+                  <p className="text-xs text-muted-foreground">макс. гости</p>
                 </div>
               </div>
 
-              <Separator />
-
-              {/* Sport Types */}
-              <div className="space-y-2">
-                <p className="text-sm font-medium">Видове спорт</p>
-                <div className="flex flex-wrap gap-1">
-                  {v.sport_types.length > 0 ? (
-                    v.sport_types.map((sport) => (
-                      <Badge key={sport} variant="outline">
-                        {SPORT_LABELS[sport] || sport}
-                      </Badge>
-                    ))
-                  ) : (
-                    <span className="text-sm text-muted-foreground">
-                      Не са посочени спортове
-                    </span>
-                  )}
+              {/* Bedrooms / Bathrooms / Beds */}
+              <div className="grid grid-cols-3 gap-3">
+                <div className="text-center p-3 rounded-lg border">
+                  <p className="font-semibold">{property.bedrooms}</p>
+                  <p className="text-xs text-muted-foreground">Спални</p>
                 </div>
+                {fullProperty && (
+                  <>
+                    <div className="text-center p-3 rounded-lg border">
+                      <p className="font-semibold">{fullProperty.bathrooms}</p>
+                      <p className="text-xs text-muted-foreground">Бани</p>
+                    </div>
+                    <div className="text-center p-3 rounded-lg border">
+                      <p className="font-semibold">{fullProperty.beds}</p>
+                      <p className="text-xs text-muted-foreground">Легла</p>
+                    </div>
+                  </>
+                )}
               </div>
 
-              <Separator />
-
-              {/* Property Type & Amenities */}
-              <div className="space-y-3">
-                <p className="text-sm font-medium">Удобства и съоръжения</p>
-                <div className="flex flex-wrap gap-2">
-                  <AmenityBadge
-                    icon={<Building2 className="size-3.5" />}
-                    label={v.is_indoor ? "Закрито" : "Открито"}
-                    enabled={true}
-                  />
-                  {fullProperty && (
-                    <>
-                      <AmenityBadge
-                        icon={<Car className="size-3.5" />}
-                        label="Паркинг"
-                        enabled={fullProperty.has_parking}
-                      />
-                      <AmenityBadge
-                        icon={<Shirt className="size-3.5" />}
-                        label="Съблекални"
-                        enabled={fullProperty.has_changing_rooms}
-                      />
-                      <AmenityBadge
-                        icon={<ShowerHead className="size-3.5" />}
-                        label="Душове"
-                        enabled={fullProperty.has_showers}
-                      />
-                      <AmenityBadge
-                        icon={<Wrench className="size-3.5" />}
-                        label="Екипировка под наем"
-                        enabled={fullProperty.has_equipment_rental}
-                      />
-                    </>
-                  )}
-                </div>
-              </div>
-
-              {/* Working Hours */}
-              {fullProperty?.working_hours && (
+              {/* Amenities */}
+              {fullProperty && fullProperty.amenities.length > 0 && (
                 <>
                   <Separator />
                   <div className="space-y-2">
-                    <p className="text-sm font-medium flex items-center gap-1.5">
-                      <Clock className="size-4" /> Работно време
-                    </p>
-                    <div className="grid grid-cols-2 gap-x-6 gap-y-1">
-                      {Object.entries(fullProperty.working_hours).map(
-                        ([day, hours]) => (
-                          <div
-                            key={day}
-                            className="flex justify-between items-center text-sm py-0.5"
-                          >
-                            <span className="text-muted-foreground w-12 shrink-0">
-                              {DAY_LABELS[day] ?? day}
-                            </span>
-                            {hours ? (
-                              <span className="font-mono text-xs">
-                                {(hours as any).open} – {(hours as any).close}
-                              </span>
-                            ) : (
-                              <span className="text-xs text-muted-foreground">
-                                Затворено
-                              </span>
-                            )}
-                          </div>
-                        ),
-                      )}
+                    <p className="text-sm font-medium">Удобства</p>
+                    <div className="flex flex-wrap gap-2">
+                      {fullProperty.amenities.map((amenity) => (
+                        <Badge key={amenity} variant="secondary" className="text-xs">
+                          {AMENITY_LABELS[amenity as AmenityType] ?? amenity}
+                        </Badge>
+                      ))}
                     </div>
                   </div>
                 </>
               )}
+
+              {/* Booking Conditions */}
+              {fullProperty && (
+                <>
+                  <Separator />
+                  <div className="space-y-1">
+                    <p className="text-sm font-medium">Условия за наем</p>
+                    <DetailRow
+                      label="Настаняване / Напускане"
+                      value={
+                        <span className="flex items-center gap-1">
+                          <Clock className="size-3.5 text-muted-foreground" />
+                          {fullProperty.check_in_time} / {fullProperty.check_out_time}
+                        </span>
+                      }
+                    />
+                    <DetailRow
+                      label="Мин. нощувки"
+                      value={`${fullProperty.min_nights} нощ${fullProperty.min_nights !== 1 ? "и" : ""}`}
+                    />
+                    {fullProperty.max_nights && (
+                      <DetailRow
+                        label="Макс. нощувки"
+                        value={`${fullProperty.max_nights} нощи`}
+                      />
+                    )}
+                    <DetailRow
+                      label="Анулация"
+                      value={
+                        CANCELLATION_LABELS[fullProperty.cancellation_policy] ||
+                        fullProperty.cancellation_policy
+                      }
+                    />
+                    <DetailRow
+                      label="Паркинг"
+                      value={
+                        <span className="flex items-center gap-1">
+                          <Car className="size-3.5 text-muted-foreground" />
+                          {fullProperty.has_parking ? "Да" : "Не"}
+                        </span>
+                      }
+                    />
+                  </div>
+                </>
+              )}
+
+              {/* Rooms */}
+              {fullProperty && fullProperty.rooms.length > 0 && (
+                <>
+                  <Separator />
+                  <div className="space-y-2">
+                    <p className="text-sm font-medium">Стаи</p>
+                    <div className="space-y-1">
+                      {fullProperty.rooms.map((room, i) => (
+                        <div
+                          key={i}
+                          className="px-3 py-2 rounded-md bg-muted/30 border text-sm"
+                        >
+                          <span className="font-medium">
+                            {room.count}×{" "}
+                            {ROOM_TYPE_LABELS[room.room_type] ?? room.room_type}
+                          </span>
+                          {room.beds.length > 0 && (
+                            <span className="text-muted-foreground ml-2">
+                              (
+                              {room.beds
+                                .map(
+                                  (b) =>
+                                    `${b.count}× ${BED_TYPE_LABELS[b.bed_type] ?? b.bed_type}`,
+                                )
+                                .join(", ")}
+                              )
+                            </span>
+                          )}
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                </>
+              )}
+
+              <Separator />
 
               {/* Unavailabilities */}
               <div>
@@ -409,8 +430,8 @@ export function PropertyDetailsDialog({
                 fullProperty.unavailabilities.length > 0 ? (
                   <div className="space-y-1">
                     {fullProperty.unavailabilities.slice(0, 5).map((u, i) => {
-                      const isPast =
-                        new Date(u.end_datetime).getTime() < Date.now();
+                      const today = new Date().toISOString().slice(0, 10);
+                      const isPast = u.end_date < today;
                       return (
                         <div
                           key={u.id ?? i}
@@ -422,13 +443,9 @@ export function PropertyDetailsDialog({
                             {u.reason ?? "Недостъпен"}
                           </span>
                           <span className="font-mono text-xs">
-                            {new Date(u.start_datetime).toLocaleDateString(
-                              "bg-BG",
-                            )}{" "}
+                            {new Date(u.start_date).toLocaleDateString("bg-BG")}{" "}
                             →{" "}
-                            {new Date(u.end_datetime).toLocaleDateString(
-                              "bg-BG",
-                            )}
+                            {new Date(u.end_date).toLocaleDateString("bg-BG")}
                           </span>
                         </div>
                       );
@@ -444,28 +461,13 @@ export function PropertyDetailsDialog({
 
               <Separator />
 
-              {/* Meta Details */}
+              {/* System Info */}
               <div className="space-y-1">
                 <p className="text-sm font-medium">Системна информация</p>
                 <DetailRow
                   label="Property ID"
-                  value={<span className="font-mono text-xs">{v.id}</span>}
+                  value={<span className="font-mono text-xs">{property.id}</span>}
                 />
-                {fullProperty?.updated_at && (
-                  <DetailRow
-                    label="Последна промяна"
-                    value={new Date(fullProperty.updated_at).toLocaleDateString(
-                      "bg-BG",
-                      {
-                        year: "numeric",
-                        month: "short",
-                        day: "numeric",
-                        hour: "2-digit",
-                        minute: "2-digit",
-                      },
-                    )}
-                  />
-                )}
               </div>
             </div>
           )}
