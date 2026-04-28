@@ -1,26 +1,27 @@
-"use client"
+"use client";
 
-import * as React from "react"
-import { AppSidebar } from "@/components/app-sidebar"
-import { SiteHeader } from "@/components/site-header"
-import { SiteFooter } from "@/components/site-footer"
-import {
-  SidebarInset,
-  SidebarProvider,
-} from "@/components/ui/sidebar"
-import { useMe } from "@/app/auth/api/hooks"
-import { isPropertyOwner } from "@/lib/scopes"
-import { OwnerStatusBanner } from "@/app/dashboard/components/owner-status-banner"
+import * as React from "react";
+import { AppSidebar } from "@/components/app-sidebar";
+import { SiteHeader } from "@/components/site-header";
+import { SiteFooter } from "@/components/site-footer";
+import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
+import { useMe } from "@/app/auth/api/hooks";
+import { isPropertyOwner } from "@/lib/scopes";
+import { OwnerStatusBanner } from "@/app/dashboard/components/owner-status-banner";
+import { useStripeStatus } from "@/app/settings/payments/hooks";
 
 interface BaseLayoutProps {
-  children: React.ReactNode
-  title?: string
-  description?: string
+  children: React.ReactNode;
+  title?: string;
+  description?: string;
 }
 
 export function BaseLayout({ children, title, description }: BaseLayoutProps) {
   const { data: me } = useMe();
-  const showBanner = me ? isPropertyOwner(me.scopes) || me.scopes.length === 0 : false;
+  const { data: stripeStatus } = useStripeStatus(Infinity);
+  const showBanner = me
+    ? isPropertyOwner(me.scopes) || me.scopes.length === 0
+    : false;
 
   return (
     <SidebarProvider
@@ -40,13 +41,25 @@ export function BaseLayout({ children, title, description }: BaseLayoutProps) {
             <div className="flex flex-col gap-4 py-4 md:gap-6 md:py-6">
               {showBanner && me && (
                 <div className="px-4 lg:px-6">
-                  <OwnerStatusBanner scopes={me.scopes} stripeConnected={false} />
+                  <OwnerStatusBanner
+                    scopes={me.scopes}
+                    stripeConnected={stripeStatus?.connected ?? false}
+                    stripeVerified={stripeStatus?.verified}
+                    stripeRequirementsOutstanding={
+                      stripeStatus?.requirementsOutstanding
+                    }
+                    stripeRequirementsEventuallyDue={
+                      stripeStatus?.requirementsEventuallyDue
+                    }
+                  />
                 </div>
               )}
               {title && (
                 <div className="px-4 lg:px-6">
                   <div className="flex flex-col gap-2">
-                    <h1 className="text-2xl font-bold tracking-tight">{title}</h1>
+                    <h1 className="text-2xl font-bold tracking-tight">
+                      {title}
+                    </h1>
                     {description && (
                       <p className="text-muted-foreground">{description}</p>
                     )}
@@ -60,5 +73,5 @@ export function BaseLayout({ children, title, description }: BaseLayoutProps) {
         <SiteFooter />
       </SidebarInset>
     </SidebarProvider>
-  )
+  );
 }

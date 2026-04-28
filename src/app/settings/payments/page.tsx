@@ -1,10 +1,22 @@
 "use client";
 
 import { useState } from "react";
-import { ExternalLink, CreditCard, AlertTriangle, CheckCircle2, Clock } from "lucide-react";
+import {
+  ExternalLink,
+  CreditCard,
+  AlertTriangle,
+  CheckCircle2,
+  Clock,
+} from "lucide-react";
 import { BaseLayout } from "@/components/layouts/base-layout";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -16,7 +28,12 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { useStripeStatus, useStripeConnect, useStripeDisconnect } from "./hooks";
+import {
+  useStripeStatus,
+  useStripeConnect,
+  useStripeDisconnect,
+  useStripeUpdate,
+} from "./hooks";
 
 function HowItWorks() {
   const steps = [
@@ -59,17 +76,26 @@ function HowItWorks() {
 export default function PaymentsSettings() {
   const { data: status, isLoading } = useStripeStatus();
   const { mutate: connect, isPending: connecting } = useStripeConnect();
-  const { mutate: disconnect, isPending: disconnecting } = useStripeDisconnect();
+  const { mutate: disconnect, isPending: disconnecting } =
+    useStripeDisconnect();
+  const { mutate: update, isPending: updating } = useStripeUpdate();
   const [confirmingDisconnect, setConfirmingDisconnect] = useState(false);
 
   return (
-    <BaseLayout title="Плащания" description="Управление на Stripe Connect и изплащания">
+    <BaseLayout
+      title="Плащания"
+      description="Управление на Stripe Connect и изплащания"
+    >
       <div className="space-y-6 px-4 lg:px-6 max-w-2xl">
         {isLoading ? (
           <Card>
             <CardContent className="space-y-4 py-6">
               {[0, 1, 2].map((i) => (
-                <Skeleton key={i} data-testid="skeleton" className="h-4 w-full" />
+                <Skeleton
+                  key={i}
+                  data-testid="skeleton"
+                  className="h-4 w-full"
+                />
               ))}
             </CardContent>
           </Card>
@@ -82,7 +108,8 @@ export default function PaymentsSettings() {
                 Приемай плащания
               </CardTitle>
               <CardDescription>
-                Свържи Stripe акаунт, за да получаваш директни изплащания от резервации.
+                Свържи Stripe акаунт, за да получаваш директни изплащания от
+                резервации.
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-6">
@@ -99,6 +126,47 @@ export default function PaymentsSettings() {
               <HowItWorks />
             </CardContent>
           </Card>
+        ) : status.requirementsOutstanding ? (
+          /* ── Action required — payouts blocked ──────────────── */
+          <Card>
+            <CardHeader>
+              <div className="flex items-center justify-between">
+                <CardTitle className="flex items-center gap-2">
+                  <AlertTriangle className="size-5 text-red-500" />
+                  Необходими са действия
+                </CardTitle>
+                <Badge
+                  variant="outline"
+                  className="text-red-600 border-red-300 bg-red-50 dark:bg-red-950/20 dark:border-red-800"
+                >
+                  Спрено
+                </Badge>
+              </div>
+              <CardDescription>
+                Изплащанията са спрени. Попълни липсващата информация в Stripe,
+                за да ги възстановиш.
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="rounded-lg bg-red-50 border border-red-200 dark:bg-red-950/20 dark:border-red-800 px-4 py-3 text-sm text-red-800 dark:text-red-300">
+                <AlertTriangle className="inline size-4 mr-1.5 shrink-0" />
+                Stripe е открил изискванияс краен срок. Изплащанията ще останат
+                спрени до тяхното изпълнение.
+              </div>
+              <div className="space-y-1 text-sm">
+                <p className="text-muted-foreground">Stripe ID на акаунта</p>
+                <p className="font-mono">{status.stripeAccountId}</p>
+              </div>
+              <Button
+                onClick={() => connect()}
+                disabled={connecting}
+                className="cursor-pointer"
+              >
+                <ExternalLink className="size-4 mr-2" />
+                {updating ? "Пренасочване…" : "Попълни в Stripe"}
+              </Button>
+            </CardContent>
+          </Card>
         ) : !status.verified ? (
           /* ── Connected, pending verification ───────────────── */
           <Card>
@@ -108,12 +176,16 @@ export default function PaymentsSettings() {
                   <Clock className="size-5 text-amber-500" />
                   Верификацията е в процес
                 </CardTitle>
-                <Badge variant="outline" className="text-amber-600 border-amber-300 bg-amber-50 dark:bg-amber-950/20 dark:border-amber-800">
+                <Badge
+                  variant="outline"
+                  className="text-amber-600 border-amber-300 bg-amber-50 dark:bg-amber-950/20 dark:border-amber-800"
+                >
                   Изчакване
                 </Badge>
               </div>
               <CardDescription>
-                Stripe акаунтът ти е свързан, но изплащанията са на изчакване до завършване на верификацията.
+                Stripe акаунтът ти е свързан, но изплащанията са на изчакване до
+                завършване на верификацията.
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
@@ -125,15 +197,12 @@ export default function PaymentsSettings() {
                 <p className="text-muted-foreground">Stripe ID на акаунта</p>
                 <p className="font-mono">{status.stripeAccountId}</p>
               </div>
-              <Button variant="outline" asChild className="cursor-pointer">
-                <a
-                  href="https://dashboard.stripe.com/account/onboarding"
-                  target="_blank"
-                  rel="noreferrer"
-                >
-                  <ExternalLink className="size-4 mr-2" />
-                  Завърши верификацията в Stripe
-                </a>
+              <Button
+                variant="outline"
+                onClick={() => connect()}
+                disabled={updating}
+              >
+                Завърши верификацията в Stripe
               </Button>
             </CardContent>
           </Card>
@@ -146,12 +215,16 @@ export default function PaymentsSettings() {
                   <CheckCircle2 className="size-5 text-emerald-500" />
                   Stripe е свързан
                 </CardTitle>
-                <Badge variant="outline" className="text-emerald-600 border-emerald-300 bg-emerald-50 dark:bg-emerald-950/20 dark:border-emerald-800">
+                <Badge
+                  variant="outline"
+                  className="text-emerald-600 border-emerald-300 bg-emerald-50 dark:bg-emerald-950/20 dark:border-emerald-800"
+                >
                   Активен
                 </Badge>
               </div>
               <CardDescription>
-                Приемаш плащания. Изплащанията се извършват автоматично от Stripe.
+                Приемаш плащания. Изплащанията се извършват автоматично от
+                Stripe.
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-5">
@@ -159,6 +232,25 @@ export default function PaymentsSettings() {
                 <p className="text-muted-foreground">Stripe ID на акаунта</p>
                 <p className="font-mono">{status.stripeAccountId}</p>
               </div>
+
+              {/* Eventually-due soft nudge */}
+              {status.requirementsEventuallyDue && (
+                <div className="rounded-lg bg-blue-50 border border-blue-200 dark:bg-blue-950/20 dark:border-blue-800 px-4 py-3 text-sm text-blue-800 dark:text-blue-300 flex items-start gap-2">
+                  <AlertTriangle className="size-4 shrink-0 mt-0.5" />
+                  <span>
+                    Stripe може да изисква допълнителна информация в бъдеще.{" "}
+                    <button
+                      onClick={() => update()}
+                      disabled={updating}
+                      className="underline font-medium disabled:opacity-50 cursor-pointer"
+                    >
+                      {updating ? "Пренасочване…" : "Попълни предварително"}
+                    </button>
+                    .
+                  </span>
+                </div>
+              )}
+
               <div className="flex flex-wrap gap-3">
                 <Button variant="outline" asChild className="cursor-pointer">
                   <a
@@ -173,6 +265,16 @@ export default function PaymentsSettings() {
                 </Button>
                 <Button
                   variant="outline"
+                  className="cursor-pointer"
+                  onClick={() => connect()}
+                  disabled={connecting}
+                  aria-label="Update account info"
+                >
+                  <ExternalLink className="size-4 mr-2" />
+                  {updating ? "Пренасочване…" : "Актуализирай данните"}
+                </Button>
+                <Button
+                  variant="outline"
                   className="cursor-pointer text-red-600 border-red-200 hover:bg-red-50 dark:border-red-800 dark:hover:bg-red-950/20"
                   onClick={() => setConfirmingDisconnect(true)}
                   aria-label="Disconnect"
@@ -183,9 +285,11 @@ export default function PaymentsSettings() {
             </CardContent>
           </Card>
         )}
-
         {/* Disconnect confirmation */}
-        <Dialog open={confirmingDisconnect} onOpenChange={setConfirmingDisconnect}>
+        <Dialog
+          open={confirmingDisconnect}
+          onOpenChange={setConfirmingDisconnect}
+        >
           <DialogContent className="sm:max-w-sm">
             <DialogHeader>
               <DialogTitle className="flex items-center gap-2">
@@ -193,8 +297,8 @@ export default function PaymentsSettings() {
                 Прекъсване на Stripe
               </DialogTitle>
               <DialogDescription>
-                Прекъсването на Stripe спира всички бъдещи изплащания. Тази операция е
-                обратима — можеш да свържеш отново по-късно.
+                Прекъсването на Stripe спира всички бъдещи изплащания. Тази
+                операция е обратима — можеш да свържеш отново по-късно.
               </DialogDescription>
             </DialogHeader>
             <DialogFooter>
