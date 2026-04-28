@@ -60,4 +60,9 @@ describe('computeSectionStates', () => {
     const states = computeSectionStates(values, {});
     expect(states.photos).toBe('complete');
   });
+
+  it('always returns untouched for dynamicPricing (managed outside the form)', () => {
+    const states = computeSectionStates(PROPERTY_FORM_DEFAULTS, {});
+    expect(states.dynamicPricing).toBe('untouched');
+  });
 });

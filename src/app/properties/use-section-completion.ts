@@ -11,6 +11,7 @@ export interface SectionStates {
   pricingPolicies: SectionState;
   amenities: SectionState;
   photos: SectionState;
+  dynamicPricing: SectionState;
 }
 
 // Pure function exported for testing without React/form dependencies
@@ -58,6 +59,7 @@ export function computeSectionStates(
       /* requiredValues */ [values.images?.some((img) => img.is_thumbnail)],
       hasError('images'),
     ),
+    dynamicPricing: 'untouched',
   };
 
   function deriveSectionState(

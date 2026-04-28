@@ -10,6 +10,8 @@ import type {
   PropertyUnavailability,
   PropertyUnavailabilityCreate,
   PropertyUnavailabilityUpdate,
+  WeekdayPrice,
+  DatePriceOverride,
 } from './types';
 import type { PropertyFormSchema } from './property-form.schema';
 import { api } from '@/lib/api';
@@ -242,6 +244,95 @@ export function useDeletePropertyUnavailability() {
       api.delete(`/properties/${propertyId}/unavailabilities/${unavailabilityId}`),
     onSuccess: (_, { propertyId }) => {
       qc.invalidateQueries({ queryKey: [...PROPERTIES_KEY, propertyId, 'unavailabilities'] });
+    },
+  });
+}
+
+// ─── Dynamic Pricing ──────────────────────────────────────────────────────────
+
+export function useWeekdayPrices(propertyId: string | undefined) {
+  return useQuery({
+    queryKey: [...PROPERTIES_KEY, propertyId, 'pricing', 'weekdays'],
+    queryFn: () =>
+      api.get<WeekdayPrice[]>(`/properties/${propertyId}/pricing/weekdays`).then((r) => r.data),
+    enabled: !!propertyId,
+  });
+}
+
+export function useUpsertWeekdayPrices(propertyId: string) {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (rules: { weekday: number; price: string }[]) =>
+      api
+        .put<WeekdayPrice[]>(`/properties/${propertyId}/pricing/weekdays`, rules)
+        .then((r) => r.data),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: [...PROPERTIES_KEY, propertyId, 'pricing'] });
+    },
+  });
+}
+
+export function useDateOverrides(propertyId: string | undefined) {
+  return useQuery({
+    queryKey: [...PROPERTIES_KEY, propertyId, 'pricing', 'overrides'],
+    queryFn: () =>
+      api
+        .get<DatePriceOverride[]>(`/properties/${propertyId}/pricing/overrides`)
+        .then((r) => r.data),
+    enabled: !!propertyId,
+  });
+}
+
+export function useCreateDateOverride(propertyId: string) {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (payload: {
+      start_date: string;
+      end_date: string;
+      price: string;
+      label?: string | null;
+    }) =>
+      api
+        .post<DatePriceOverride>(`/properties/${propertyId}/pricing/overrides`, payload)
+        .then((r) => r.data),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: [...PROPERTIES_KEY, propertyId, 'pricing'] });
+    },
+  });
+}
+
+export function useUpdateDateOverride(propertyId: string) {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: ({
+      overrideId,
+      ...payload
+    }: {
+      overrideId: string;
+      start_date?: string;
+      end_date?: string;
+      price?: string;
+      label?: string | null;
+    }) =>
+      api
+        .patch<DatePriceOverride>(
+          `/properties/${propertyId}/pricing/overrides/${overrideId}`,
+          payload,
+        )
+        .then((r) => r.data),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: [...PROPERTIES_KEY, propertyId, 'pricing'] });
+    },
+  });
+}
+
+export function useDeleteDateOverride(propertyId: string) {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (overrideId: string) =>
+      api.delete(`/properties/${propertyId}/pricing/overrides/${overrideId}`),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: [...PROPERTIES_KEY, propertyId, 'pricing'] });
     },
   });
 }

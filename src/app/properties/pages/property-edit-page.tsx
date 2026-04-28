@@ -55,6 +55,7 @@ export default function PropertyEditPage() {
         initialValues={propertyToFormValues(property)}
         onSubmit={handleSubmit}
         isPending={isPending}
+        propertyId={id}
       />
     </BaseLayout>
   );

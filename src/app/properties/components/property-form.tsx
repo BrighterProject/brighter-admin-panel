@@ -16,6 +16,7 @@ import { RoomsCapacitySection } from './sections/rooms-capacity-section';
 import { PricingPoliciesSection } from './sections/pricing-policies-section';
 import { AmenitiesSection } from './sections/amenities-section';
 import { PhotosSection } from './sections/photos-section';
+import { DynamicPricingSection } from './sections/dynamic-pricing-section';
 import type { Property } from '../types';
 
 interface PropertyFormProps {
@@ -23,6 +24,8 @@ interface PropertyFormProps {
   initialValues?: Partial<PropertyFormSchema>;
   onSubmit: (data: PropertyFormSchema) => void;
   isPending: boolean;
+  /** Existing property id — enables dynamic pricing controls in edit mode */
+  propertyId?: string;
 }
 
 function propertyToFormValues(property: Property): PropertyFormSchema {
@@ -76,7 +79,7 @@ function propertyToFormValues(property: Property): PropertyFormSchema {
 
 export { propertyToFormValues };
 
-export function PropertyForm({ initialValues, onSubmit, isPending }: PropertyFormProps) {
+export function PropertyForm({ initialValues, onSubmit, isPending, propertyId }: PropertyFormProps) {
   const form = useForm<PropertyFormSchema>({
     resolver: zodResolver(propertyFormSchema) as Resolver<PropertyFormSchema>,
     defaultValues: { ...PROPERTY_FORM_DEFAULTS, ...initialValues },
@@ -136,6 +139,12 @@ export function PropertyForm({ initialValues, onSubmit, isPending }: PropertyFor
           <AmenitiesSection form={form} />
           <Separator />
           <PhotosSection form={form} />
+          <Separator />
+          <DynamicPricingSection
+            propertyId={propertyId}
+            basePricePerNight={form.watch('price_per_night')}
+            currency={form.watch('currency') || 'EUR'}
+          />
         </form>
       </Form>
 

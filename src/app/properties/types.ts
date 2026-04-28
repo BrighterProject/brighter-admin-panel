@@ -212,3 +212,19 @@ export type PropertyUpdate = Partial<PropertyFormValues>;
 export interface PropertyStatusUpdate {
   status: PropertyStatus;
 }
+
+export interface WeekdayPrice {
+  id: string;
+  property_id: string;
+  weekday: number;
+  price: string;
+}
+
+export interface DatePriceOverride {
+  id: string;
+  property_id: string;
+  start_date: string;
+  end_date: string;
+  price: string;
+  label: string | null;
+}

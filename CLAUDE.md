@@ -101,6 +101,18 @@ isPropertyOwner(scopes: string[])  // true if has "properties:me" and is NOT adm
 
 Property owners cannot change property status (button hidden). Admins can escalate any user to property owner via the Users page scope management UI.
 
+## Property form section architecture
+
+Adding a section to the property form requires touching 4 places:
+1. `components/sections/<name>-section.tsx` — section component (must have `id="section-<name>"`)
+2. `components/property-form-nav.tsx` — add entry to `FORM_SECTIONS`
+3. `use-section-completion.ts` — add key to `SectionStates`, return value in `computeSectionStates`
+4. `components/property-form.tsx` — add any new props, render section after `<Separator />`
+
+Sections outside the form schema (separate API calls) return `'untouched'` from section completion and must not be listed in `allRequiredComplete`. Pass `propertyId?` as a prop to enable edit-only sections (create mode shows a "save first" placeholder).
+
+API client: `api` from `@/lib/api` (not `apiClient` — that name is used in brighter-frontend).
+
 ## Adding a shadcn/ui component
 
 ```bash
