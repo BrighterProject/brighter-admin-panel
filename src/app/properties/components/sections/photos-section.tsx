@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useRef, useState } from 'react';
 import { type UseFormReturn, useController } from 'react-hook-form';
 import {
   DndContext,
@@ -15,12 +15,13 @@ import {
   arrayMove,
 } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
-import { GripVertical, Trash2, Plus, Star } from 'lucide-react';
+import { GripVertical, Loader2, Plus, Star, Trash2, Upload } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { cn } from '@/lib/utils';
 import type { PropertyFormSchema } from '../../property-form.schema';
+import { useUploadPropertyImage } from '../../hooks';
 
 interface ImageItem {
   url: string;
@@ -90,11 +91,15 @@ function SortableImage({
 
 interface PhotosSectionProps {
   form: UseFormReturn<PropertyFormSchema>;
+  propertyId?: string;
 }
 
-export function PhotosSection({ form }: PhotosSectionProps) {
+export function PhotosSection({ form, propertyId }: PhotosSectionProps) {
   const [urlInput, setUrlInput] = useState('');
+  const [uploadError, setUploadError] = useState<string | null>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
   const { field, fieldState } = useController({ control: form.control, name: 'images' });
+  const uploadMutation = useUploadPropertyImage();
 
   const images: ImageItem[] = field.value ?? [];
 
@@ -109,6 +114,24 @@ export function PhotosSection({ form }: PhotosSectionProps) {
       { url: trimmed, is_thumbnail: !hasThumbnail, order: images.length },
     ]);
     setUrlInput('');
+  };
+
+  const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file || !propertyId) return;
+    setUploadError(null);
+    try {
+      const uploaded = await uploadMutation.mutateAsync({ propertyId, file });
+      const hasThumbnail = images.some((img) => img.is_thumbnail);
+      field.onChange([
+        ...images,
+        { url: uploaded.url, is_thumbnail: !hasThumbnail, order: images.length },
+      ]);
+    } catch {
+      setUploadError('Upload failed. Check file type (JPEG/PNG/WebP) and size (max 5 MB).');
+    } finally {
+      if (fileInputRef.current) fileInputRef.current.value = '';
+    }
   };
 
   const removeImage = (index: number) => {
@@ -140,10 +163,43 @@ export function PhotosSection({ form }: PhotosSectionProps) {
       <div>
         <h3 className="text-base font-semibold">Photos</h3>
         <p className="text-sm text-muted-foreground mt-0.5">
-          Add photo URLs. Drag to reorder. Click the star to set the thumbnail.
+          Upload photos or add URLs. Drag to reorder. Click the star to set the thumbnail.
           At least one photo required.
         </p>
       </div>
+
+      {propertyId && (
+        <FormItem>
+          <FormLabel>Upload photo</FormLabel>
+          <div className="flex items-center gap-2">
+            <input
+              ref={fileInputRef}
+              type="file"
+              accept="image/jpeg,image/png,image/webp"
+              className="hidden"
+              onChange={handleFileChange}
+            />
+            <Button
+              type="button"
+              variant="outline"
+              disabled={uploadMutation.isPending}
+              onClick={() => fileInputRef.current?.click()}
+            >
+              {uploadMutation.isPending ? (
+                <Loader2 className="size-4 animate-spin" />
+              ) : (
+                <Upload className="size-4" />
+              )}
+              <span className="ml-2">
+                {uploadMutation.isPending ? 'Uploading…' : 'Choose file'}
+              </span>
+            </Button>
+          </div>
+          {uploadError && (
+            <p className="text-sm text-destructive mt-1">{uploadError}</p>
+          )}
+        </FormItem>
+      )}
 
       <FormItem>
         <FormLabel>Add photo URL</FormLabel>

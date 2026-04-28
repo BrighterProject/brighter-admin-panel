@@ -152,6 +152,24 @@ export function useAddPropertyImage() {
   });
 }
 
+export function useUploadPropertyImage() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: ({ propertyId, file }: { propertyId: string; file: File }) => {
+      const form = new FormData();
+      form.append('file', file);
+      return api
+        .post<PropertyImage>(`/properties/${propertyId}/images/upload`, form, {
+          headers: { 'Content-Type': 'multipart/form-data' },
+        })
+        .then((r) => r.data);
+    },
+    onSuccess: (_, { propertyId }) => {
+      qc.invalidateQueries({ queryKey: [...PROPERTIES_KEY, propertyId] });
+    },
+  });
+}
+
 export function useUpdatePropertyImage() {
   const qc = useQueryClient();
   return useMutation({

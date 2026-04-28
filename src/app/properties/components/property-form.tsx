@@ -138,7 +138,7 @@ export function PropertyForm({ initialValues, onSubmit, isPending, propertyId }:
           <Separator />
           <AmenitiesSection form={form} />
           <Separator />
-          <PhotosSection form={form} />
+          <PhotosSection form={form} propertyId={propertyId} />
           <Separator />
           <DynamicPricingSection
             propertyId={propertyId}
