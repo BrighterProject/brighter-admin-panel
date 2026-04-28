@@ -268,15 +268,6 @@ export function useDeletePropertyUnavailability() {
 
 // ─── Dynamic Pricing ──────────────────────────────────────────────────────────
 
-export function useWeekdayPrices(propertyId: string | undefined) {
-  return useQuery({
-    queryKey: [...PROPERTIES_KEY, propertyId, 'pricing', 'weekdays'],
-    queryFn: () =>
-      api.get<WeekdayPrice[]>(`/properties/${propertyId}/pricing/weekdays`).then((r) => r.data),
-    enabled: !!propertyId,
-  });
-}
-
 export function useUpsertWeekdayPrices(propertyId: string) {
   const qc = useQueryClient();
   return useMutation({
@@ -285,19 +276,8 @@ export function useUpsertWeekdayPrices(propertyId: string) {
         .put<WeekdayPrice[]>(`/properties/${propertyId}/pricing/weekdays`, rules)
         .then((r) => r.data),
     onSuccess: () => {
-      qc.invalidateQueries({ queryKey: [...PROPERTIES_KEY, propertyId, 'pricing'] });
+      qc.invalidateQueries({ queryKey: [...PROPERTIES_KEY, propertyId] });
     },
-  });
-}
-
-export function useDateOverrides(propertyId: string | undefined) {
-  return useQuery({
-    queryKey: [...PROPERTIES_KEY, propertyId, 'pricing', 'overrides'],
-    queryFn: () =>
-      api
-        .get<DatePriceOverride[]>(`/properties/${propertyId}/pricing/overrides`)
-        .then((r) => r.data),
-    enabled: !!propertyId,
   });
 }
 
@@ -314,7 +294,7 @@ export function useCreateDateOverride(propertyId: string) {
         .post<DatePriceOverride>(`/properties/${propertyId}/pricing/overrides`, payload)
         .then((r) => r.data),
     onSuccess: () => {
-      qc.invalidateQueries({ queryKey: [...PROPERTIES_KEY, propertyId, 'pricing'] });
+      qc.invalidateQueries({ queryKey: [...PROPERTIES_KEY, propertyId] });
     },
   });
 }
@@ -339,7 +319,7 @@ export function useUpdateDateOverride(propertyId: string) {
         )
         .then((r) => r.data),
     onSuccess: () => {
-      qc.invalidateQueries({ queryKey: [...PROPERTIES_KEY, propertyId, 'pricing'] });
+      qc.invalidateQueries({ queryKey: [...PROPERTIES_KEY, propertyId] });
     },
   });
 }
@@ -350,7 +330,7 @@ export function useDeleteDateOverride(propertyId: string) {
     mutationFn: (overrideId: string) =>
       api.delete(`/properties/${propertyId}/pricing/overrides/${overrideId}`),
     onSuccess: () => {
-      qc.invalidateQueries({ queryKey: [...PROPERTIES_KEY, propertyId, 'pricing'] });
+      qc.invalidateQueries({ queryKey: [...PROPERTIES_KEY, propertyId] });
     },
   });
 }

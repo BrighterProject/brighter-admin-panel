@@ -160,6 +160,8 @@ export interface Property {
   images: PropertyImage[];
   unavailabilities: PropertyUnavailability[];
   translations: PropertyTranslation[];
+  weekday_prices: WeekdayPrice[];
+  date_price_overrides: DatePriceOverride[];
 }
 
 export interface PropertyListItem {

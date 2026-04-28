@@ -56,6 +56,8 @@ export default function PropertyEditPage() {
         onSubmit={handleSubmit}
         isPending={isPending}
         propertyId={id}
+        weekdayPrices={property.weekday_prices}
+        dateOverrides={property.date_price_overrides}
       />
     </BaseLayout>
   );

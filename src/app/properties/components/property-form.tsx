@@ -17,7 +17,7 @@ import { PricingPoliciesSection } from './sections/pricing-policies-section';
 import { AmenitiesSection } from './sections/amenities-section';
 import { PhotosSection } from './sections/photos-section';
 import { DynamicPricingSection } from './sections/dynamic-pricing-section';
-import type { Property } from '../types';
+import type { Property, WeekdayPrice, DatePriceOverride } from '../types';
 
 interface PropertyFormProps {
   /** Provide to pre-populate for edit mode */
@@ -26,6 +26,8 @@ interface PropertyFormProps {
   isPending: boolean;
   /** Existing property id — enables dynamic pricing controls in edit mode */
   propertyId?: string;
+  weekdayPrices?: WeekdayPrice[];
+  dateOverrides?: DatePriceOverride[];
 }
 
 function propertyToFormValues(property: Property): PropertyFormSchema {
@@ -79,7 +81,7 @@ function propertyToFormValues(property: Property): PropertyFormSchema {
 
 export { propertyToFormValues };
 
-export function PropertyForm({ initialValues, onSubmit, isPending, propertyId }: PropertyFormProps) {
+export function PropertyForm({ initialValues, onSubmit, isPending, propertyId, weekdayPrices, dateOverrides }: PropertyFormProps) {
   const form = useForm<PropertyFormSchema>({
     resolver: zodResolver(propertyFormSchema) as Resolver<PropertyFormSchema>,
     defaultValues: { ...PROPERTY_FORM_DEFAULTS, ...initialValues },
@@ -144,6 +146,8 @@ export function PropertyForm({ initialValues, onSubmit, isPending, propertyId }:
             propertyId={propertyId}
             basePricePerNight={form.watch('price_per_night')}
             currency={form.watch('currency') || 'EUR'}
+            weekdayPrices={weekdayPrices}
+            dateOverrides={dateOverrides}
           />
         </form>
       </Form>

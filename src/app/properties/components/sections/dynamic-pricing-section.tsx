@@ -4,14 +4,12 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import {
-  useWeekdayPrices,
   useUpsertWeekdayPrices,
-  useDateOverrides,
   useCreateDateOverride,
   useUpdateDateOverride,
   useDeleteDateOverride,
 } from "../../hooks";
-import type { DatePriceOverride } from "../../types";
+import type { DatePriceOverride, WeekdayPrice } from "../../types";
 
 const WEEKDAY_LABELS = [
   "Monday",
@@ -29,10 +27,10 @@ interface WeekdayGridProps {
   propertyId: string;
   basePricePerNight: string;
   currency: string;
+  existing: WeekdayPrice[];
 }
 
-function WeekdayGrid({ propertyId, basePricePerNight, currency }: WeekdayGridProps) {
-  const { data: existing } = useWeekdayPrices(propertyId);
+function WeekdayGrid({ propertyId, basePricePerNight, currency, existing }: WeekdayGridProps) {
   const upsert = useUpsertWeekdayPrices(propertyId);
 
   const [prices, setPrices] = useState<(string | null)[]>(() => {
@@ -147,8 +145,7 @@ function OverrideForm({ propertyId, currency, editTarget, onDone }: OverrideForm
   const [label, setLabel] = useState(editTarget?.label ?? "");
   const [error, setError] = useState<string | null>(null);
 
-  async function handleSubmit(e: React.FormEvent) {
-    e.preventDefault();
+  async function handleSubmit() {
     setError(null);
     if (!startDate || !endDate || !price) {
       setError("Start date, end date and price are required.");
@@ -184,7 +181,7 @@ function OverrideForm({ propertyId, currency, editTarget, onDone }: OverrideForm
   const isPending = create.isPending || update.isPending;
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-3 rounded-lg border bg-card p-4">
+    <div className="space-y-3 rounded-lg border bg-card p-4">
       <h5 className="text-sm font-semibold">
         {editTarget ? "Edit override" : "Add date override"}
       </h5>
@@ -241,14 +238,14 @@ function OverrideForm({ propertyId, currency, editTarget, onDone }: OverrideForm
       {error && <p className="text-xs text-destructive">{error}</p>}
 
       <div className="flex gap-2">
-        <Button type="submit" size="sm" disabled={isPending}>
+        <Button type="button" size="sm" disabled={isPending} onClick={handleSubmit}>
           {isPending ? "Saving…" : editTarget ? "Update" : "Add"}
         </Button>
         <Button type="button" size="sm" variant="ghost" onClick={onDone}>
           Cancel
         </Button>
       </div>
-    </form>
+    </div>
   );
 }
 
@@ -257,10 +254,10 @@ function OverrideForm({ propertyId, currency, editTarget, onDone }: OverrideForm
 interface DateOverridesProps {
   propertyId: string;
   currency: string;
+  overrides: DatePriceOverride[];
 }
 
-function DateOverrides({ propertyId, currency }: DateOverridesProps) {
-  const { data: overrides = [] } = useDateOverrides(propertyId);
+function DateOverrides({ propertyId, currency, overrides }: DateOverridesProps) {
   const deleteOverride = useDeleteDateOverride(propertyId);
   const [showForm, setShowForm] = useState(false);
   const [editing, setEditing] = useState<DatePriceOverride | undefined>(undefined);
@@ -356,12 +353,16 @@ interface DynamicPricingSectionProps {
   propertyId: string | undefined;
   basePricePerNight?: string;
   currency?: string;
+  weekdayPrices?: WeekdayPrice[];
+  dateOverrides?: DatePriceOverride[];
 }
 
 export function DynamicPricingSection({
   propertyId,
   basePricePerNight = "0",
   currency = "EUR",
+  weekdayPrices = [],
+  dateOverrides = [],
 }: DynamicPricingSectionProps) {
   return (
     <section id="section-dynamic-pricing" className="space-y-6 scroll-mt-20">
@@ -383,8 +384,9 @@ export function DynamicPricingSection({
             propertyId={propertyId}
             basePricePerNight={basePricePerNight}
             currency={currency}
+            existing={weekdayPrices}
           />
-          <DateOverrides propertyId={propertyId} currency={currency} />
+          <DateOverrides propertyId={propertyId} currency={currency} overrides={dateOverrides} />
         </>
       )}
     </section>
