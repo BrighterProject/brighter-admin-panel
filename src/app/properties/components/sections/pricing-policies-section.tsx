@@ -1,26 +1,30 @@
-import { type UseFormReturn } from 'react-hook-form';
+import { type UseFormReturn } from "react-hook-form";
 import {
-  FormControl, FormField, FormItem, FormLabel, FormMessage,
-} from '@/components/ui/form';
-import { Input } from '@/components/ui/input';
-import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
-import type { PropertyFormSchema } from '../../property-form.schema';
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from "@/components/ui/form";
+import { Input } from "@/components/ui/input";
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
+import type { PropertyFormSchema } from "../../property-form.schema";
 
 const CANCELLATION_OPTIONS = [
   {
-    value: 'free',
-    label: 'Free cancellation',
-    description: 'Full refund up to 24 hours before check-in.',
+    value: "free",
+    label: "Free cancellation",
+    description: "Full refund up to 24 hours before check-in.",
   },
   {
-    value: 'moderate',
-    label: 'Moderate',
-    description: 'Full refund up to 5 days before check-in; 50% refund after.',
+    value: "moderate",
+    label: "Moderate",
+    description: "Full refund up to 5 days before check-in; 50% refund after.",
   },
   {
-    value: 'strict',
-    label: 'Strict',
-    description: '50% refund up to 7 days before check-in; no refund after.',
+    value: "strict",
+    label: "Strict",
+    description: "50% refund up to 7 days before check-in; no refund after.",
   },
 ] as const;
 
@@ -106,15 +110,16 @@ export function PricingPoliciesSection({ form }: PricingPoliciesSectionProps) {
           name="max_nights"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Max nights (optional)</FormLabel>
+              <FormLabel>Max nights*</FormLabel>
               <FormControl>
                 <Input
                   type="number"
                   min={1}
-                  placeholder="No limit"
-                  value={field.value ?? ''}
+                  value={field.value ?? ""}
                   onChange={(e) =>
-                    field.onChange(e.target.value === '' ? null : Number(e.target.value))
+                    field.onChange(
+                      e.target.value === "" ? null : Number(e.target.value),
+                    )
                   }
                 />
               </FormControl>
@@ -131,7 +136,11 @@ export function PricingPoliciesSection({ form }: PricingPoliciesSectionProps) {
           <FormItem>
             <FormLabel>Cancellation policy *</FormLabel>
             <FormControl>
-              <RadioGroup value={field.value} onValueChange={field.onChange} className="space-y-2 mt-1">
+              <RadioGroup
+                value={field.value}
+                onValueChange={field.onChange}
+                className="space-y-2 mt-1"
+              >
                 {CANCELLATION_OPTIONS.map((opt) => (
                   <FormItem
                     key={opt.value}
@@ -141,8 +150,12 @@ export function PricingPoliciesSection({ form }: PricingPoliciesSectionProps) {
                       <RadioGroupItem value={opt.value} className="mt-0.5" />
                     </FormControl>
                     <div>
-                      <FormLabel className="font-medium cursor-pointer">{opt.label}</FormLabel>
-                      <p className="text-xs text-muted-foreground mt-0.5">{opt.description}</p>
+                      <FormLabel className="font-medium cursor-pointer">
+                        {opt.label}
+                      </FormLabel>
+                      <p className="text-xs text-muted-foreground mt-0.5">
+                        {opt.description}
+                      </p>
                     </div>
                   </FormItem>
                 ))}

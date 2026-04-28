@@ -1,42 +1,77 @@
 export type PropertyType =
-  | 'apartment' | 'house' | 'villa' | 'hotel'
-  | 'hostel' | 'guesthouse' | 'room' | 'other';
+  | "apartment"
+  | "house"
+  | "villa"
+  | "hotel"
+  | "hostel"
+  | "guesthouse"
+  | "room"
+  | "other";
 
 export type PropertyStatus =
-  | 'active' | 'inactive' | 'maintenance' | 'pending_approval';
+  | "active"
+  | "inactive"
+  | "maintenance"
+  | "pending_approval";
 
 export type AmenityType =
-  | 'wifi' | 'air_conditioning' | 'kitchen' | 'washing_machine'
-  | 'fireplace' | 'bbq' | 'mountain_view' | 'ski_storage'
-  | 'breakfast_included' | 'reception_24h' | 'sea_view' | 'balcony'
-  | 'pool' | 'garden' | 'pet_friendly' | 'coffee_machine';
+  | "wifi"
+  | "air_conditioning"
+  | "kitchen"
+  | "washing_machine"
+  | "fireplace"
+  | "bbq"
+  | "mountain_view"
+  | "ski_storage"
+  | "breakfast_included"
+  | "reception_24h"
+  | "sea_view"
+  | "balcony"
+  | "pool"
+  | "garden"
+  | "pet_friendly"
+  | "coffee_machine";
 
 export const AMENITY_LABELS: Record<AmenityType, string> = {
-  wifi: 'Wi-Fi',
-  air_conditioning: 'Климатик',
-  kitchen: 'Кухня',
-  washing_machine: 'Пералня',
-  fireplace: 'Камина',
-  bbq: 'Барбекю',
-  mountain_view: 'Планинска гледка',
-  ski_storage: 'Ски гардероб',
-  breakfast_included: 'Закуска включена',
-  reception_24h: 'Рецепция 24ч',
-  sea_view: 'Морска гледка',
-  balcony: 'Балкон',
-  pool: 'Басейн',
-  garden: 'Градина',
-  pet_friendly: 'Домашни любимци',
-  coffee_machine: 'Кафемашина',
+  wifi: "Wi-Fi",
+  air_conditioning: "Климатик",
+  kitchen: "Кухня",
+  washing_machine: "Пералня",
+  fireplace: "Камина",
+  bbq: "Барбекю",
+  mountain_view: "Планинска гледка",
+  ski_storage: "Ски гардероб",
+  breakfast_included: "Закуска включена",
+  reception_24h: "Рецепция 24ч",
+  sea_view: "Морска гледка",
+  balcony: "Балкон",
+  pool: "Басейн",
+  garden: "Градина",
+  pet_friendly: "Домашни любимци",
+  coffee_machine: "Кафемашина",
 };
 
-export const ALL_AMENITIES: AmenityType[] = Object.keys(AMENITY_LABELS) as AmenityType[];
+export const ALL_AMENITIES: AmenityType[] = Object.keys(
+  AMENITY_LABELS,
+) as AmenityType[];
 
-export type CancellationPolicy = 'free' | 'moderate' | 'strict';
+export type CancellationPolicy = "free" | "moderate" | "strict";
 
-export type RoomType = 'bedroom' | 'living_room' | 'kitchen' | 'bathroom' | 'studio';
+export type RoomType =
+  | "bedroom"
+  | "living_room"
+  | "kitchen"
+  | "bathroom"
+  | "studio";
 
-export type BedType = 'single' | 'double' | 'queen' | 'king' | 'sofa_bed' | 'bunk' | 'crib';
+export type BedType =
+  | "single"
+  | "double"
+  | "queen"
+  | "king"
+  | "sofa_bed"
+  | "bunk"
+  | "crib";
 
 export interface BedEntry {
   bed_type: BedType;
@@ -52,7 +87,7 @@ export interface RoomEntry {
 export interface PropertyTranslation {
   id: string;
   property_id: string;
-  locale: 'bg' | 'en' | 'ru';
+  locale: "bg" | "en" | "ru";
   name: string;
   description: string;
   address: string;
@@ -117,7 +152,7 @@ export interface Property {
   check_in_time: string;
   check_out_time: string;
   min_nights: number;
-  max_nights: number | null;
+  max_nights: number;
   cancellation_policy: CancellationPolicy;
   rating: string;
   total_reviews: number;

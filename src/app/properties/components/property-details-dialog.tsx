@@ -251,7 +251,7 @@ export function PropertyDetailsDialog({
                   <Separator />
                   <div className="space-y-1">
                     <p className="text-sm font-medium">Описание</p>
-                    <p className="text-sm text-muted-foreground leading-relaxed">
+                    <p className="text-sm whitespace-pre-wrap text-muted-foreground leading-relaxed">
                       {property.description}
                     </p>
                   </div>
