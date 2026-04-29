@@ -101,6 +101,10 @@ export const propertyFormSchema = z.object({
     ]),
   ),
   images: z.array(imageCreateSchema),
+  enable_gap_filler: z.boolean().default(false),
+  gap_premium_pct: z.coerce.number().min(0).max(100).default(10),
+  gap_last_minute_window: z.coerce.number().min(1).max(90).default(7),
+  gap_adjacent_only: z.boolean().default(false),
   translations: z.object({
     bg: z.object({
       name: z.string().min(2, "Name must be at least 2 characters"),
@@ -137,6 +141,10 @@ export const PROPERTY_FORM_DEFAULTS: PropertyFormSchema = {
   rooms: [],
   amenities: [],
   images: [],
+  enable_gap_filler: false,
+  gap_premium_pct: 10,
+  gap_last_minute_window: 7,
+  gap_adjacent_only: false,
   translations: {
     bg: { name: "", description: "", address: "", house_rules: "" },
     en: { name: "", description: "", address: "", house_rules: "" },

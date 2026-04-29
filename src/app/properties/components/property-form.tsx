@@ -17,6 +17,7 @@ import { PricingPoliciesSection } from './sections/pricing-policies-section';
 import { AmenitiesSection } from './sections/amenities-section';
 import { PhotosSection } from './sections/photos-section';
 import { DynamicPricingSection } from './sections/dynamic-pricing-section';
+import { GapFillerSection } from './sections/gap-filler-section';
 import type { Property, WeekdayPrice, DatePriceOverride } from '../types';
 
 interface PropertyFormProps {
@@ -149,6 +150,8 @@ export function PropertyForm({ initialValues, onSubmit, isPending, propertyId, w
             weekdayPrices={weekdayPrices}
             dateOverrides={dateOverrides}
           />
+          <Separator />
+          <GapFillerSection form={form} />
         </form>
       </Form>
 

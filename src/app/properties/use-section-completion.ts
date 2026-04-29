@@ -12,6 +12,7 @@ export interface SectionStates {
   amenities: SectionState;
   photos: SectionState;
   dynamicPricing: SectionState;
+  gapFiller: SectionState;
 }
 
 // Pure function exported for testing without React/form dependencies
@@ -60,6 +61,7 @@ export function computeSectionStates(
       hasError('images'),
     ),
     dynamicPricing: 'untouched',
+    gapFiller: 'untouched',
   };
 
   function deriveSectionState(
