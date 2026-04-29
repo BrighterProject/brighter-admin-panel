@@ -8,7 +8,6 @@ import {
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Switch } from "@/components/ui/switch";
-import { Checkbox } from "@/components/ui/checkbox";
 import type { PropertyFormSchema } from "../../property-form.schema";
 
 interface GapFillerSectionProps {
@@ -46,14 +45,14 @@ export function GapFillerSection({ form }: GapFillerSectionProps) {
         <div className="grid grid-cols-2 gap-4">
           <FormField
             control={form.control}
-            name="gap_premium_pct"
+            name="gap_tax_pct"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Премия за малки пролуки (%)</FormLabel>
+                <FormLabel>Такса за малки пролуки (%)</FormLabel>
                 <FormControl>
                   <Input
                     type="number"
-                    min={0}
+                    min={-100}
                     max={100}
                     disabled={!enabled}
                     {...field}
@@ -84,24 +83,6 @@ export function GapFillerSection({ form }: GapFillerSectionProps) {
           />
         </div>
 
-        <FormField
-          control={form.control}
-          name="gap_adjacent_only"
-          render={({ field }) => (
-            <FormItem className="mt-4 flex items-center gap-3 rounded-lg border p-4">
-              <FormControl>
-                <Checkbox
-                  checked={field.value}
-                  onCheckedChange={field.onChange}
-                  disabled={!enabled}
-                />
-              </FormControl>
-              <FormLabel className="!mt-0 cursor-pointer">
-                Само при пълна пролука (от двете страни)
-              </FormLabel>
-            </FormItem>
-          )}
-        />
       </div>
     </section>
   );
