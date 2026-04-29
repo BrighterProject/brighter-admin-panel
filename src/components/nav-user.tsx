@@ -38,8 +38,8 @@ export function NavUser() {
   const displayName = user?.full_name || user?.username || "—";
   const displayEmail = user?.email || "—";
 
-  const handleLogout = () => {
-    logout();
+  const handleLogout = async () => {
+    await logout();
     window.location.href = "/bg/auth/login";
   };
 
