@@ -1,7 +1,8 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { Loader2 } from "lucide-react";
+import { AlertTriangle, Loader2 } from "lucide-react";
+import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -13,6 +14,9 @@ import {
 } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
+import { useMe } from "@/app/auth/api/hooks";
+import { useStripeStatus } from "@/app/settings/payments/hooks";
+import { isAdmin } from "@/lib/scopes";
 import { useUpdatePropertyStatus } from "../hooks";
 import type { PropertyListItem, PropertyStatus } from "../types";
 
@@ -51,6 +55,14 @@ interface PropertyStatusDialogProps {
 export function PropertyStatusDialog({ property, onClose }: PropertyStatusDialogProps) {
   const [selectedStatus, setSelectedStatus] = useState<PropertyStatus>("active");
   const { mutate: updateStatus, isPending } = useUpdatePropertyStatus();
+  const { data: me } = useMe();
+  const { data: stripeStatus } = useStripeStatus();
+
+  const userIsAdmin = me ? isAdmin(me.scopes) : false;
+  const paymentsRequired =
+    selectedStatus === "pending_approval" &&
+    !userIsAdmin &&
+    !(stripeStatus?.connected && stripeStatus?.verified);
 
   useEffect(() => {
     if (property) {
@@ -109,6 +121,15 @@ export function PropertyStatusDialog({ property, onClose }: PropertyStatusDialog
               </div>
             ))}
           </RadioGroup>
+          {paymentsRequired && (
+            <p className="mt-3 text-sm text-amber-600 flex items-center gap-1.5">
+              <AlertTriangle className="size-4 shrink-0" />
+              За да изпратиш обекта за одобрение, трябва първо да свържеш Stripe акаунт.{" "}
+              <Link to="/settings/payments" className="underline font-medium">
+                Настройки за плащания
+              </Link>
+            </p>
+          )}
         </div>
 
         <DialogFooter>
@@ -121,7 +142,7 @@ export function PropertyStatusDialog({ property, onClose }: PropertyStatusDialog
           </Button>
           <Button
             onClick={handleSave}
-            disabled={isPending || selectedStatus === property?.status}
+            disabled={isPending || selectedStatus === property?.status || paymentsRequired}
             className="cursor-pointer"
           >
             {isPending && <Loader2 className="mr-2 size-4 animate-spin" />}
