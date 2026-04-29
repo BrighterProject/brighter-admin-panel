@@ -56,12 +56,13 @@ export function PropertyStatusDialog({ property, onClose }: PropertyStatusDialog
   const [selectedStatus, setSelectedStatus] = useState<PropertyStatus>("active");
   const { mutate: updateStatus, isPending } = useUpdatePropertyStatus();
   const { data: me } = useMe();
-  const { data: stripeStatus } = useStripeStatus();
+  const { data: stripeStatus, isLoading: stripeLoading } = useStripeStatus();
 
   const userIsAdmin = me ? isAdmin(me.scopes) : false;
   const paymentsRequired =
     selectedStatus === "pending_approval" &&
     !userIsAdmin &&
+    !stripeLoading &&
     !(stripeStatus?.connected && stripeStatus?.verified);
 
   useEffect(() => {
