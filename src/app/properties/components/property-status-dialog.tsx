@@ -60,10 +60,9 @@ export function PropertyStatusDialog({ property, onClose }: PropertyStatusDialog
 
   const userIsAdmin = me ? isAdmin(me.scopes) : false;
   const paymentsRequired =
-    selectedStatus === "pending_approval" &&
     !userIsAdmin &&
-    !stripeLoading &&
-    !(stripeStatus?.connected && stripeStatus?.verified);
+    selectedStatus === "pending_approval" &&
+    (stripeLoading || !(stripeStatus?.connected && stripeStatus?.verified));
 
   useEffect(() => {
     if (property) {
@@ -122,7 +121,7 @@ export function PropertyStatusDialog({ property, onClose }: PropertyStatusDialog
               </div>
             ))}
           </RadioGroup>
-          {paymentsRequired && (
+          {paymentsRequired && !stripeLoading && (
             <p className="mt-3 text-sm text-amber-600 flex items-center gap-1.5">
               <AlertTriangle className="size-4 shrink-0" />
               За да изпратиш обекта за одобрение, трябва първо да свържеш Stripe акаунт.{" "}
