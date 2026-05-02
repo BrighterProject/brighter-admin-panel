@@ -12,19 +12,19 @@ export default function PropertyNewPage() {
   const handleSubmit = (data: PropertyFormSchema) => {
     addProperty(data, {
       onSuccess: () => {
-        toast.success('Property saved. Pending admin approval.');
+        toast.success('Обект сохранен. Чакащ одобрението на администратор.');
         navigate('/properties');
       },
       onError: () => {
-        toast.error('Failed to save property. Please try again.');
+        toast.error('Неудачно записване на обект. Моля, опитайте отново.');
       },
     });
   };
 
   return (
     <BaseLayout
-      title="Add Property"
-      description="Fill in the details for your new property listing."
+      title="Добавяне на обект"
+      description="Попълнете подробностите за вашото ново обявление на обект."
     >
       <PropertyForm onSubmit={handleSubmit} isPending={isPending} />
     </BaseLayout>

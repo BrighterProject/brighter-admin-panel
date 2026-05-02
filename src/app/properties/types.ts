@@ -133,12 +133,25 @@ export interface PropertyUnavailabilityUpdate {
   reason?: string | null;
 }
 
+export interface Region {
+  code: string;
+  name: string;
+}
+
+export interface Settlement {
+  ekatte: string;
+  tvm: string;
+  name: string;
+}
+
 export interface Property {
   id: string;
   owner_id: string;
   property_type: PropertyType;
   status: PropertyStatus;
-  city: string;
+  region_code: string | null;
+  settlement_ekatte: string | null;
+  city: string | null;
   lat: number | null;
   lng: number | null;
   price_per_night: string;
@@ -169,7 +182,9 @@ export interface PropertyListItem {
   owner_id: string;
   property_type: PropertyType;
   status: PropertyStatus;
-  city: string;
+  region_code: string | null;
+  settlement_ekatte: string | null;
+  city: string | null;
   name: string;
   description: string;
   price_per_night: string;
@@ -184,7 +199,8 @@ export interface PropertyListItem {
 
 export interface PropertyFormValues {
   property_type: PropertyType;
-  city: string;
+  region_code: string;
+  settlement_ekatte: string;
   lat: string;
   lng: string;
   has_parking: boolean;

@@ -52,7 +52,8 @@ export const propertyFormSchema = z.object({
     ],
     { required_error: "Property type is required" },
   ),
-  city: z.string().min(1, "City is required"),
+  region_code: z.string().min(1, "Region is required"),
+  settlement_ekatte: z.string().min(1, "Settlement is required"),
   lat: z
     .string()
     .regex(/^[-+]?\d*\.?\d*$/, "Invalid latitude")
@@ -122,7 +123,8 @@ export type PropertyFormSchema = z.infer<typeof propertyFormSchema>;
 
 export const PROPERTY_FORM_DEFAULTS: PropertyFormSchema = {
   property_type: "apartment",
-  city: "",
+  region_code: "",
+  settlement_ekatte: "",
   lat: "",
   lng: "",
   has_parking: false,

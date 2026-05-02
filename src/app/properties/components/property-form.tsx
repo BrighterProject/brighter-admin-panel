@@ -38,7 +38,8 @@ function propertyToFormValues(property: Property): PropertyFormSchema {
 
   return {
     property_type: property.property_type,
-    city: property.city,
+    region_code: property.region_code ?? '',
+    settlement_ekatte: property.settlement_ekatte ?? '',
     lat: property.lat?.toString() ?? '',
     lng: property.lng?.toString() ?? '',
     has_parking: property.has_parking,

@@ -18,11 +18,11 @@ export default function PropertyEditPage() {
       { id, data },
       {
         onSuccess: () => {
-          toast.success('Property updated. Pending admin approval.');
+          toast.success('Обект обновен. Чакащ одобрението на администратор.');
           navigate('/properties');
         },
         onError: () => {
-          toast.error('Failed to update property. Please try again.');
+          toast.error('Неудачно обновление на обект. Моля, опитайте отново.');
         },
       },
     );
@@ -30,7 +30,7 @@ export default function PropertyEditPage() {
 
   if (isLoading) {
     return (
-      <BaseLayout title="Edit Property" description="">
+      <BaseLayout title="Редактиране на обект" description="">
         <div className="flex items-center justify-center py-20">
           <Loader2 className="size-6 animate-spin text-muted-foreground" />
         </div>
@@ -40,16 +40,16 @@ export default function PropertyEditPage() {
 
   if (!property) {
     return (
-      <BaseLayout title="Edit Property" description="">
-        <p className="text-center text-muted-foreground py-20">Property not found.</p>
+      <BaseLayout title="Редактиране на обект" description="">
+        <p className="text-center text-muted-foreground py-20">Обектът не е намерен.</p>
       </BaseLayout>
     );
   }
 
   return (
     <BaseLayout
-      title="Edit Property"
-      description={`Editing: ${property.translations.find((t) => t.locale === 'bg')?.name ?? property.id}`}
+      title="Редактиране на обект"
+      description={`Редактиране: ${property.translations.find((t) => t.locale === 'bg')?.name ?? property.id}`}
     >
       <PropertyForm
         initialValues={propertyToFormValues(property)}

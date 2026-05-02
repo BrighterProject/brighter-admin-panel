@@ -12,11 +12,36 @@ import type {
   PropertyUnavailabilityUpdate,
   WeekdayPrice,
   DatePriceOverride,
+  Region,
+  Settlement,
 } from './types';
 import type { PropertyFormSchema } from './property-form.schema';
 import { api } from '@/lib/api';
 
 const PROPERTIES_KEY = ['properties'];
+const REGIONS_KEY = ['regions'];
+
+// ─── Region / Settlement Queries ──────────────────────────────────────────────
+
+export function useRegions(lang = 'bg') {
+  return useQuery({
+    queryKey: [...REGIONS_KEY, lang],
+    queryFn: () => api.get<Region[]>('/regions/', { params: { lang } }).then((r) => r.data),
+    staleTime: Infinity,
+  });
+}
+
+export function useSettlements(regionCode: string | null, lang = 'bg') {
+  return useQuery({
+    queryKey: [...REGIONS_KEY, regionCode, 'settlements', lang],
+    queryFn: () =>
+      api
+        .get<Settlement[]>(`/regions/${regionCode}/settlements`, { params: { lang } })
+        .then((r) => r.data),
+    enabled: !!regionCode,
+    staleTime: Infinity,
+  });
+}
 
 // ─── Property Queries ─────────────────────────────────────────────────────────
 
