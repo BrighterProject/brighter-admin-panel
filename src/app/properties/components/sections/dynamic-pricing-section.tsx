@@ -1,359 +1,150 @@
-import { useState } from "react";
-import { Plus, Trash2, Pencil } from "lucide-react";
+import { useState, useRef, useEffect } from "react";
+import { ChevronLeft, ChevronRight, X, Check } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import {
-  useUpsertWeekdayPrices,
   useCreateDateOverride,
   useUpdateDateOverride,
   useDeleteDateOverride,
 } from "../../hooks";
-import type { DatePriceOverride, WeekdayPrice } from "../../types";
+import type { DatePriceOverride } from "../../types";
 
-const WEEKDAY_LABELS = [
-  "Monday",
-  "Tuesday",
-  "Wednesday",
-  "Thursday",
-  "Friday",
-  "Saturday",
-  "Sunday",
+const WEEKDAY_HEADERS = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
+
+const MONTH_NAMES = [
+  "January", "February", "March", "April", "May", "June",
+  "July", "August", "September", "October", "November", "December",
 ];
 
-// ─── Weekday grid ─────────────────────────────────────────────────────────────
-
-interface WeekdayGridProps {
-  propertyId: string;
-  basePricePerNight: string;
-  currency: string;
-  existing: WeekdayPrice[];
+function toIso(year: number, month: number, day: number): string {
+  return `${year}-${String(month + 1).padStart(2, "0")}-${String(day).padStart(2, "0")}`;
 }
 
-function WeekdayGrid({ propertyId, basePricePerNight, currency, existing }: WeekdayGridProps) {
-  const upsert = useUpsertWeekdayPrices(propertyId);
+function buildCalendarDays(year: number, month: number): Array<string | null> {
+  const firstDay = new Date(year, month, 1);
+  const daysInMonth = new Date(year, month + 1, 0).getDate();
+  // ISO: Mon=0 … Sun=6
+  const leadingBlanks = (firstDay.getDay() + 6) % 7;
 
-  const [prices, setPrices] = useState<(string | null)[]>(() => {
-    const map = Object.fromEntries((existing ?? []).map((w) => [w.weekday, w.price]));
-    return Array.from({ length: 7 }, (_, i) => map[i] ?? null);
-  });
-  const [saved, setSaved] = useState(false);
+  const cells: Array<string | null> = [];
+  for (let i = 0; i < leadingBlanks; i++) cells.push(null);
+  for (let d = 1; d <= daysInMonth; d++) cells.push(toIso(year, month, d));
+  const trailing = (7 - (cells.length % 7)) % 7;
+  for (let i = 0; i < trailing; i++) cells.push(null);
+  return cells;
+}
+
+function addMonths(date: Date, n: number): Date {
+  return new Date(date.getFullYear(), date.getMonth() + n, 1);
+}
+
+interface DayEditPopoverProps {
+  date: string;
+  currentPrice: string | null;
+  basePrice: string;
+  currency: string;
+  overrideId: string | null;
+  onCreate: (price: string) => Promise<void>;
+  onUpdate: (price: string) => Promise<void>;
+  onDelete: () => Promise<void>;
+  onClose: () => void;
+}
+
+function DayEditPopover({
+  date,
+  currentPrice,
+  basePrice,
+  currency,
+  overrideId,
+  onCreate,
+  onUpdate,
+  onDelete,
+  onClose,
+}: DayEditPopoverProps) {
+  const [price, setPrice] = useState(currentPrice ?? "");
+  const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const inputRef = useRef<HTMLInputElement>(null);
 
-  function handlePriceChange(i: number, value: string) {
-    setPrices((prev) => {
-      const next = [...prev];
-      next[i] = value === "" ? null : value;
-      return next;
-    });
-    setSaved(false);
-  }
-
-  function handleToggle(i: number, useBase: boolean) {
-    setPrices((prev) => {
-      const next = [...prev];
-      next[i] = useBase ? null : basePricePerNight;
-      return next;
-    });
-    setSaved(false);
-  }
+  useEffect(() => {
+    inputRef.current?.focus();
+    inputRef.current?.select();
+  }, []);
 
   async function handleSave() {
-    setError(null);
-    const rules = prices
-      .map((price, weekday) => (price !== null ? { weekday, price } : null))
-      .filter(Boolean) as { weekday: number; price: string }[];
-    try {
-      await upsert.mutateAsync(rules);
-      setSaved(true);
-    } catch {
-      setError("Failed to save weekday prices. Please try again.");
-    }
-  }
-
-  return (
-    <div className="space-y-3">
-      <div>
-        <h4 className="text-sm font-semibold">Weekday Prices</h4>
-        <p className="text-xs text-muted-foreground mt-0.5">
-          Override per-weekday price. Leave "Use base" checked to use the
-          default ({Number(basePricePerNight).toFixed(0)} {currency}/night).
-        </p>
-      </div>
-
-      <div className="space-y-1.5">
-        {WEEKDAY_LABELS.map((label, i) => {
-          const useBase = prices[i] === null;
-          return (
-            <div
-              key={i}
-              className="flex items-center gap-3 rounded-lg border bg-card px-3 py-2"
-            >
-              <span className="w-24 text-sm font-medium">{label}</span>
-
-              <label className="flex cursor-pointer items-center gap-1.5 text-xs text-muted-foreground">
-                <input
-                  type="checkbox"
-                  checked={useBase}
-                  onChange={(e) => handleToggle(i, e.target.checked)}
-                  className="h-3.5 w-3.5 rounded border-muted"
-                />
-                Use base
-              </label>
-
-              <Input
-                type="number"
-                min="0"
-                step="0.01"
-                disabled={useBase}
-                value={useBase ? "" : (prices[i] ?? "")}
-                onChange={(e) => handlePriceChange(i, e.target.value)}
-                placeholder={basePricePerNight}
-                className="ml-auto h-8 w-28 text-right disabled:opacity-40"
-              />
-              <span className="w-8 text-xs text-muted-foreground">{currency}</span>
-            </div>
-          );
-        })}
-      </div>
-
-      {error && <p className="text-xs text-destructive">{error}</p>}
-
-      <Button size="sm" onClick={handleSave} disabled={upsert.isPending}>
-        {upsert.isPending ? "Saving…" : saved ? "Saved!" : "Save weekday prices"}
-      </Button>
-    </div>
-  );
-}
-
-// ─── Date override form ───────────────────────────────────────────────────────
-
-interface OverrideFormProps {
-  propertyId: string;
-  currency: string;
-  editTarget?: DatePriceOverride;
-  onDone: () => void;
-}
-
-function OverrideForm({ propertyId, currency, editTarget, onDone }: OverrideFormProps) {
-  const create = useCreateDateOverride(propertyId);
-  const update = useUpdateDateOverride(propertyId);
-
-  const [startDate, setStartDate] = useState(editTarget?.start_date ?? "");
-  const [endDate, setEndDate] = useState(editTarget?.end_date ?? "");
-  const [price, setPrice] = useState(editTarget?.price ?? "");
-  const [label, setLabel] = useState(editTarget?.label ?? "");
-  const [error, setError] = useState<string | null>(null);
-
-  async function handleSubmit() {
-    setError(null);
-    if (!startDate || !endDate || !price) {
-      setError("Start date, end date and price are required.");
+    if (!price || isNaN(Number(price)) || Number(price) < 0) {
+      setError("Enter a valid price");
       return;
     }
-    if (endDate < startDate) {
-      setError("End date must be on or after start date.");
-      return;
-    }
+    setSaving(true);
+    setError(null);
     try {
-      if (editTarget) {
-        await update.mutateAsync({
-          overrideId: editTarget.id,
-          start_date: startDate,
-          end_date: endDate,
-          price,
-          label: label || null,
-        });
+      if (overrideId) {
+        await onUpdate(price);
       } else {
-        await create.mutateAsync({
-          start_date: startDate,
-          end_date: endDate,
-          price,
-          label: label || null,
-        });
+        await onCreate(price);
       }
-      onDone();
+      onClose();
     } catch {
-      setError("Failed to save override. Please try again.");
+      setError("Failed to save");
+    } finally {
+      setSaving(false);
     }
   }
 
-  const isPending = create.isPending || update.isPending;
+  async function handleClear() {
+    if (!overrideId) { onClose(); return; }
+    setSaving(true);
+    try {
+      await onDelete();
+      onClose();
+    } catch {
+      setError("Failed to clear");
+    } finally {
+      setSaving(false);
+    }
+  }
 
   return (
-    <div className="space-y-3 rounded-lg border bg-card p-4">
-      <h5 className="text-sm font-semibold">
-        {editTarget ? "Edit override" : "Add date override"}
-      </h5>
-
-      <div className="grid grid-cols-2 gap-3">
-        <div className="space-y-1">
-          <Label className="text-xs">Start date *</Label>
-          <Input
-            type="date"
-            value={startDate}
-            onChange={(e) => setStartDate(e.target.value)}
-            className="h-8 text-sm"
-            required
-          />
-        </div>
-        <div className="space-y-1">
-          <Label className="text-xs">End date *</Label>
-          <Input
-            type="date"
-            value={endDate}
-            onChange={(e) => setEndDate(e.target.value)}
-            className="h-8 text-sm"
-            required
-          />
-        </div>
+    <div className="absolute z-30 top-full left-1/2 -translate-x-1/2 mt-1 w-44 rounded-lg border bg-popover shadow-md p-3 space-y-2">
+      <div className="text-xs font-medium text-foreground">{date}</div>
+      <div className="flex items-center gap-1.5">
+        <Input
+          ref={inputRef}
+          type="number"
+          min="0"
+          step="0.01"
+          value={price}
+          onChange={(e) => { setPrice(e.target.value); setError(null); }}
+          onKeyDown={(e) => { if (e.key === "Enter") handleSave(); if (e.key === "Escape") onClose(); }}
+          placeholder={basePrice}
+          className="h-7 text-sm"
+        />
+        <span className="text-xs text-muted-foreground shrink-0">{currency}</span>
       </div>
-
-      <div className="grid grid-cols-2 gap-3">
-        <div className="space-y-1">
-          <Label className="text-xs">Price per night * ({currency})</Label>
-          <Input
-            type="number"
-            min="0"
-            step="0.01"
-            value={price}
-            onChange={(e) => setPrice(e.target.value)}
-            className="h-8 text-sm"
-            required
-          />
-        </div>
-        <div className="space-y-1">
-          <Label className="text-xs">Label (optional)</Label>
-          <Input
-            type="text"
-            value={label}
-            onChange={(e) => setLabel(e.target.value)}
-            placeholder="e.g. Easter weekend"
-            className="h-8 text-sm"
-            maxLength={100}
-          />
-        </div>
-      </div>
-
       {error && <p className="text-xs text-destructive">{error}</p>}
-
-      <div className="flex gap-2">
-        <Button type="button" size="sm" disabled={isPending} onClick={handleSubmit}>
-          {isPending ? "Saving…" : editTarget ? "Update" : "Add"}
+      <div className="flex gap-1">
+        <Button size="sm" className="h-6 px-2 text-xs flex-1" disabled={saving} onClick={handleSave}>
+          <Check className="size-3 mr-1" />
+          Save
         </Button>
-        <Button type="button" size="sm" variant="ghost" onClick={onDone}>
-          Cancel
-        </Button>
-      </div>
-    </div>
-  );
-}
-
-// ─── Date overrides list ──────────────────────────────────────────────────────
-
-interface DateOverridesProps {
-  propertyId: string;
-  currency: string;
-  overrides: DatePriceOverride[];
-}
-
-function DateOverrides({ propertyId, currency, overrides }: DateOverridesProps) {
-  const deleteOverride = useDeleteDateOverride(propertyId);
-  const [showForm, setShowForm] = useState(false);
-  const [editing, setEditing] = useState<DatePriceOverride | undefined>(undefined);
-
-  return (
-    <div className="space-y-3">
-      <div className="flex items-center justify-between">
-        <div>
-          <h4 className="text-sm font-semibold">Date Overrides</h4>
-          <p className="text-xs text-muted-foreground mt-0.5">
-            Holiday / special-date prices (highest priority).
-          </p>
-        </div>
-        {!showForm && !editing && (
-          <Button
-            size="sm"
-            variant="outline"
-            className="gap-1.5"
-            onClick={() => setShowForm(true)}
-          >
-            <Plus className="size-3.5" />
-            Add
+        {overrideId && (
+          <Button size="sm" variant="ghost" className="h-6 px-2 text-xs text-destructive hover:text-destructive" disabled={saving} onClick={handleClear}>
+            <X className="size-3" />
           </Button>
         )}
+        <Button size="sm" variant="ghost" className="h-6 px-2 text-xs" disabled={saving} onClick={onClose}>
+          Esc
+        </Button>
       </div>
-
-      {(showForm || editing) && (
-        <OverrideForm
-          propertyId={propertyId}
-          currency={currency}
-          editTarget={editing}
-          onDone={() => {
-            setShowForm(false);
-            setEditing(undefined);
-          }}
-        />
-      )}
-
-      {overrides.length === 0 ? (
-        <p className="text-sm text-muted-foreground">No date overrides yet.</p>
-      ) : (
-        <div className="space-y-1.5">
-          {overrides.map((o) => (
-            <div
-              key={o.id}
-              className="flex items-center justify-between rounded-lg border bg-card px-3 py-2 text-sm"
-            >
-              <div>
-                <span className="font-medium">
-                  {o.start_date} → {o.end_date}
-                </span>
-                {o.label && (
-                  <span className="ml-2 rounded-full bg-primary/10 px-2 py-0.5 text-xs font-medium text-primary">
-                    {o.label}
-                  </span>
-                )}
-                <div className="mt-0.5 text-xs text-muted-foreground">
-                  {Number(o.price).toFixed(0)} {currency}/night
-                </div>
-              </div>
-              <div className="flex gap-1">
-                <button
-                  type="button"
-                  onClick={() => {
-                    setEditing(o);
-                    setShowForm(false);
-                  }}
-                  className="rounded-md p-1.5 text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
-                  aria-label="Edit"
-                >
-                  <Pencil className="size-3.5" />
-                </button>
-                <button
-                  type="button"
-                  onClick={() => deleteOverride.mutate(o.id)}
-                  className="rounded-md p-1.5 text-muted-foreground transition-colors hover:bg-destructive/10 hover:text-destructive"
-                  aria-label="Delete"
-                >
-                  <Trash2 className="size-3.5" />
-                </button>
-              </div>
-            </div>
-          ))}
-        </div>
-      )}
     </div>
   );
 }
-
-// ─── Section ──────────────────────────────────────────────────────────────────
 
 interface DynamicPricingSectionProps {
   propertyId: string | undefined;
   basePricePerNight?: string;
   currency?: string;
-  weekdayPrices?: WeekdayPrice[];
   dateOverrides?: DatePriceOverride[];
 }
 
@@ -361,33 +152,226 @@ export function DynamicPricingSection({
   propertyId,
   basePricePerNight = "0",
   currency = "EUR",
-  weekdayPrices = [],
   dateOverrides = [],
 }: DynamicPricingSectionProps) {
+  const today = new Date();
+  const [viewDate, setViewDate] = useState(new Date(today.getFullYear(), today.getMonth(), 1));
+  const [editingDate, setEditingDate] = useState<string | null>(null);
+
+  const create = useCreateDateOverride(propertyId!);
+  const update = useUpdateDateOverride(propertyId!);
+  const del = useDeleteDateOverride(propertyId!);
+
+  // Build lookup: date string → single-day override
+  const singleDayMap = new Map<string, DatePriceOverride>();
+  for (const o of dateOverrides) {
+    if (o.start_date === o.end_date) {
+      singleDayMap.set(o.start_date, o);
+    }
+  }
+
+  // Range overrides (start != end) — shown as info only
+  const rangeOverrides = dateOverrides.filter((o) => o.start_date !== o.end_date);
+
+  // Determine which dates are covered by a range override
+  const rangeCoveredDates = new Set<string>();
+  for (const o of rangeOverrides) {
+    const start = new Date(o.start_date);
+    const end = new Date(o.end_date);
+    for (let d = new Date(start); d <= end; d.setDate(d.getDate() + 1)) {
+      rangeCoveredDates.add(d.toISOString().slice(0, 10));
+    }
+  }
+
+  const year = viewDate.getFullYear();
+  const month = viewDate.getMonth();
+  const cells = buildCalendarDays(year, month);
+  const todayStr = today.toISOString().slice(0, 10);
+
+  function getPriceDisplay(date: string): { price: string; isCustom: boolean } {
+    const o = singleDayMap.get(date);
+    if (o) return { price: Number(o.price).toFixed(0), isCustom: true };
+    if (rangeCoveredDates.has(date)) return { price: "range", isCustom: true };
+    return { price: Number(basePricePerNight).toFixed(0), isCustom: false };
+  }
+
+  if (!propertyId) {
+    return (
+      <section id="section-dynamic-pricing" className="space-y-4 scroll-mt-20">
+        <div>
+          <h3 className="text-base font-semibold">Pricing Calendar</h3>
+          <p className="text-sm text-muted-foreground mt-0.5">
+            Set a custom price for specific dates. Base price applies otherwise.
+          </p>
+        </div>
+        <p className="text-sm text-muted-foreground rounded-lg border border-dashed p-4">
+          Save the property first to configure the pricing calendar.
+        </p>
+      </section>
+    );
+  }
+
   return (
-    <section id="section-dynamic-pricing" className="space-y-6 scroll-mt-20">
+    <section id="section-dynamic-pricing" className="space-y-4 scroll-mt-20">
       <div>
-        <h3 className="text-base font-semibold">Dynamic Pricing</h3>
+        <h3 className="text-base font-semibold">Pricing Calendar</h3>
         <p className="text-sm text-muted-foreground mt-0.5">
-          Per-weekday rates and special-date overrides. Priority: date override › weekday › base
-          price.
+          Click any date to set a custom price. Base price ({Number(basePricePerNight).toFixed(0)} {currency}) applies otherwise.
         </p>
       </div>
 
-      {!propertyId ? (
-        <p className="text-sm text-muted-foreground rounded-lg border border-dashed p-4">
-          Save the property first to configure dynamic pricing.
-        </p>
-      ) : (
-        <>
-          <WeekdayGrid
-            propertyId={propertyId}
-            basePricePerNight={basePricePerNight}
-            currency={currency}
-            existing={weekdayPrices}
-          />
-          <DateOverrides propertyId={propertyId} currency={currency} overrides={dateOverrides} />
-        </>
+      {/* Month navigation */}
+      <div className="flex items-center justify-between">
+        <Button
+          type="button"
+          variant="outline"
+          size="sm"
+          className="h-8 w-8 p-0"
+          onClick={() => { setEditingDate(null); setViewDate((d) => addMonths(d, -1)); }}
+        >
+          <ChevronLeft className="size-4" />
+        </Button>
+        <span className="text-sm font-semibold">
+          {MONTH_NAMES[month]} {year}
+        </span>
+        <Button
+          type="button"
+          variant="outline"
+          size="sm"
+          className="h-8 w-8 p-0"
+          onClick={() => { setEditingDate(null); setViewDate((d) => addMonths(d, 1)); }}
+        >
+          <ChevronRight className="size-4" />
+        </Button>
+      </div>
+
+      {/* Calendar grid */}
+      <div className="rounded-lg border overflow-hidden">
+        {/* Weekday headers */}
+        <div className="grid grid-cols-7 border-b">
+          {WEEKDAY_HEADERS.map((h) => (
+            <div key={h} className="py-1.5 text-center text-xs font-medium text-muted-foreground">
+              {h}
+            </div>
+          ))}
+        </div>
+
+        {/* Day cells */}
+        <div className="grid grid-cols-7">
+          {cells.map((date, idx) => {
+            if (!date) {
+              return <div key={`blank-${idx}`} className="aspect-square border-r border-b last:border-r-0 bg-muted/20" />;
+            }
+
+            const isToday = date === todayStr;
+            const isEditing = editingDate === date;
+            const override = singleDayMap.get(date);
+            const { price, isCustom } = getPriceDisplay(date);
+            const isRange = rangeCoveredDates.has(date) && !override;
+            const isPast = date < todayStr;
+
+            return (
+              <div
+                key={date}
+                className={[
+                  "relative aspect-square border-r border-b last:border-r-0 flex flex-col items-center justify-center gap-0.5 cursor-pointer select-none transition-colors",
+                  isPast ? "opacity-50" : "hover:bg-muted/50",
+                  isEditing ? "bg-primary/5 ring-1 ring-inset ring-primary" : "",
+                  isToday && !isEditing ? "bg-blue-50 dark:bg-blue-950/20" : "",
+                ].join(" ")}
+                onClick={() => {
+                  if (isEditing) return;
+                  setEditingDate(date);
+                }}
+              >
+                <span
+                  className={[
+                    "text-xs font-medium leading-none",
+                    isToday ? "text-blue-600 dark:text-blue-400" : "text-foreground",
+                  ].join(" ")}
+                >
+                  {parseInt(date.slice(8))}
+                </span>
+                <span
+                  className={[
+                    "text-[10px] leading-none",
+                    isCustom && !isRange ? "text-emerald-600 dark:text-emerald-400 font-semibold" : "",
+                    isRange ? "text-amber-500 dark:text-amber-400 font-medium" : "",
+                    !isCustom ? "text-muted-foreground" : "",
+                  ].join(" ")}
+                >
+                  {isRange ? "range" : `${price}`}
+                </span>
+
+                {isEditing && (
+                  <DayEditPopover
+                    date={date}
+                    currentPrice={override ? String(override.price) : null}
+                    basePrice={basePricePerNight}
+                    currency={currency}
+                    overrideId={override?.id ?? null}
+                    onCreate={async (p) => {
+                      await create.mutateAsync({ start_date: date, end_date: date, price: p });
+                    }}
+                    onUpdate={async (p) => {
+                      await update.mutateAsync({ overrideId: override!.id, price: p });
+                    }}
+                    onDelete={async () => {
+                      await del.mutateAsync(override!.id);
+                    }}
+                    onClose={() => setEditingDate(null)}
+                  />
+                )}
+              </div>
+            );
+          })}
+        </div>
+      </div>
+
+      {/* Legend */}
+      <div className="flex flex-wrap gap-4 text-xs text-muted-foreground">
+        <span className="flex items-center gap-1.5">
+          <span className="size-2.5 rounded-sm bg-muted border" />
+          Base price
+        </span>
+        <span className="flex items-center gap-1.5">
+          <span className="size-2.5 rounded-sm bg-emerald-100 dark:bg-emerald-900 border border-emerald-300" />
+          Custom price
+        </span>
+        {rangeOverrides.length > 0 && (
+          <span className="flex items-center gap-1.5">
+            <span className="size-2.5 rounded-sm bg-amber-100 dark:bg-amber-900 border border-amber-300" />
+            Range override
+          </span>
+        )}
+      </div>
+
+      {/* Range overrides info */}
+      {rangeOverrides.length > 0 && (
+        <div className="rounded-lg border bg-amber-50 dark:bg-amber-950/20 p-3 space-y-1.5">
+          <p className="text-xs font-medium text-amber-700 dark:text-amber-400">
+            Range-based overrides (not editable via calendar):
+          </p>
+          {rangeOverrides.map((o) => (
+            <div key={o.id} className="flex items-center justify-between text-xs">
+              <span className="text-foreground">
+                {o.start_date} → {o.end_date}
+                {o.label && <span className="ml-1 text-muted-foreground">({o.label})</span>}
+                {" — "}
+                <span className="font-medium">{Number(o.price).toFixed(0)} {currency}</span>
+              </span>
+              <Button
+                type="button"
+                variant="ghost"
+                size="sm"
+                className="h-5 px-1.5 text-xs text-destructive hover:text-destructive"
+                onClick={() => del.mutate(o.id)}
+              >
+                <X className="size-3" />
+              </Button>
+            </div>
+          ))}
+        </div>
       )}
     </section>
   );

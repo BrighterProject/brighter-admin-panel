@@ -17,8 +17,7 @@ import { PricingPoliciesSection } from './sections/pricing-policies-section';
 import { AmenitiesSection } from './sections/amenities-section';
 import { PhotosSection } from './sections/photos-section';
 import { DynamicPricingSection } from './sections/dynamic-pricing-section';
-import { GapFillerSection } from './sections/gap-filler-section';
-import type { Property, WeekdayPrice, DatePriceOverride } from '../types';
+import type { Property, DatePriceOverride } from '../types';
 
 interface PropertyFormProps {
   /** Provide to pre-populate for edit mode */
@@ -27,7 +26,6 @@ interface PropertyFormProps {
   isPending: boolean;
   /** Existing property id — enables dynamic pricing controls in edit mode */
   propertyId?: string;
-  weekdayPrices?: WeekdayPrice[];
   dateOverrides?: DatePriceOverride[];
 }
 
@@ -61,6 +59,9 @@ function propertyToFormValues(property: Property): PropertyFormSchema {
       is_thumbnail,
       order,
     })),
+    enable_gap_filler: property.enable_gap_filler ?? false,
+    gap_tax_pct: property.gap_tax_pct ?? 10,
+    gap_last_minute_window: property.gap_last_minute_window ?? 7,
     translations: {
       bg: {
         name: bgTranslation?.name ?? '',
@@ -83,7 +84,7 @@ function propertyToFormValues(property: Property): PropertyFormSchema {
 
 export { propertyToFormValues };
 
-export function PropertyForm({ initialValues, onSubmit, isPending, propertyId, weekdayPrices, dateOverrides }: PropertyFormProps) {
+export function PropertyForm({ initialValues, onSubmit, isPending, propertyId, dateOverrides }: PropertyFormProps) {
   const form = useForm<PropertyFormSchema>({
     resolver: zodResolver(propertyFormSchema) as Resolver<PropertyFormSchema>,
     defaultValues: { ...PROPERTY_FORM_DEFAULTS, ...initialValues },
@@ -148,11 +149,8 @@ export function PropertyForm({ initialValues, onSubmit, isPending, propertyId, w
             propertyId={propertyId}
             basePricePerNight={form.watch('price_per_night')}
             currency={form.watch('currency') || 'EUR'}
-            weekdayPrices={weekdayPrices}
             dateOverrides={dateOverrides}
           />
-          <Separator />
-          <GapFillerSection form={form} />
         </form>
       </Form>
 
