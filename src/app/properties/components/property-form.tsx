@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useForm, type Resolver } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { Loader2 } from 'lucide-react';
@@ -19,6 +19,12 @@ import { PhotosSection } from './sections/photos-section';
 import { DynamicPricingSection } from './sections/dynamic-pricing-section';
 import type { Property, DatePriceOverride } from '../types';
 
+interface PendingOverride {
+  start_date: string;
+  end_date: string;
+  price: string;
+}
+
 interface PropertyFormProps {
   /** Provide to pre-populate for edit mode */
   initialValues?: Partial<PropertyFormSchema>;
@@ -27,6 +33,8 @@ interface PropertyFormProps {
   /** Existing property id — enables dynamic pricing controls in edit mode */
   propertyId?: string;
   dateOverrides?: DatePriceOverride[];
+  onPendingFilesChange?: (files: File[]) => void;
+  onPendingOverridesChange?: (overrides: PendingOverride[]) => void;
 }
 
 function propertyToFormValues(property: Property): PropertyFormSchema {
@@ -84,13 +92,16 @@ function propertyToFormValues(property: Property): PropertyFormSchema {
 
 export { propertyToFormValues };
 
-export function PropertyForm({ initialValues, onSubmit, isPending, propertyId, dateOverrides }: PropertyFormProps) {
+export function PropertyForm({ initialValues, onSubmit, isPending, propertyId, dateOverrides, onPendingFilesChange, onPendingOverridesChange }: PropertyFormProps) {
   const form = useForm<PropertyFormSchema>({
     resolver: zodResolver(propertyFormSchema) as Resolver<PropertyFormSchema>,
     defaultValues: { ...PROPERTY_FORM_DEFAULTS, ...initialValues },
   });
 
-  const sectionStates = useSectionCompletion(form);
+  const [pendingFilesCount, setPendingFilesCount] = useState(0);
+  const [pendingOverridesCount, setPendingOverridesCount] = useState(0);
+
+  const sectionStates = useSectionCompletion(form, { pendingFilesCount, pendingOverridesCount });
   const completedCount = Object.values(sectionStates).filter((s) => s === 'complete').length;
   const allRequiredComplete = [
     sectionStates.basicInfo,
@@ -143,13 +154,24 @@ export function PropertyForm({ initialValues, onSubmit, isPending, propertyId, d
           <Separator />
           <AmenitiesSection form={form} />
           <Separator />
-          <PhotosSection form={form} propertyId={propertyId} />
+          <PhotosSection
+            form={form}
+            propertyId={propertyId}
+            onPendingFilesChange={useCallback((files: File[]) => {
+              setPendingFilesCount(files.length);
+              onPendingFilesChange?.(files);
+            }, [onPendingFilesChange])}
+          />
           <Separator />
           <DynamicPricingSection
             propertyId={propertyId}
             basePricePerNight={form.watch('price_per_night')}
             currency={form.watch('currency') || 'EUR'}
             dateOverrides={dateOverrides}
+            onPendingOverridesChange={useCallback((overrides) => {
+              setPendingOverridesCount(overrides.length);
+              onPendingOverridesChange?.(overrides);
+            }, [onPendingOverridesChange])}
           />
         </form>
       </Form>

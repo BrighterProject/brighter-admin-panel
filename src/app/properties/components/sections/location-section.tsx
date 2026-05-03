@@ -124,7 +124,7 @@ export function LocationSection({ form }: LocationSectionProps) {
                     disabled={!regionCode || settlementsLoading}
                   >
                     {selectedSettlement
-                      ? `${selectedSettlement.tvm} ${selectedSettlement.name}`
+                      ? `${selectedSettlement.tvm ? `${selectedSettlement.tvm} ` : ''}${selectedSettlement.name}`
                       : regionCode
                         ? 'Select settlement…'
                         : 'Select a region first'}
@@ -141,7 +141,7 @@ export function LocationSection({ form }: LocationSectionProps) {
                       {settlements.map((s) => (
                         <CommandItem
                           key={s.ekatte}
-                          value={`${s.tvm} ${s.name}`}
+                          value={`${s.tvm ? `${s.tvm} ` : ''}${s.name}`}
                           onSelect={() => {
                             field.onChange(s.ekatte);
                             setSettlementOpen(false);
@@ -153,7 +153,7 @@ export function LocationSection({ form }: LocationSectionProps) {
                               field.value === s.ekatte ? 'opacity-100' : 'opacity-0',
                             )}
                           />
-                          {s.tvm} {s.name}
+                          {s.tvm ? `${s.tvm} ` : ''}{s.name}
                         </CommandItem>
                       ))}
                     </CommandGroup>

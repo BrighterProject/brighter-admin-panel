@@ -14,10 +14,16 @@ export interface SectionStates {
   dynamicPricing: SectionState;
 }
 
+interface SectionExtras {
+  pendingFilesCount?: number;
+  pendingOverridesCount?: number;
+}
+
 // Pure function exported for testing without React/form dependencies
 export function computeSectionStates(
   values: PropertyFormSchema,
   errors: Record<string, { message?: string }>,
+  extras?: SectionExtras,
 ): SectionStates {
   const hasError = (...paths: string[]) => paths.some((p) => !!errors[p]);
   const filled = (v: unknown) => v !== undefined && v !== '' && v !== null && v !== false && v !== 0;
@@ -39,9 +45,9 @@ export function computeSectionStates(
       values.translations.ru.address,
     ]),
     location: deriveSectionState(
-      /* touchedValues */ [values.translations.bg.address, values.city],
-      /* requiredValues */ [values.translations.bg.address, values.city],
-      hasError('translations.bg.address', 'city'),
+      /* touchedValues */ [values.translations.bg.address, values.region_code],
+      /* requiredValues */ [values.translations.bg.address, values.region_code, values.settlement_ekatte],
+      hasError('translations.bg.address', 'region_code', 'settlement_ekatte'),
     ),
     roomsCapacity: deriveSectionState(
       /* touchedValues */ [values.max_guests, values.bedrooms, values.bathrooms, values.beds],
@@ -55,11 +61,11 @@ export function computeSectionStates(
     ),
     amenities: deriveOptionalSectionState([values.amenities?.length]),
     photos: deriveSectionState(
-      /* touchedValues */ [values.images?.length],
-      /* requiredValues */ [values.images?.some((img) => img.is_thumbnail)],
+      /* touchedValues */ [values.images?.length || extras?.pendingFilesCount],
+      /* requiredValues */ [values.images?.some((img) => img.is_thumbnail) || (extras?.pendingFilesCount ?? 0) > 0],
       hasError('images'),
     ),
-    dynamicPricing: 'untouched',
+    dynamicPricing: (extras?.pendingOverridesCount ?? 0) > 0 ? 'complete' : 'untouched',
   };
 
   function deriveSectionState(
@@ -78,8 +84,8 @@ export function computeSectionStates(
   }
 }
 
-export function useSectionCompletion(form: UseFormReturn<PropertyFormSchema>): SectionStates {
+export function useSectionCompletion(form: UseFormReturn<PropertyFormSchema>, extras?: SectionExtras): SectionStates {
   const values = form.watch();
   const errors = form.formState.errors as Record<string, { message?: string }>;
-  return computeSectionStates(values, errors);
+  return computeSectionStates(values, errors, extras);
 }

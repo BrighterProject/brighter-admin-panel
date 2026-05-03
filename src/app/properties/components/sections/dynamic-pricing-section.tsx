@@ -141,11 +141,18 @@ function DayEditPopover({
   );
 }
 
+interface PendingOverride {
+  start_date: string;
+  end_date: string;
+  price: string;
+}
+
 interface DynamicPricingSectionProps {
   propertyId: string | undefined;
   basePricePerNight?: string;
   currency?: string;
   dateOverrides?: DatePriceOverride[];
+  onPendingOverridesChange?: (overrides: PendingOverride[]) => void;
 }
 
 export function DynamicPricingSection({
@@ -153,25 +160,49 @@ export function DynamicPricingSection({
   basePricePerNight = "0",
   currency = "EUR",
   dateOverrides = [],
+  onPendingOverridesChange,
 }: DynamicPricingSectionProps) {
   const today = new Date();
   const [viewDate, setViewDate] = useState(new Date(today.getFullYear(), today.getMonth(), 1));
   const [editingDate, setEditingDate] = useState<string | null>(null);
+  const [offlineOverrides, setOfflineOverrides] = useState<Map<string, string>>(new Map());
 
-  const create = useCreateDateOverride(propertyId!);
-  const update = useUpdateDateOverride(propertyId!);
-  const del = useDeleteDateOverride(propertyId!);
+  const create = useCreateDateOverride(propertyId ?? '');
+  const update = useUpdateDateOverride(propertyId ?? '');
+  const del = useDeleteDateOverride(propertyId ?? '');
 
-  // Build lookup: date string → single-day override
+  const setOffline = (date: string, price: string) => {
+    setOfflineOverrides((prev) => {
+      const next = new Map(prev);
+      next.set(date, price);
+      onPendingOverridesChange?.(Array.from(next.entries()).map(([d, p]) => ({ start_date: d, end_date: d, price: p })));
+      return next;
+    });
+  };
+
+  const deleteOffline = (date: string) => {
+    setOfflineOverrides((prev) => {
+      const next = new Map(prev);
+      next.delete(date);
+      onPendingOverridesChange?.(Array.from(next.entries()).map(([d, p]) => ({ start_date: d, end_date: d, price: p })));
+      return next;
+    });
+  };
+
+  // In create mode: use offline overrides; in edit mode: use API-backed overrides
   const singleDayMap = new Map<string, DatePriceOverride>();
-  for (const o of dateOverrides) {
-    if (o.start_date === o.end_date) {
-      singleDayMap.set(o.start_date, o);
+  if (propertyId) {
+    for (const o of dateOverrides) {
+      if (o.start_date === o.end_date) singleDayMap.set(o.start_date, o);
+    }
+  } else {
+    for (const [date, price] of offlineOverrides.entries()) {
+      singleDayMap.set(date, { id: date, start_date: date, end_date: date, price, label: null } as DatePriceOverride);
     }
   }
 
-  // Range overrides (start != end) — shown as info only
-  const rangeOverrides = dateOverrides.filter((o) => o.start_date !== o.end_date);
+  // Range overrides (start != end) — shown as info only (edit mode only)
+  const rangeOverrides = propertyId ? dateOverrides.filter((o) => o.start_date !== o.end_date) : [];
 
   // Determine which dates are covered by a range override
   const rangeCoveredDates = new Set<string>();
@@ -195,28 +226,13 @@ export function DynamicPricingSection({
     return { price: Number(basePricePerNight).toFixed(0), isCustom: false };
   }
 
-  if (!propertyId) {
-    return (
-      <section id="section-dynamic-pricing" className="space-y-4 scroll-mt-20">
-        <div>
-          <h3 className="text-base font-semibold">Pricing Calendar</h3>
-          <p className="text-sm text-muted-foreground mt-0.5">
-            Set a custom price for specific dates. Base price applies otherwise.
-          </p>
-        </div>
-        <p className="text-sm text-muted-foreground rounded-lg border border-dashed p-4">
-          Save the property first to configure the pricing calendar.
-        </p>
-      </section>
-    );
-  }
-
   return (
     <section id="section-dynamic-pricing" className="space-y-4 scroll-mt-20">
       <div>
         <h3 className="text-base font-semibold">Pricing Calendar</h3>
         <p className="text-sm text-muted-foreground mt-0.5">
           Click any date to set a custom price. Base price ({Number(basePricePerNight).toFixed(0)} {currency}) applies otherwise.
+          {!propertyId && <span className="ml-1 text-amber-600 dark:text-amber-400">(Overrides will be saved when you submit.)</span>}
         </p>
       </div>
 
@@ -311,12 +327,15 @@ export function DynamicPricingSection({
                     currency={currency}
                     overrideId={override?.id ?? null}
                     onCreate={async (p) => {
+                      if (!propertyId) { setOffline(date, p); return; }
                       await create.mutateAsync({ start_date: date, end_date: date, price: p });
                     }}
                     onUpdate={async (p) => {
+                      if (!propertyId) { setOffline(date, p); return; }
                       await update.mutateAsync({ overrideId: override!.id, price: p });
                     }}
                     onDelete={async () => {
+                      if (!propertyId) { deleteOffline(date); return; }
                       await del.mutateAsync(override!.id);
                     }}
                     onClose={() => setEditingDate(null)}
