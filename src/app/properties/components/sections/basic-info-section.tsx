@@ -22,9 +22,10 @@ const PROPERTY_TYPE_LABELS = {
 
 interface BasicInfoSectionProps {
   form: UseFormReturn<PropertyFormSchema>;
+  isEdit?: boolean;
 }
 
-export function BasicInfoSection({ form }: BasicInfoSectionProps) {
+export function BasicInfoSection({ form, isEdit = false }: BasicInfoSectionProps) {
   return (
     <section id="section-basic-info" className="space-y-4 scroll-mt-20">
       <div>
@@ -52,6 +53,32 @@ export function BasicInfoSection({ form }: BasicInfoSectionProps) {
                 ))}
               </SelectContent>
             </Select>
+            <FormMessage />
+          </FormItem>
+        )}
+      />
+
+      <FormField
+        control={form.control}
+        name="registration_number"
+        render={({ field }) => (
+          <FormItem>
+            <FormLabel>
+              Регистрационен номер на обекта{isEdit ? '' : ' *'}
+            </FormLabel>
+            <FormControl>
+              <Input
+                placeholder="напр. АПТ-2024-00123"
+                disabled={isEdit}
+                readOnly={isEdit}
+                {...field}
+              />
+            </FormControl>
+            {isEdit && (
+              <p className="text-xs text-muted-foreground">
+                Регистрационният номер не може да се променя след създаване.
+              </p>
+            )}
             <FormMessage />
           </FormItem>
         )}

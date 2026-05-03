@@ -44,6 +44,7 @@ function propertyToFormValues(property: Property): PropertyFormSchema {
 
   return {
     property_type: property.property_type,
+    registration_number: property.registration_number ?? '',
     region_code: property.region_code ?? '',
     settlement_ekatte: property.settlement_ekatte ?? '',
     lat: property.lat?.toString() ?? '',
@@ -142,7 +143,7 @@ export function PropertyForm({ initialValues, onSubmit, isPending, propertyId, d
           onSubmit={form.handleSubmit(onSubmit)}
           className="flex-1 space-y-10 min-w-0"
         >
-          <BasicInfoSection form={form} />
+          <BasicInfoSection form={form} isEdit={!!initialValues} />
           <Separator />
           <TranslationsSection form={form} />
           <Separator />

@@ -187,6 +187,21 @@ export function PropertyDetailsDialog({
                 </div>
               </div>
 
+              {/* Registration Number — highlighted for admin review */}
+              {fullProperty?.registration_number && (
+                <div className="flex items-center gap-3 rounded-lg border border-orange-200 bg-orange-50 px-4 py-3 dark:border-orange-900/40 dark:bg-orange-900/20">
+                  <Building2 className="size-4 shrink-0 text-orange-600 dark:text-orange-400" />
+                  <div className="min-w-0">
+                    <p className="text-xs text-orange-600 dark:text-orange-400">
+                      Регистрационен номер на обекта
+                    </p>
+                    <p className="font-mono font-semibold text-sm truncate">
+                      {fullProperty.registration_number}
+                    </p>
+                  </div>
+                </div>
+              )}
+
               {/* Image Gallery */}
               <div>
                 <div className="flex items-center justify-between mb-2">

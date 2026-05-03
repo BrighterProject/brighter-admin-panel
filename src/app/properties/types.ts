@@ -154,6 +154,7 @@ export interface Property {
   city: string | null;
   lat: number | null;
   lng: number | null;
+  registration_number: string | null;
   price_per_night: string;
   currency: string;
   bedrooms: number;

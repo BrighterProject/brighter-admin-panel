@@ -52,6 +52,9 @@ export const propertyFormSchema = z.object({
     ],
     { required_error: "Property type is required" },
   ),
+  registration_number: z
+    .string()
+    .min(1, "Регистрационният номер е задължителен"),
   region_code: z.string().min(1, "Region is required"),
   settlement_ekatte: z.string().min(1, "Settlement is required"),
   lat: z
@@ -123,6 +126,7 @@ export type PropertyFormSchema = z.infer<typeof propertyFormSchema>;
 
 export const PROPERTY_FORM_DEFAULTS: PropertyFormSchema = {
   property_type: "apartment",
+  registration_number: "",
   region_code: "",
   settlement_ekatte: "",
   lat: "",
