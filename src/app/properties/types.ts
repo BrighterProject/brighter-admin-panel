@@ -168,6 +168,14 @@ export interface Property {
   min_nights: number;
   max_nights: number;
   cancellation_policy: CancellationPolicy;
+  enable_gap_filler: boolean;
+  gap_tax_pct: number;
+  gap_last_minute_window: number;
+  payment_config: {
+    accepted_methods: string[];
+    deposit_pct: number;
+    remaining_method: string | null;
+  } | null;
   rating: string;
   total_reviews: number;
   rooms: RoomEntry[];

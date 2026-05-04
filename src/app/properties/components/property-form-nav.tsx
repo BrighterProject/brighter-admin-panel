@@ -10,6 +10,7 @@ export const FORM_SECTIONS = [
   { id: 'section-amenities',         label: 'Amenities',           key: 'amenities' as const },
   { id: 'section-photos',            label: 'Photos',              key: 'photos' as const },
   { id: 'section-dynamic-pricing',  label: 'Pricing Calendar',    key: 'dynamicPricing' as const },
+  { id: 'section-payment-config',   label: 'Payment Config',       key: 'paymentConfig' as const },
 ] as const;
 
 interface PropertyFormNavProps {

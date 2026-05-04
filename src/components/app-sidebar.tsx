@@ -9,6 +9,7 @@ import {
   MapPin,
   ExternalLink,
   CreditCard,
+  BadgeCheck,
 } from "lucide-react";
 import { Link } from "react-router-dom";
 import { NavMain } from "@/components/nav-main";
@@ -60,6 +61,12 @@ const navGroups = [
         url: "/settings/payments",
         icon: CreditCard,
         ownerOnly: true,
+      },
+      {
+        title: "Абонаменти",
+        url: "/settings/subscriptions",
+        icon: BadgeCheck,
+        adminOnly: true,
       },
     ],
   },

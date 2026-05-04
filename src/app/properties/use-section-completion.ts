@@ -12,6 +12,7 @@ export interface SectionStates {
   amenities: SectionState;
   photos: SectionState;
   dynamicPricing: SectionState;
+  paymentConfig: SectionState;
 }
 
 interface SectionExtras {
@@ -66,6 +67,9 @@ export function computeSectionStates(
       hasError('images'),
     ),
     dynamicPricing: (extras?.pendingOverridesCount ?? 0) > 0 ? 'complete' : 'untouched',
+    paymentConfig: deriveOptionalSectionState([
+      values.payment_config?.accepted_methods?.length,
+    ]),
   };
 
   function deriveSectionState(

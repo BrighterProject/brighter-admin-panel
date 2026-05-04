@@ -17,6 +17,7 @@ import { PricingPoliciesSection } from './sections/pricing-policies-section';
 import { AmenitiesSection } from './sections/amenities-section';
 import { PhotosSection } from './sections/photos-section';
 import { DynamicPricingSection } from './sections/dynamic-pricing-section';
+import { PaymentConfigSection } from './sections/payment-config-section';
 import type { Property, DatePriceOverride } from '../types';
 
 interface PendingOverride {
@@ -71,6 +72,11 @@ function propertyToFormValues(property: Property): PropertyFormSchema {
     enable_gap_filler: property.enable_gap_filler ?? false,
     gap_tax_pct: property.gap_tax_pct ?? 10,
     gap_last_minute_window: property.gap_last_minute_window ?? 7,
+    payment_config: property.payment_config ?? {
+      accepted_methods: ["card"],
+      deposit_pct: 100,
+      remaining_method: null,
+    },
     translations: {
       bg: {
         name: bgTranslation?.name ?? '',
@@ -174,6 +180,8 @@ export function PropertyForm({ initialValues, onSubmit, isPending, propertyId, d
               onPendingOverridesChange?.(overrides);
             }, [onPendingOverridesChange])}
           />
+          <Separator />
+          <PaymentConfigSection form={form} />
         </form>
       </Form>
 

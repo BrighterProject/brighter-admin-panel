@@ -108,6 +108,11 @@ export const propertyFormSchema = z.object({
   enable_gap_filler: z.boolean().default(false),
   gap_tax_pct: z.coerce.number().min(-100).max(100).default(10),
   gap_last_minute_window: z.coerce.number().min(1).max(90).default(7),
+  payment_config: z.object({
+    accepted_methods: z.array(z.enum(["card", "bank_transfer", "cash"])).default(["card"]),
+    deposit_pct: z.number().min(20).max(100).default(100),
+    remaining_method: z.enum(["card", "bank_transfer", "cash"]).nullable().optional(),
+  }).default({}),
   translations: z.object({
     bg: z.object({
       name: z.string().min(2, "Name must be at least 2 characters"),
@@ -149,6 +154,11 @@ export const PROPERTY_FORM_DEFAULTS: PropertyFormSchema = {
   enable_gap_filler: false,
   gap_tax_pct: 10,
   gap_last_minute_window: 7,
+  payment_config: {
+    accepted_methods: ["card"],
+    deposit_pct: 100,
+    remaining_method: null,
+  },
   translations: {
     bg: { name: "", description: "", address: "", house_rules: "" },
     en: { name: "", description: "", address: "", house_rules: "" },
