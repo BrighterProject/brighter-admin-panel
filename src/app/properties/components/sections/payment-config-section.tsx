@@ -17,7 +17,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { usePaymentCapabilities } from "@/app/settings/bank-account/hooks";
+import { usePaymentCapabilities } from "@/app/settings/payments/hooks";
 import type { PropertyFormSchema } from "../../property-form.schema";
 
 type PaymentMethod = "card" | "bank_transfer" | "cash";
@@ -50,7 +50,7 @@ function methodBlocker(
   if (method === "bank_transfer" && !caps.can_accept_bank_transfer)
     return {
       message: "No bank account configured.",
-      linkTo: "/settings/bank-account",
+      linkTo: "/settings/payments",
       linkLabel: "Add bank account →",
     };
   return null;

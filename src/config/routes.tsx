@@ -25,9 +25,6 @@ const NotificationSettings = lazy(
 const PaymentsSettings = lazy(
   () => import("@/app/settings/payments/page"),
 );
-const BankAccountSettings = lazy(
-  () => import("@/app/settings/bank-account/page"),
-);
 const SubscriptionsSettings = lazy(
   () => import("@/app/settings/subscriptions/page"),
 );
@@ -55,7 +52,6 @@ export const routes: RouteConfig[] = [
   { path: "/settings/account", element: <AccountSettings /> },
   { path: "/settings/notifications", element: <NotificationSettings /> },
   { path: "/settings/payments", element: <PaymentsSettings /> },
-  { path: "/settings/bank-account", element: <BankAccountSettings /> },
   { path: "/settings/subscriptions", element: <SubscriptionsSettings /> },
   { path: "*", element: <NotFound /> },
 ];

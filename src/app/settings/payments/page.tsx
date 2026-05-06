@@ -1,12 +1,14 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import {
   ExternalLink,
   CreditCard,
   AlertTriangle,
   CheckCircle2,
   Clock,
+  Landmark,
+  Pencil,
 } from "lucide-react";
 import { BaseLayout } from "@/components/layouts/base-layout";
 import { Button } from "@/components/ui/button";
@@ -18,6 +20,8 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import { Separator } from "@/components/ui/separator";
 import { Skeleton } from "@/components/ui/skeleton";
 import {
@@ -29,11 +33,184 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import {
-  useStripeStatus,
+  useMyBankAccount,
   useStripeConnect,
   useStripeDisconnect,
+  useStripeStatus,
   useStripeUpdate,
+  useUpsertBankAccount,
 } from "./hooks";
+
+function BankAccountCard() {
+  const { data: account, isLoading } = useMyBankAccount();
+  const upsert = useUpsertBankAccount();
+  const [editing, setEditing] = useState(false);
+  const [iban, setIban] = useState("");
+  const [bic, setBic] = useState("");
+  const [bankName, setBankName] = useState("");
+  const [accountHolder, setAccountHolder] = useState("");
+  const [error, setError] = useState<string | null>(null);
+  const [saved, setSaved] = useState(false);
+
+  useEffect(() => {
+    if (!isLoading && !account && !editing) setEditing(true);
+  }, [isLoading, account, editing]);
+
+  function openEdit() {
+    setIban(account?.iban ?? "");
+    setBic(account?.bic ?? "");
+    setBankName(account?.bank_name ?? "");
+    setAccountHolder(account?.account_holder ?? "");
+    setError(null);
+    setSaved(false);
+    setEditing(true);
+  }
+
+  async function handleSubmit(e: React.FormEvent) {
+    e.preventDefault();
+    setError(null);
+    const ibanClean = iban.trim().replace(/\s/g, "");
+    if (!ibanClean || !accountHolder.trim()) {
+      setError("IBAN and account holder name are required.");
+      return;
+    }
+    try {
+      await upsert.mutateAsync({
+        iban: ibanClean,
+        bic: bic.trim() || null,
+        bank_name: bankName.trim() || null,
+        account_holder: accountHolder.trim(),
+      });
+      setSaved(true);
+      setEditing(false);
+    } catch {
+      setError("Failed to save. Please check the details and try again.");
+    }
+  }
+
+  if (isLoading)
+    return (
+      <Card>
+        <CardContent className="space-y-4 py-6">
+          {[0, 1].map((i) => (
+            <Skeleton key={i} className="h-4 w-full" />
+          ))}
+        </CardContent>
+      </Card>
+    );
+
+  return (
+    <Card>
+      <CardHeader>
+        <div className="flex items-center justify-between">
+          <CardTitle className="flex items-center gap-2">
+            <Landmark className="size-5" />
+            Банков превод
+          </CardTitle>
+          {account && !editing && (
+            <Button variant="ghost" size="sm" className="gap-1.5 cursor-pointer" onClick={openEdit}>
+              <Pencil className="size-4" />
+              Редактирай
+            </Button>
+          )}
+        </div>
+        <CardDescription>
+          {account
+            ? "Гостите, избрали банков превод, изпращат парите директно на тази сметка."
+            : "Добави банкова сметка, за да можеш да приемаш плащания чрез банков превод."}
+        </CardDescription>
+      </CardHeader>
+      <CardContent>
+        {!editing && account ? (
+          <div className="space-y-3 text-sm">
+            <div className="grid gap-1">
+              <p className="text-muted-foreground">Титуляр</p>
+              <p className="font-medium">{account.account_holder}</p>
+            </div>
+            <div className="grid gap-1">
+              <p className="text-muted-foreground">IBAN</p>
+              <p className="font-mono">{account.iban}</p>
+            </div>
+            {account.bic && (
+              <div className="grid gap-1">
+                <p className="text-muted-foreground">BIC / SWIFT</p>
+                <p className="font-mono">{account.bic}</p>
+              </div>
+            )}
+            {account.bank_name && (
+              <div className="grid gap-1">
+                <p className="text-muted-foreground">Банка</p>
+                <p>{account.bank_name}</p>
+              </div>
+            )}
+            {saved && (
+              <p className="flex items-center gap-1.5 text-emerald-600 text-xs font-medium">
+                <CheckCircle2 className="size-3.5" />
+                Записано успешно.
+              </p>
+            )}
+          </div>
+        ) : (
+          <form onSubmit={handleSubmit} className="space-y-4">
+            <div className="grid gap-4 sm:grid-cols-2">
+              <div className="space-y-1.5">
+                <Label htmlFor="iban">IBAN *</Label>
+                <Input
+                  id="iban"
+                  value={iban}
+                  onChange={(e) => setIban(e.target.value)}
+                  placeholder="BG80BNBG96611020345678"
+                  maxLength={34}
+                />
+              </div>
+              <div className="space-y-1.5">
+                <Label htmlFor="bic">BIC / SWIFT</Label>
+                <Input
+                  id="bic"
+                  value={bic}
+                  onChange={(e) => setBic(e.target.value)}
+                  placeholder="BNBGBGSD"
+                  maxLength={11}
+                />
+              </div>
+              <div className="space-y-1.5">
+                <Label htmlFor="account-holder">Титуляр *</Label>
+                <Input
+                  id="account-holder"
+                  value={accountHolder}
+                  onChange={(e) => setAccountHolder(e.target.value)}
+                  placeholder="Иван Петров"
+                  maxLength={200}
+                />
+              </div>
+              <div className="space-y-1.5">
+                <Label htmlFor="bank-name">Банка</Label>
+                <Input
+                  id="bank-name"
+                  value={bankName}
+                  onChange={(e) => setBankName(e.target.value)}
+                  placeholder="DSK Bank"
+                  maxLength={100}
+                />
+              </div>
+            </div>
+            {error && <p className="text-sm text-destructive">{error}</p>}
+            <div className="flex gap-2">
+              <Button type="submit" disabled={upsert.isPending} className="cursor-pointer">
+                {upsert.isPending ? "Записване…" : "Запази"}
+              </Button>
+              {account && (
+                <Button type="button" variant="ghost" className="cursor-pointer" onClick={() => setEditing(false)}>
+                  Отказ
+                </Button>
+              )}
+            </div>
+          </form>
+        )}
+      </CardContent>
+    </Card>
+  );
+}
 
 function HowItWorks() {
   const steps = [
@@ -285,6 +462,7 @@ export default function PaymentsSettings() {
             </CardContent>
           </Card>
         )}
+        <BankAccountCard />
         {/* Disconnect confirmation */}
         <Dialog
           open={confirmingDisconnect}

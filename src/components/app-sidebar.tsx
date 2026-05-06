@@ -10,7 +10,6 @@ import {
   ExternalLink,
   CreditCard,
   BadgeCheck,
-  Landmark,
 } from "lucide-react";
 import { Link } from "react-router-dom";
 import { NavMain } from "@/components/nav-main";
@@ -61,12 +60,6 @@ const navGroups = [
         title: "Плащания",
         url: "/settings/payments",
         icon: CreditCard,
-        ownerOnly: true,
-      },
-      {
-        title: "Банкова сметка",
-        url: "/settings/bank-account",
-        icon: Landmark,
         ownerOnly: true,
       },
       {
