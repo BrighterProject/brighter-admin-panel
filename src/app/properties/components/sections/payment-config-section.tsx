@@ -1,4 +1,6 @@
 import { type UseFormReturn } from "react-hook-form";
+import { AlertTriangle } from "lucide-react";
+import { Link } from "react-router-dom";
 import {
   FormControl,
   FormDescription,
@@ -15,21 +17,52 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { usePaymentCapabilities } from "@/app/settings/bank-account/hooks";
 import type { PropertyFormSchema } from "../../property-form.schema";
 
-const PAYMENT_METHOD_LABELS: Record<string, string> = {
+type PaymentMethod = "card" | "bank_transfer" | "cash";
+
+const PAYMENT_METHOD_LABELS: Record<PaymentMethod, string> = {
   card: "Credit/Debit Card",
   bank_transfer: "Bank Transfer",
   cash: "Cash (on arrival)",
 };
 
-const ALL_METHODS = ["card", "bank_transfer", "cash"] as const;
+const ALL_METHODS: PaymentMethod[] = ["card", "bank_transfer", "cash"];
+
+interface Blocker {
+  message: string;
+  linkTo: string;
+  linkLabel: string;
+}
+
+function methodBlocker(
+  method: PaymentMethod,
+  caps: { can_accept_card: boolean; can_accept_bank_transfer: boolean } | undefined,
+): Blocker | null {
+  if (!caps) return null;
+  if (method === "card" && !caps.can_accept_card)
+    return {
+      message: "Stripe Connect is not active.",
+      linkTo: "/settings/payments",
+      linkLabel: "Set up Stripe →",
+    };
+  if (method === "bank_transfer" && !caps.can_accept_bank_transfer)
+    return {
+      message: "No bank account configured.",
+      linkTo: "/settings/bank-account",
+      linkLabel: "Add bank account →",
+    };
+  return null;
+}
 
 interface PaymentConfigSectionProps {
   form: UseFormReturn<PropertyFormSchema>;
 }
 
 export function PaymentConfigSection({ form }: PaymentConfigSectionProps) {
+  const { data: caps } = usePaymentCapabilities();
+
   return (
     <section id="section-payment-config" className="space-y-4 scroll-mt-20">
       <div>
@@ -45,23 +78,45 @@ export function PaymentConfigSection({ form }: PaymentConfigSectionProps) {
         render={({ field }) => (
           <FormItem>
             <FormLabel>Accepted payment methods</FormLabel>
-            <div className="flex flex-wrap gap-4 mt-1">
-              {ALL_METHODS.map((method) => (
-                <label key={method} className="flex items-center gap-2 text-sm cursor-pointer">
-                  <input
-                    type="checkbox"
-                    checked={field.value?.includes(method) ?? false}
-                    onChange={(e) => {
-                      const next = e.target.checked
-                        ? [...(field.value ?? []), method]
-                        : (field.value ?? []).filter((m: string) => m !== method);
-                      field.onChange(next);
-                    }}
-                    className="rounded"
-                  />
-                  {PAYMENT_METHOD_LABELS[method]}
-                </label>
-              ))}
+            <div className="space-y-2 mt-1">
+              {ALL_METHODS.map((method) => {
+                const blocker = methodBlocker(method, caps);
+                const checked = field.value?.includes(method) ?? false;
+                return (
+                  <div key={method} className="flex flex-col gap-0.5">
+                    <label
+                      className={`flex items-center gap-2 text-sm ${blocker ? "cursor-not-allowed opacity-60" : "cursor-pointer"}`}
+                    >
+                      <input
+                        type="checkbox"
+                        checked={checked}
+                        disabled={!!blocker}
+                        onChange={(e) => {
+                          if (blocker) return;
+                          const next = e.target.checked
+                            ? [...(field.value ?? []), method]
+                            : (field.value ?? []).filter((m: string) => m !== method);
+                          field.onChange(next);
+                        }}
+                        className="rounded"
+                      />
+                      {PAYMENT_METHOD_LABELS[method]}
+                    </label>
+                    {blocker && (
+                      <p className="ml-6 flex items-center gap-1 text-xs text-amber-600 dark:text-amber-400">
+                        <AlertTriangle className="size-3 shrink-0" />
+                        {blocker.message}{" "}
+                        <Link
+                          to={blocker.linkTo}
+                          className="underline font-medium hover:text-amber-700 dark:hover:text-amber-300"
+                        >
+                          {blocker.linkLabel}
+                        </Link>
+                      </p>
+                    )}
+                  </div>
+                );
+              })}
             </div>
             <FormMessage />
           </FormItem>
