@@ -1,4 +1,5 @@
 import { useEffect } from "react";
+import { toast } from "sonner";
 import { useForm } from "react-hook-form";
 import { z, regexes } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -89,7 +90,18 @@ export function UserEditDialog({ user, onClose }: UserEditDialogProps) {
       onClose();
       return;
     }
-    updateUser({ id: user.id, data: changed }, { onSuccess: onClose });
+    updateUser(
+      { id: user.id, data: changed },
+      {
+        onSuccess: () => {
+          toast.success("Потребителят е обновен успешно.");
+          onClose();
+        },
+        onError: () => {
+          toast.error("Грешка при обновяване на потребителя. Моля, опитайте отново.");
+        },
+      },
+    );
   };
 
   return (

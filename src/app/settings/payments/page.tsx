@@ -71,7 +71,7 @@ function BankAccountCard() {
     setError(null);
     const ibanClean = iban.trim().replace(/\s/g, "");
     if (!ibanClean || !accountHolder.trim()) {
-      setError("IBAN and account holder name are required.");
+      setError("IBAN и името на титуляра са задължителни.");
       return;
     }
     try {
@@ -84,7 +84,7 @@ function BankAccountCard() {
       setSaved(true);
       setEditing(false);
     } catch {
-      setError("Failed to save. Please check the details and try again.");
+      setError("Грешка при запазване. Моля, проверете данните и опитайте отново.");
     }
   }
 

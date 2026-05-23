@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { toast } from "sonner";
 import { Loader2 } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
@@ -39,7 +40,18 @@ export function ScopeEditorDialog({ user, onClose }: ScopeEditorProps) {
 
   const handleSave = () => {
     if (!user) return;
-    updateScopes({ id: user.id, scopes: selected }, { onSuccess: onClose });
+    updateScopes(
+      { id: user.id, scopes: selected },
+      {
+        onSuccess: () => {
+          toast.success("Правата са обновени успешно.");
+          onClose();
+        },
+        onError: () => {
+          toast.error("Грешка при обновяване на правата. Моля, опитайте отново.");
+        },
+      },
+    );
   };
 
   return (

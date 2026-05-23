@@ -4,7 +4,7 @@ import { Navigate } from "react-router-dom";
 import { BaseLayout } from "@/components/layouts/base-layout";
 import { StatCards } from "./components/stat-cards";
 import { DataTable } from "./components/data-table";
-import { useAddUser, useDeleteUser, useUpdateScopes, useUsers } from "./hooks";
+import { useDeleteUser, useUpdateScopes, useUsers } from "./hooks";
 import { useMe } from "@/app/auth/api/hooks";
 import { isAdmin } from "@/lib/scopes";
 
@@ -15,7 +15,6 @@ export default function UsersPage() {
   if (!meLoading && me && !isAdmin(me.scopes)) {
     return <Navigate to="/errors/forbidden" replace />;
   }
-  const { mutate: addUser } = useAddUser();
   const { mutate: deleteUser } = useDeleteUser();
   const { mutate: updateScopes } = useUpdateScopes();
 
@@ -32,7 +31,6 @@ export default function UsersPage() {
           <DataTable
             users={users}
             loading={isLoading}
-            onAddUser={addUser}
             onDeleteUser={deleteUser}
             onUpdateScopes={(id, scopes) => updateScopes({ id, scopes })}
           />
