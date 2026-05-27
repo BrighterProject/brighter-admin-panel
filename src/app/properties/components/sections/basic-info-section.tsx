@@ -29,9 +29,9 @@ export function BasicInfoSection({ form, isEdit = false }: BasicInfoSectionProps
   return (
     <section id="section-basic-info" className="space-y-4 scroll-mt-20">
       <div>
-        <h3 className="text-base font-semibold">Basic Info</h3>
+        <h3 className="text-base font-semibold">Основна информация</h3>
         <p className="text-sm text-muted-foreground mt-0.5">
-          Property type, name and description in Bulgarian.
+          Вид имот, наименование и описание на български.
         </p>
       </div>
 
@@ -40,11 +40,11 @@ export function BasicInfoSection({ form, isEdit = false }: BasicInfoSectionProps
         name="property_type"
         render={({ field }) => (
           <FormItem>
-            <FormLabel>Property Type</FormLabel>
+            <FormLabel>Вид имот</FormLabel>
             <Select onValueChange={field.onChange} value={field.value}>
               <FormControl>
                 <SelectTrigger>
-                  <SelectValue placeholder="Select type…" />
+                  <SelectValue placeholder="Изберете вид…" />
                 </SelectTrigger>
               </FormControl>
               <SelectContent>
@@ -89,7 +89,7 @@ export function BasicInfoSection({ form, isEdit = false }: BasicInfoSectionProps
         name="translations.bg.name"
         render={({ field }) => (
           <FormItem>
-            <FormLabel>Name (Bulgarian) *</FormLabel>
+            <FormLabel>Наименование (Български) *</FormLabel>
             <FormControl>
               <Input placeholder="Уютен апартамент в центъра" {...field} />
             </FormControl>
@@ -103,7 +103,7 @@ export function BasicInfoSection({ form, isEdit = false }: BasicInfoSectionProps
         name="translations.bg.description"
         render={({ field }) => (
           <FormItem>
-            <FormLabel>Description (Bulgarian) *</FormLabel>
+            <FormLabel>Описание (Български) *</FormLabel>
             <FormControl>
               <Textarea rows={4} placeholder="Опишете имота…" {...field} />
             </FormControl>
@@ -117,7 +117,7 @@ export function BasicInfoSection({ form, isEdit = false }: BasicInfoSectionProps
         name="translations.bg.house_rules"
         render={({ field }) => (
           <FormItem>
-            <FormLabel>House Rules (Bulgarian)</FormLabel>
+            <FormLabel>Правила на имота (Български)</FormLabel>
             <FormControl>
               <Textarea rows={3} placeholder="Правила на имота (по избор)…" {...field} />
             </FormControl>

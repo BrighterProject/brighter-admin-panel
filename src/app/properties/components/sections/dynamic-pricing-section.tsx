@@ -9,11 +9,11 @@ import {
 } from "../../hooks";
 import type { DatePriceOverride } from "../../types";
 
-const WEEKDAY_HEADERS = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
+const WEEKDAY_HEADERS = ["Пон", "Вт", "Ср", "Чет", "Пет", "Съб", "Нед"];
 
 const MONTH_NAMES = [
-  "January", "February", "March", "April", "May", "June",
-  "July", "August", "September", "October", "November", "December",
+  "Януари", "Февруари", "Март", "Април", "Май", "Юни",
+  "Юли", "Август", "Септември", "Октомври", "Ноември", "Декември",
 ];
 
 function toIso(year: number, month: number, day: number): string {
@@ -73,7 +73,7 @@ function DayEditPopover({
 
   async function handleSave() {
     if (!price || isNaN(Number(price)) || Number(price) < 0) {
-      setError("Enter a valid price");
+      setError("Въведете валидна цена");
       return;
     }
     setSaving(true);
@@ -86,7 +86,7 @@ function DayEditPopover({
       }
       onClose();
     } catch {
-      setError("Failed to save");
+      setError("Неуспешно запазване");
     } finally {
       setSaving(false);
     }
@@ -99,7 +99,7 @@ function DayEditPopover({
       await onDelete();
       onClose();
     } catch {
-      setError("Failed to clear");
+      setError("Неуспешно изтриване");
     } finally {
       setSaving(false);
     }
@@ -126,7 +126,7 @@ function DayEditPopover({
       <div className="flex gap-1">
         <Button size="sm" className="h-6 px-2 text-xs flex-1" disabled={saving} onClick={handleSave}>
           <Check className="size-3 mr-1" />
-          Save
+          Запази
         </Button>
         {overrideId && (
           <Button size="sm" variant="ghost" className="h-6 px-2 text-xs text-destructive hover:text-destructive" disabled={saving} onClick={handleClear}>
@@ -229,10 +229,10 @@ export function DynamicPricingSection({
   return (
     <section id="section-dynamic-pricing" className="space-y-4 scroll-mt-20">
       <div>
-        <h3 className="text-base font-semibold">Pricing Calendar</h3>
+        <h3 className="text-base font-semibold">Ценови календар</h3>
         <p className="text-sm text-muted-foreground mt-0.5">
-          Click any date to set a custom price. Base price ({Number(basePricePerNight).toFixed(0)} {currency}) applies otherwise.
-          {!propertyId && <span className="ml-1 text-amber-600 dark:text-amber-400">(Overrides will be saved when you submit.)</span>}
+          Натиснете върху дата за задаване на персонализирана цена. Базовата цена ({Number(basePricePerNight).toFixed(0)} {currency}) важи в останалите случаи.
+          {!propertyId && <span className="ml-1 text-amber-600 dark:text-amber-400">(Замените ще бъдат запазени при изпращане.)</span>}
         </p>
       </div>
 
@@ -316,7 +316,7 @@ export function DynamicPricingSection({
                     !isCustom ? "text-muted-foreground" : "",
                   ].join(" ")}
                 >
-                  {isRange ? "range" : `${price}`}
+                  {isRange ? "обхват" : `${price}`}
                 </span>
 
                 {isEditing && (
@@ -351,16 +351,16 @@ export function DynamicPricingSection({
       <div className="flex flex-wrap gap-4 text-xs text-muted-foreground">
         <span className="flex items-center gap-1.5">
           <span className="size-2.5 rounded-sm bg-muted border" />
-          Base price
+          Базова цена
         </span>
         <span className="flex items-center gap-1.5">
           <span className="size-2.5 rounded-sm bg-emerald-100 dark:bg-emerald-900 border border-emerald-300" />
-          Custom price
+          Персонализирана цена
         </span>
         {rangeOverrides.length > 0 && (
           <span className="flex items-center gap-1.5">
             <span className="size-2.5 rounded-sm bg-amber-100 dark:bg-amber-900 border border-amber-300" />
-            Range override
+            Обхватна замяна
           </span>
         )}
       </div>
@@ -369,7 +369,7 @@ export function DynamicPricingSection({
       {rangeOverrides.length > 0 && (
         <div className="rounded-lg border bg-amber-50 dark:bg-amber-950/20 p-3 space-y-1.5">
           <p className="text-xs font-medium text-amber-700 dark:text-amber-400">
-            Range-based overrides (not editable via calendar):
+            Обхватни замени (не се редактират в календара):
           </p>
           {rangeOverrides.map((o) => (
             <div key={o.id} className="flex items-center justify-between text-xs">

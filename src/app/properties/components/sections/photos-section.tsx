@@ -78,7 +78,7 @@ function SortableImage({
       <button
         type="button"
         onClick={onSetThumbnail}
-        title="Set as thumbnail"
+        title="Задай като миниатюра"
         className={cn(
           'p-1 rounded',
           item.is_thumbnail
@@ -154,7 +154,7 @@ export function PhotosSection({ form, propertyId, onPendingFilesChange }: Photos
         { url: uploaded.url, is_thumbnail: !hasThumbnail, order: images.length },
       ]);
     } catch {
-      setUploadError('Upload failed. Check file type (JPEG/PNG/WebP) and size (max 5 MB).');
+      setUploadError('Неуспешно качване. Проверете вида (JPEG/PNG/WebP) и размера (макс. 5 MB).');
     } finally {
       if (fileInputRef.current) fileInputRef.current.value = '';
     }
@@ -197,15 +197,15 @@ export function PhotosSection({ form, propertyId, onPendingFilesChange }: Photos
   return (
     <section id="section-photos" className="space-y-4 scroll-mt-20">
       <div>
-        <h3 className="text-base font-semibold">Photos</h3>
+        <h3 className="text-base font-semibold">Снимки</h3>
         <p className="text-sm text-muted-foreground mt-0.5">
-          Upload photos or add URLs. Drag to reorder. Click the star to set the thumbnail.
-          At least one photo required.
+          Качете снимки или добавете URL адреси. Плъзнете за пренареждане. Натиснете звездата за миниатюра.
+          Необходима е поне една снимка.
         </p>
       </div>
 
       <FormItem>
-        <FormLabel>Upload photo</FormLabel>
+        <FormLabel>Качи снимка</FormLabel>
         <div className="flex items-center gap-2">
           <input
             ref={fileInputRef}
@@ -226,7 +226,7 @@ export function PhotosSection({ form, propertyId, onPendingFilesChange }: Photos
               <Upload className="size-4" />
             )}
             <span className="ml-2">
-              {uploadMutation.isPending ? 'Uploading…' : 'Choose file'}
+              {uploadMutation.isPending ? 'Качване…' : 'Избери файл'}
             </span>
           </Button>
         </div>
@@ -239,7 +239,7 @@ export function PhotosSection({ form, propertyId, onPendingFilesChange }: Photos
         <div className="space-y-2">
           <p className="text-xs text-muted-foreground flex items-center gap-1">
             <Clock className="size-3" />
-            These files will be uploaded after saving the property.
+            Тези файлове ще бъдат качени след запазване на имота.
           </p>
           {pendingFiles.map((p) => (
             <div key={p.id} className="flex items-center gap-2 rounded-md border p-2">
@@ -249,7 +249,7 @@ export function PhotosSection({ form, propertyId, onPendingFilesChange }: Photos
                 className="size-12 rounded object-cover shrink-0"
               />
               <span className="text-xs text-muted-foreground flex-1 truncate">{p.file.name}</span>
-              <Badge variant="secondary" className="text-xs shrink-0">Pending</Badge>
+              <Badge variant="secondary" className="text-xs shrink-0">Изчакващ</Badge>
               <Button type="button" variant="ghost" size="icon" onClick={() => removePendingFile(p.id)}>
                 <Trash2 className="size-4 text-destructive" />
               </Button>
@@ -259,7 +259,7 @@ export function PhotosSection({ form, propertyId, onPendingFilesChange }: Photos
       )}
 
       <FormItem>
-        <FormLabel>Add photo URL</FormLabel>
+        <FormLabel>Добави URL на снимка</FormLabel>
         <div className="flex gap-2">
           <Input
             placeholder="https://example.com/photo.jpg"

@@ -14,14 +14,14 @@ export function AmenitiesSection({ form }: AmenitiesSectionProps) {
   return (
     <section id="section-amenities" className="space-y-4 scroll-mt-20">
       <div>
-        <h3 className="text-base font-semibold">Amenities</h3>
+        <h3 className="text-base font-semibold">Удобства</h3>
         <p className="text-sm text-muted-foreground mt-0.5">
-          Search and select amenities available at your property.
+          Търсете и изберете удобствата, налични на вашия имот.
         </p>
       </div>
 
       <FormItem>
-        <FormLabel>Amenities (optional)</FormLabel>
+        <FormLabel>Удобства (незадължително)</FormLabel>
         <AmenitySearchInput
           value={field.value as AmenityType[]}
           onChange={field.onChange}

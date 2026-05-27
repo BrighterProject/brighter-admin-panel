@@ -16,18 +16,18 @@ export function RoomsCapacitySection({ form }: RoomsCapacitySectionProps) {
   return (
     <section id="section-rooms-capacity" className="space-y-4 scroll-mt-20">
       <div>
-        <h3 className="text-base font-semibold">Rooms & Capacity</h3>
+        <h3 className="text-base font-semibold">Стаи и капацитет</h3>
         <p className="text-sm text-muted-foreground mt-0.5">
-          How many guests can stay and what rooms does the property have.
+          Колко гости могат да отседнат и какви стаи има имотът.
         </p>
       </div>
 
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
         {([
-          { name: 'max_guests', label: 'Max guests *' },
-          { name: 'bedrooms',   label: 'Bedrooms *' },
-          { name: 'bathrooms',  label: 'Bathrooms *' },
-          { name: 'beds',       label: 'Total beds *' },
+          { name: 'max_guests', label: 'Макс. гости *' },
+          { name: 'bedrooms',   label: 'Спални *' },
+          { name: 'bathrooms',  label: 'Бани *' },
+          { name: 'beds',       label: 'Общо легла *' },
         ] as const).map(({ name, label }) => (
           <FormField
             key={name}
@@ -47,9 +47,9 @@ export function RoomsCapacitySection({ form }: RoomsCapacitySectionProps) {
       </div>
 
       <div className="space-y-2">
-        <FormLabel>Room configuration (optional)</FormLabel>
+        <FormLabel>Конфигурация на стаи (незадължително)</FormLabel>
         <p className="text-xs text-muted-foreground">
-          Add individual rooms with their bed types for a detailed listing.
+          Добавете отделни стаи с видовете им легла за детайлно описание.
         </p>
         <RoomsBuilder value={roomsField.value} onChange={roomsField.onChange} />
       </div>

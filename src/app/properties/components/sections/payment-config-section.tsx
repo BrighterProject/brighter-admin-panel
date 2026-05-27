@@ -23,9 +23,9 @@ import type { PropertyFormSchema } from "../../property-form.schema";
 type PaymentMethod = "card" | "bank_transfer" | "cash";
 
 const PAYMENT_METHOD_LABELS: Record<PaymentMethod, string> = {
-  card: "Credit/Debit Card",
-  bank_transfer: "Bank Transfer",
-  cash: "Cash (on arrival)",
+  card: "Карта (дебитна/кредитна)",
+  bank_transfer: "Банков превод",
+  cash: "В брой (при пристигане)",
 };
 
 const ALL_METHODS: PaymentMethod[] = ["card", "bank_transfer", "cash"];
@@ -43,15 +43,15 @@ function methodBlocker(
   if (!caps) return null;
   if (method === "card" && !caps.can_accept_card)
     return {
-      message: "Stripe Connect is not active.",
+      message: "Stripe Connect не е активен.",
       linkTo: "/settings/payments",
-      linkLabel: "Set up Stripe →",
+      linkLabel: "Настрой Stripe →",
     };
   if (method === "bank_transfer" && !caps.can_accept_bank_transfer)
     return {
-      message: "No bank account configured.",
+      message: "Няма конфигурирана банкова сметка.",
       linkTo: "/settings/payments",
-      linkLabel: "Add bank account →",
+      linkLabel: "Добави банкова сметка →",
     };
   return null;
 }
@@ -66,9 +66,9 @@ export function PaymentConfigSection({ form }: PaymentConfigSectionProps) {
   return (
     <section id="section-payment-config" className="space-y-4 scroll-mt-20">
       <div>
-        <h3 className="text-base font-semibold">Payment Configuration</h3>
+        <h3 className="text-base font-semibold">Платежна конфигурация</h3>
         <p className="text-sm text-muted-foreground mt-0.5">
-          Accepted payment methods and deposit requirements for this property.
+          Приети методи на плащане и изисквания за депозит за този имот.
         </p>
       </div>
 
@@ -77,7 +77,7 @@ export function PaymentConfigSection({ form }: PaymentConfigSectionProps) {
         name="payment_config.accepted_methods"
         render={({ field }) => (
           <FormItem>
-            <FormLabel>Accepted payment methods</FormLabel>
+            <FormLabel>Приети методи на плащане</FormLabel>
             <div className="space-y-2 mt-1">
               {ALL_METHODS.map((method) => {
                 const blocker = methodBlocker(method, caps);
@@ -128,7 +128,7 @@ export function PaymentConfigSection({ form }: PaymentConfigSectionProps) {
         name="payment_config.deposit_pct"
         render={({ field }) => (
           <FormItem>
-            <FormLabel>Deposit required (%)</FormLabel>
+            <FormLabel>Изискуем депозит (%)</FormLabel>
             <FormControl>
               <Input
                 type="number"
@@ -140,7 +140,7 @@ export function PaymentConfigSection({ form }: PaymentConfigSectionProps) {
               />
             </FormControl>
             <FormDescription>
-              20–100. Use 100 for full payment upfront at time of booking.
+              20–100. Използвайте 100 за пълно плащане при резервация.
             </FormDescription>
             <FormMessage />
           </FormItem>
@@ -152,24 +152,24 @@ export function PaymentConfigSection({ form }: PaymentConfigSectionProps) {
         name="payment_config.remaining_method"
         render={({ field }) => (
           <FormItem>
-            <FormLabel>Remaining balance method</FormLabel>
+            <FormLabel>Метод за остатъка</FormLabel>
             <Select
               onValueChange={(v) => field.onChange(v === "none" ? null : v)}
               value={field.value ?? "none"}
             >
               <FormControl>
                 <SelectTrigger className="max-w-64">
-                  <SelectValue placeholder="N/A (full payment upfront)" />
+                  <SelectValue placeholder="Неприложимо (пълно плащане предварително)" />
                 </SelectTrigger>
               </FormControl>
               <SelectContent>
-                <SelectItem value="none">N/A (full payment upfront)</SelectItem>
-                <SelectItem value="cash">Cash (on arrival)</SelectItem>
-                <SelectItem value="bank_transfer">Bank Transfer</SelectItem>
+                <SelectItem value="none">Неприложимо (пълно плащане предварително)</SelectItem>
+                <SelectItem value="cash">В брой (при пристигане)</SelectItem>
+                <SelectItem value="bank_transfer">Банков превод</SelectItem>
               </SelectContent>
             </Select>
             <FormDescription>
-              Only applies when deposit is less than 100%.
+              Прилага се само когато депозитът е под 100%.
             </FormDescription>
             <FormMessage />
           </FormItem>

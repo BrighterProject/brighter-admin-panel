@@ -14,8 +14,8 @@ interface TranslationsSectionProps {
 type OptionalLocale = 'en' | 'ru';
 
 const LOCALE_LABELS: Record<OptionalLocale, string> = {
-  en: 'English',
-  ru: 'Russian',
+  en: 'Английски',
+  ru: 'Руски',
 };
 
 function LocaleFields({
@@ -34,9 +34,9 @@ function LocaleFields({
         name={`translations.${locale}.name`}
         render={({ field }) => (
           <FormItem>
-            <FormLabel>Name</FormLabel>
+            <FormLabel>Наименование</FormLabel>
             <FormControl>
-              <Input placeholder={`Property name in ${label}…`} {...field} />
+              <Input placeholder={`Наименование на имота на ${label}…`} {...field} />
             </FormControl>
             <FormMessage />
           </FormItem>
@@ -47,9 +47,9 @@ function LocaleFields({
         name={`translations.${locale}.description`}
         render={({ field }) => (
           <FormItem>
-            <FormLabel>Description</FormLabel>
+            <FormLabel>Описание</FormLabel>
             <FormControl>
-              <Textarea rows={3} placeholder={`Description in ${label}…`} {...field} />
+              <Textarea rows={3} placeholder={`Описание на ${label}…`} {...field} />
             </FormControl>
             <FormMessage />
           </FormItem>
@@ -60,9 +60,9 @@ function LocaleFields({
         name={`translations.${locale}.address`}
         render={({ field }) => (
           <FormItem>
-            <FormLabel>Address</FormLabel>
+            <FormLabel>Адрес</FormLabel>
             <FormControl>
-              <Input placeholder={`Address in ${label}…`} {...field} />
+              <Input placeholder={`Адрес на ${label}…`} {...field} />
             </FormControl>
             <FormMessage />
           </FormItem>
@@ -73,9 +73,9 @@ function LocaleFields({
         name={`translations.${locale}.house_rules`}
         render={({ field }) => (
           <FormItem>
-            <FormLabel>House Rules</FormLabel>
+            <FormLabel>Правила на имота</FormLabel>
             <FormControl>
-              <Textarea rows={3} placeholder={`House rules in ${label}…`} {...field} />
+              <Textarea rows={3} placeholder={`Правила на имота на ${label}…`} {...field} />
             </FormControl>
             <FormMessage />
           </FormItem>
@@ -94,21 +94,21 @@ export function TranslationsSection({ form }: TranslationsSectionProps) {
   return (
     <section id="section-translations" className="space-y-4 scroll-mt-20">
       <div>
-        <h3 className="text-base font-semibold">Translations</h3>
+        <h3 className="text-base font-semibold">Преводи</h3>
         <p className="text-sm text-muted-foreground mt-0.5">
-          Add English and Russian translations. Auto-translate coming soon.
+          Добавете преводи на английски и руски. Автоматичен превод — очаквайте.
         </p>
       </div>
 
       {/* Bulgarian read-only summary */}
       <div className="rounded-md border bg-muted/30 p-3 space-y-1 text-sm">
         <p className="font-medium text-muted-foreground text-xs uppercase tracking-wider mb-2">
-          Bulgarian (filled in Basic Info & Location)
+          Български (попълва се в Основна информация и Местоположение)
         </p>
-        <p><span className="text-muted-foreground">Name:</span> {bgName || <em className="text-muted-foreground">not filled</em>}</p>
-        <p><span className="text-muted-foreground">Description:</span> {bgDescription ? `${bgDescription.slice(0, 80)}…` : <em className="text-muted-foreground">not filled</em>}</p>
-        <p><span className="text-muted-foreground">Address:</span> {bgAddress || <em className="text-muted-foreground">not filled</em>}</p>
-        <p><span className="text-muted-foreground">House Rules:</span> {bgHouseRules ? `${bgHouseRules.slice(0, 80)}…` : <em className="text-muted-foreground">not filled</em>}</p>
+        <p><span className="text-muted-foreground">Наименование:</span> {bgName || <em className="text-muted-foreground">не е попълнено</em>}</p>
+        <p><span className="text-muted-foreground">Описание:</span> {bgDescription ? `${bgDescription.slice(0, 80)}…` : <em className="text-muted-foreground">не е попълнено</em>}</p>
+        <p><span className="text-muted-foreground">Адрес:</span> {bgAddress || <em className="text-muted-foreground">не е попълнено</em>}</p>
+        <p><span className="text-muted-foreground">Правила на имота:</span> {bgHouseRules ? `${bgHouseRules.slice(0, 80)}…` : <em className="text-muted-foreground">не е попълнено</em>}</p>
       </div>
 
       <Separator />

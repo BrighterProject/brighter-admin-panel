@@ -45,9 +45,9 @@ export function LocationSection({ form }: LocationSectionProps) {
   return (
     <section id="section-location" className="space-y-4 scroll-mt-20">
       <div>
-        <h3 className="text-base font-semibold">Location</h3>
+        <h3 className="text-base font-semibold">Местоположение</h3>
         <p className="text-sm text-muted-foreground mt-0.5">
-          Region, settlement and optional map coordinates.
+          Регион, населено място и незадължителни координати.
         </p>
       </div>
 
@@ -57,7 +57,7 @@ export function LocationSection({ form }: LocationSectionProps) {
         name="region_code"
         render={({ field }) => (
           <FormItem className="flex flex-col">
-            <FormLabel>Region (Oblast) *</FormLabel>
+            <FormLabel>Регион (Област) *</FormLabel>
             <Popover open={regionOpen} onOpenChange={setRegionOpen}>
               <PopoverTrigger asChild>
                 <FormControl>
@@ -67,16 +67,16 @@ export function LocationSection({ form }: LocationSectionProps) {
                     className={cn('justify-between font-normal', !field.value && 'text-muted-foreground')}
                     disabled={regionsLoading}
                   >
-                    {selectedRegion?.name ?? 'Select region…'}
+                    {selectedRegion?.name ?? 'Изберете регион…'}
                     <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
                   </Button>
                 </FormControl>
               </PopoverTrigger>
               <PopoverContent className="p-0 w-[var(--radix-popover-trigger-width)]">
                 <Command>
-                  <CommandInput placeholder="Search region…" />
+                  <CommandInput placeholder="Търсене на регион…" />
                   <CommandList>
-                    <CommandEmpty>No region found.</CommandEmpty>
+                    <CommandEmpty>Няма намерен регион.</CommandEmpty>
                     <CommandGroup>
                       {regions.map((r) => (
                         <CommandItem
@@ -113,7 +113,7 @@ export function LocationSection({ form }: LocationSectionProps) {
         name="settlement_ekatte"
         render={({ field }) => (
           <FormItem className="flex flex-col">
-            <FormLabel>Settlement *</FormLabel>
+            <FormLabel>Населено място *</FormLabel>
             <Popover open={settlementOpen} onOpenChange={setSettlementOpen}>
               <PopoverTrigger asChild>
                 <FormControl>
@@ -126,17 +126,17 @@ export function LocationSection({ form }: LocationSectionProps) {
                     {selectedSettlement
                       ? `${selectedSettlement.tvm ? `${selectedSettlement.tvm} ` : ''}${selectedSettlement.name}`
                       : regionCode
-                        ? 'Select settlement…'
-                        : 'Select a region first'}
+                        ? 'Изберете населено място…'
+                        : 'Изберете регион първо'}
                     <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
                   </Button>
                 </FormControl>
               </PopoverTrigger>
               <PopoverContent className="p-0 w-[var(--radix-popover-trigger-width)]">
                 <Command>
-                  <CommandInput placeholder="Search settlement…" />
+                  <CommandInput placeholder="Търсене на населено място…" />
                   <CommandList>
-                    <CommandEmpty>No settlement found.</CommandEmpty>
+                    <CommandEmpty>Няма намерено населено място.</CommandEmpty>
                     <CommandGroup>
                       {settlements.map((s) => (
                         <CommandItem
@@ -171,7 +171,7 @@ export function LocationSection({ form }: LocationSectionProps) {
         name="translations.bg.address"
         render={({ field }) => (
           <FormItem>
-            <FormLabel>Address (Bulgarian) *</FormLabel>
+            <FormLabel>Адрес (Български) *</FormLabel>
             <FormControl>
               <Input placeholder="ул. Витоша 1" {...field} />
             </FormControl>
@@ -186,7 +186,7 @@ export function LocationSection({ form }: LocationSectionProps) {
           name="lat"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Latitude (optional)</FormLabel>
+              <FormLabel>Ширина (незадължително)</FormLabel>
               <FormControl>
                 <Input placeholder="42.6977" {...field} />
               </FormControl>
@@ -199,7 +199,7 @@ export function LocationSection({ form }: LocationSectionProps) {
           name="lng"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Longitude (optional)</FormLabel>
+              <FormLabel>Дължина (незадължително)</FormLabel>
               <FormControl>
                 <Input placeholder="23.3219" {...field} />
               </FormControl>
@@ -209,7 +209,7 @@ export function LocationSection({ form }: LocationSectionProps) {
         />
       </div>
       <p className="text-xs text-muted-foreground -mt-2">
-        Used to show your property on the map.
+        Използва се за показване на имота на картата.
       </p>
 
       <FormField
@@ -217,7 +217,7 @@ export function LocationSection({ form }: LocationSectionProps) {
         name="has_parking"
         render={({ field }) => (
           <FormItem className="flex items-center justify-between rounded-lg border p-3">
-            <FormLabel className="m-0 cursor-pointer">Parking available</FormLabel>
+            <FormLabel className="m-0 cursor-pointer">Налично паркиране</FormLabel>
             <FormControl>
               <Switch checked={field.value} onCheckedChange={field.onChange} />
             </FormControl>
