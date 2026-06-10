@@ -5,7 +5,7 @@ import { BaseLayout } from '@/components/layouts/base-layout';
 import { PropertyForm } from '../components/property-form';
 import { useAddProperty } from '../hooks';
 import { api } from '@/lib/api';
-import type { PropertyFormSchema } from '../property-form.schema';
+import { DEV_PROPERTY_DEFAULTS, type PropertyFormSchema } from '../property-form.schema';
 
 interface PendingOverride {
   start_date: string;
@@ -58,6 +58,7 @@ export default function PropertyNewPage() {
       <PropertyForm
         onSubmit={handleSubmit}
         isPending={isPending || isSubmitting}
+        initialValues={import.meta.env.DEV ? DEV_PROPERTY_DEFAULTS : undefined}
         onPendingFilesChange={(files) => { pendingFilesRef.current = files; }}
         onPendingOverridesChange={(overrides) => { pendingOverridesRef.current = overrides; }}
       />
