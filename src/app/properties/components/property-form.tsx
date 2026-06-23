@@ -103,6 +103,7 @@ export function PropertyForm({ initialValues, onSubmit, isPending, propertyId, d
   const form = useForm<PropertyFormSchema>({
     resolver: zodResolver(propertyFormSchema) as Resolver<PropertyFormSchema>,
     defaultValues: { ...PROPERTY_FORM_DEFAULTS, ...initialValues },
+    mode: 'onTouched',
   });
 
   const [pendingFilesCount, setPendingFilesCount] = useState(0);

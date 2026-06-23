@@ -7,7 +7,7 @@ const STRIPE_STATUS_KEY = ["stripe", "status"];
 export function useStripeStatus(staleTime?: number) {
   return useQuery<ApiStripeStatus, Error, StripeStatus>({
     queryKey: STRIPE_STATUS_KEY,
-    queryFn: () => api.get("/payments-connect/status").then((r) => r.data),
+    queryFn: () => api.get("/payments/connect/status").then((r) => r.data),
     select: (data) => ({
       connected: data.connected,
       verified: data.verified,
@@ -24,7 +24,7 @@ export function useStripeConnect() {
   return useMutation({
     mutationFn: () =>
       api
-        .post<{ redirect_url: string }>("/payments-connect/onboard")
+        .post<{ redirect_url: string }>("/payments/connect/onboard")
         .then((r) => r.data),
     onSuccess: (data) => {
       window.location.href = data.redirect_url;
@@ -36,7 +36,7 @@ export function useStripeUpdate() {
   return useMutation({
     mutationFn: () =>
       api
-        .get<{ redirect_url: string }>("/payments-connect/update")
+        .get<{ redirect_url: string }>("/payments/connect/update")
         .then((r) => r.data),
     onSuccess: (data) => {
       window.location.href = data.redirect_url;
@@ -47,7 +47,7 @@ export function useStripeUpdate() {
 export function useStripeDisconnect() {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: () => api.delete("/payments-connect/"),
+    mutationFn: () => api.delete("/payments/connect/"),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: STRIPE_STATUS_KEY });
     },

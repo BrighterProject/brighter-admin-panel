@@ -19,10 +19,25 @@ export interface OwnerSubscription {
   cancelled_at: string | null;
 }
 
+export function useMySubscription() {
+  return useQuery<OwnerSubscription | null>({
+    queryKey: ["subscriptions", "me"],
+    queryFn: async () => {
+      try {
+        return await api.get<OwnerSubscription>("/payments/subscriptions/me").then((r) => r.data);
+      } catch (e: unknown) {
+        if ((e as { response?: { status: number } })?.response?.status === 404) return null;
+        throw e;
+      }
+    },
+    staleTime: 30_000,
+  });
+}
+
 export function useAllSubscriptions() {
   return useQuery<OwnerSubscription[]>({
     queryKey: ["admin", "subscriptions"],
-    queryFn: () => api.get("/subscriptions/").then((r) => r.data),
+    queryFn: () => api.get("/payments/subscriptions/").then((r) => r.data),
     staleTime: 30_000,
   });
 }
@@ -30,7 +45,7 @@ export function useAllSubscriptions() {
 export function useSubscriptionPlans() {
   return useQuery<SubscriptionPlan[]>({
     queryKey: ["subscriptions", "plans"],
-    queryFn: () => api.get("/subscriptions/plans").then((r) => r.data),
+    queryFn: () => api.get("/payments/subscriptions/plans").then((r) => r.data),
     staleTime: 60_000,
   });
 }

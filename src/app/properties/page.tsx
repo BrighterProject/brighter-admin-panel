@@ -11,6 +11,7 @@ import { useProperties, useDeleteProperty } from "./hooks";
 import type { PropertyListItem } from "./types";
 import { useMe } from "@/app/auth/api/hooks";
 import { isPropertyOwner } from "@/lib/scopes";
+import { useMySubscription } from "@/app/settings/subscriptions/hooks";
 
 export default function PropertiesPage() {
   const navigate = useNavigate();
@@ -18,7 +19,14 @@ export default function PropertiesPage() {
   const ownerOnly = me ? isPropertyOwner(me.scopes) : false;
   const propertyParams = ownerOnly && me ? { owner_id: String(me.id) } : undefined;
   const { data: properties = [], isLoading } = useProperties(propertyParams);
+  const { data: subscription } = useMySubscription();
   const { mutate: deleteProperty } = useDeleteProperty();
+
+  const maxListings = subscription?.plan.max_listings ?? -1;
+  const atQuota = ownerOnly && maxListings !== -1 && properties.length >= maxListings;
+  const addDisabledReason = atQuota
+    ? `Достигнахте лимита на вашия план (${properties.length}/${maxListings} обекта)`
+    : undefined;
 
   const [imagesProperty, setImagesProperty] = useState<PropertyListItem | null>(null);
   const [unavailabilityProperty, setUnavailabilityProperty] =
@@ -43,6 +51,7 @@ export default function PropertiesPage() {
             }
             onAddProperty={() => navigate("/properties/new")}
             isAdmin={!ownerOnly}
+            addDisabledReason={addDisabledReason}
           />
         </div>
       </div>
