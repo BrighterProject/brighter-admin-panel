@@ -144,6 +144,13 @@ export interface Settlement {
   name: string;
 }
 
+export interface SettlementCenter {
+  ekatte: string;
+  name: string;
+  lat: number | null;
+  lon: number | null;
+}
+
 export interface Property {
   id: string;
   owner_id: string;

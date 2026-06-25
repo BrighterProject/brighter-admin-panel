@@ -14,6 +14,7 @@ import type {
   DatePriceOverride,
   Region,
   Settlement,
+  SettlementCenter,
 } from './types';
 import type { PropertyFormSchema } from './property-form.schema';
 import { api } from '@/lib/api';
@@ -39,6 +40,19 @@ export function useSettlements(regionCode: string | null, lang = 'bg') {
         .get<Settlement[]>(`/regions/${regionCode}/settlements`, { params: { lang } })
         .then((r) => r.data),
     enabled: !!regionCode,
+    staleTime: Infinity,
+  });
+}
+
+/** Approximate map center for a settlement, used to pan the location picker. */
+export function useSettlementCenter(ekatte: string | null) {
+  return useQuery({
+    queryKey: [...REGIONS_KEY, 'center', ekatte],
+    queryFn: () =>
+      api
+        .get<SettlementCenter>(`/regions/settlements/${ekatte}`)
+        .then((r) => r.data),
+    enabled: !!ekatte,
     staleTime: Infinity,
   });
 }
