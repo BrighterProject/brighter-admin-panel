@@ -126,8 +126,23 @@ bunx shadcn@latest add <component>
 3. Add API hooks in `src/app/<feature>/api/hooks.ts` using the axios instance from `src/lib/api.ts`
 4. Add a nav item in `src/components/app-sidebar.tsx`
 
+## Testing
+
+No test suite exists for this service. When adding tests, use vitest + `@testing-library/react` (consistent with brighter-frontend).
+
 ## Environment variables
 
 | Variable | Default | Description |
 |---|---|---|
 | `VITE_BASENAME` | `""` | Router basename — set to `/admin` when served behind Traefik |
+
+## Git & Branch Workflow
+
+- **Branch off `dev`**: all new work starts from `dev` — use `feat/<slug>` (or `fix/`, `chore/`, `test/`, `refactor/` as appropriate)
+- **PR targets `dev`**: never push directly to `dev` or `main`
+- **Approval required**: at least one human approval before merging
+- **CI must be green**: all checks must pass before merging
+- **Staging on green `dev`**: a passing `dev` triggers an automatic staging deployment
+- **`dev` → `main` is manual**: when `dev` is stable and ready to ship, open a PR from `dev` to `main` and merge manually
+- **Hotfixes bypass `dev`**: branch off `main` as `fix/<slug>`, PR directly to `main`, then backport to `dev`
+- **Branch cleanup**: delete merged branches periodically — keep them for a while for reference, then clean up

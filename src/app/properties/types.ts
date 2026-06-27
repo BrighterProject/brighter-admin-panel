@@ -133,14 +133,35 @@ export interface PropertyUnavailabilityUpdate {
   reason?: string | null;
 }
 
+export interface Region {
+  code: string;
+  name: string;
+}
+
+export interface Settlement {
+  ekatte: string;
+  tvm: string;
+  name: string;
+}
+
+export interface SettlementCenter {
+  ekatte: string;
+  name: string;
+  lat: number | null;
+  lon: number | null;
+}
+
 export interface Property {
   id: string;
   owner_id: string;
   property_type: PropertyType;
   status: PropertyStatus;
-  city: string;
+  region_code: string | null;
+  settlement_ekatte: string | null;
+  city: string | null;
   lat: number | null;
   lng: number | null;
+  registration_number: string | null;
   price_per_night: string;
   currency: string;
   bedrooms: number;
@@ -154,6 +175,14 @@ export interface Property {
   min_nights: number;
   max_nights: number;
   cancellation_policy: CancellationPolicy;
+  enable_gap_filler: boolean;
+  gap_tax_pct: number;
+  gap_last_minute_window: number;
+  payment_config: {
+    accepted_methods: string[];
+    deposit_pct: number;
+    remaining_method: string | null;
+  } | null;
   rating: string;
   total_reviews: number;
   rooms: RoomEntry[];
@@ -169,7 +198,9 @@ export interface PropertyListItem {
   owner_id: string;
   property_type: PropertyType;
   status: PropertyStatus;
-  city: string;
+  region_code: string | null;
+  settlement_ekatte: string | null;
+  city: string | null;
   name: string;
   description: string;
   price_per_night: string;
@@ -184,7 +215,8 @@ export interface PropertyListItem {
 
 export interface PropertyFormValues {
   property_type: PropertyType;
-  city: string;
+  region_code: string;
+  settlement_ekatte: string;
   lat: string;
   lng: string;
   has_parking: boolean;

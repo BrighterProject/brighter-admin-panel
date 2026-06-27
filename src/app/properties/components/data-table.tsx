@@ -79,6 +79,7 @@ interface DataTableProps {
   onEditProperty?: (property: PropertyListItem) => void;
   onAddProperty?: () => void;
   isAdmin: boolean;
+  addDisabledReason?: string;
 }
 
 const statusColors: Record<PropertyStatus, string> = {
@@ -135,6 +136,7 @@ export function DataTable({
   onEditProperty,
   onAddProperty,
   isAdmin,
+  addDisabledReason,
 }: DataTableProps) {
   const [sorting, setSorting] = useState<SortingState>([]);
   const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
@@ -495,10 +497,23 @@ export function DataTable({
             Експорт
           </Button>
           {onAddProperty && (
-            <Button className="cursor-pointer" onClick={onAddProperty}>
-              <Plus className="mr-2 size-4" />
-              Добави обект
-            </Button>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <span tabIndex={addDisabledReason ? 0 : undefined}>
+                  <Button
+                    className="cursor-pointer"
+                    onClick={onAddProperty}
+                    disabled={!!addDisabledReason}
+                  >
+                    <Plus className="mr-2 size-4" />
+                    Добави обект
+                  </Button>
+                </span>
+              </TooltipTrigger>
+              {addDisabledReason && (
+                <TooltipContent>{addDisabledReason}</TooltipContent>
+              )}
+            </Tooltip>
           )}
         </div>
       </div>

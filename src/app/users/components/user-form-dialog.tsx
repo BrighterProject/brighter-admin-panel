@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -25,7 +26,7 @@ import { Plus } from "lucide-react";
 import { useForm, type Resolver } from "react-hook-form";
 import { z, regexes } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
-import type { UserFormValues } from "../types";
+import { useAddUser } from "../hooks";
 
 const userFormSchema = z.object({
   username: z
@@ -43,12 +44,9 @@ const userFormSchema = z.object({
 
 type FormValues = z.infer<typeof userFormSchema>;
 
-interface UserFormDialogProps {
-  onAddUser: (user: UserFormValues) => void;
-}
-
-export function UserFormDialog({ onAddUser }: UserFormDialogProps) {
+export function UserFormDialog() {
   const [open, setOpen] = useState(false);
+  const { mutate: addUser } = useAddUser();
 
   const form = useForm<FormValues>({
     resolver: zodResolver(userFormSchema) as Resolver<FormValues>,
@@ -62,19 +60,34 @@ export function UserFormDialog({ onAddUser }: UserFormDialogProps) {
   });
 
   function onSubmit(data: FormValues) {
-    onAddUser({
-      username: data.username,
-      full_name: data.full_name ?? "",
-      email: data.email ?? "",
-      password: data.password,
-      is_active: data.is_active,
-    });
-    form.reset();
-    setOpen(false);
+    addUser(
+      {
+        username: data.username,
+        full_name: data.full_name ?? "",
+        email: data.email ?? "",
+        password: data.password,
+        is_active: data.is_active,
+      },
+      {
+        onSuccess: () => {
+          toast.success("Потребителят е добавен успешно.");
+          form.reset();
+          setOpen(false);
+        },
+        onError: (err: any) => {
+          const status = err?.response?.status;
+          if (status === 409) {
+            toast.error("Потребител с този имейл вече съществува.");
+          } else {
+            toast.error("Грешка при добавяне на потребител. Моля, опитайте отново.");
+          }
+        },
+      },
+    );
   }
 
   return (
-    <Dialog open={open} onOpenChange={setOpen}>
+    <Dialog open={open} onOpenChange={(o) => { if (!o) form.reset(); setOpen(o); }}>
       <DialogTrigger asChild>
         <Button className="cursor-pointer">
           <Plus className="mr-2 h-4 w-4" />

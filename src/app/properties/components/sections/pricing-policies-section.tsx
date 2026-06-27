@@ -13,18 +13,18 @@ import type { PropertyFormSchema } from "../../property-form.schema";
 const CANCELLATION_OPTIONS = [
   {
     value: "free",
-    label: "Free cancellation",
-    description: "Full refund up to 24 hours before check-in.",
+    label: "Безплатен отказ",
+    description: "Пълно връщане до 24 часа преди настаняване.",
   },
   {
     value: "moderate",
-    label: "Moderate",
-    description: "Full refund up to 5 days before check-in; 50% refund after.",
+    label: "Умерена",
+    description: "Пълно връщане до 5 дни преди настаняване; 50% след това.",
   },
   {
     value: "strict",
-    label: "Strict",
-    description: "50% refund up to 7 days before check-in; no refund after.",
+    label: "Строга",
+    description: "50% връщане до 7 дни преди настаняване; без връщане след това.",
   },
 ] as const;
 
@@ -36,9 +36,9 @@ export function PricingPoliciesSection({ form }: PricingPoliciesSectionProps) {
   return (
     <section id="section-pricing-policies" className="space-y-4 scroll-mt-20">
       <div>
-        <h3 className="text-base font-semibold">Pricing & Policies</h3>
+        <h3 className="text-base font-semibold">Цени и условия</h3>
         <p className="text-sm text-muted-foreground mt-0.5">
-          Nightly rate, stay length limits, and cancellation terms.
+          Нощна цена, ограничения за престой и условия за отказ.
         </p>
       </div>
 
@@ -48,7 +48,7 @@ export function PricingPoliciesSection({ form }: PricingPoliciesSectionProps) {
           name="price_per_night"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Price per night (EUR) *</FormLabel>
+              <FormLabel>Цена на нощ (EUR) *</FormLabel>
               <FormControl>
                 <Input placeholder="80.00" {...field} />
               </FormControl>
@@ -57,7 +57,7 @@ export function PricingPoliciesSection({ form }: PricingPoliciesSectionProps) {
           )}
         />
         <FormItem>
-          <FormLabel>Currency</FormLabel>
+          <FormLabel>Валута</FormLabel>
           <Input value="EUR" disabled />
         </FormItem>
       </div>
@@ -68,7 +68,7 @@ export function PricingPoliciesSection({ form }: PricingPoliciesSectionProps) {
           name="check_in_time"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Check-in time *</FormLabel>
+              <FormLabel>Час за настаняване *</FormLabel>
               <FormControl>
                 <Input type="time" {...field} />
               </FormControl>
@@ -81,7 +81,7 @@ export function PricingPoliciesSection({ form }: PricingPoliciesSectionProps) {
           name="check_out_time"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Check-out time *</FormLabel>
+              <FormLabel>Час за напускане *</FormLabel>
               <FormControl>
                 <Input type="time" {...field} />
               </FormControl>
@@ -97,7 +97,7 @@ export function PricingPoliciesSection({ form }: PricingPoliciesSectionProps) {
           name="min_nights"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Min nights *</FormLabel>
+              <FormLabel>Мин. нощувки *</FormLabel>
               <FormControl>
                 <Input type="number" min={1} {...field} />
               </FormControl>
@@ -110,7 +110,7 @@ export function PricingPoliciesSection({ form }: PricingPoliciesSectionProps) {
           name="max_nights"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Max nights*</FormLabel>
+              <FormLabel>Макс. нощувки *</FormLabel>
               <FormControl>
                 <Input
                   type="number"
@@ -134,7 +134,7 @@ export function PricingPoliciesSection({ form }: PricingPoliciesSectionProps) {
         name="cancellation_policy"
         render={({ field }) => (
           <FormItem>
-            <FormLabel>Cancellation policy *</FormLabel>
+            <FormLabel>Политика за отказ *</FormLabel>
             <FormControl>
               <RadioGroup
                 value={field.value}

@@ -1,0 +1,13 @@
+{
+  "plugin": ["typedoc-plugin-markdown"],
+  "entryPointStrategy": "expand",
+  "entryPoints": ["./src"],
+  "exclude": ["**/*.test.ts", "**/*.test.tsx", "**/node_modules/**"],
+  "out": "../brighter-docs/docs/frontend/brighter-admin-api",
+  "readme": "none",
+  "outputFileStrategy": "modules",
+  "flattenOutputFiles": false,
+  "hidePageHeader": true,
+  "hideBreadcrumbs": false,
+  "skipErrorChecking": true
+}

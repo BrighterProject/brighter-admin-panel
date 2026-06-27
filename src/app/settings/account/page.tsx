@@ -18,10 +18,10 @@ import { Button } from "@/components/ui/button"
 import { Separator } from "@/components/ui/separator"
 
 const accountFormSchema = z.object({
-  firstName: z.string().min(1, "First name is required"),
-  lastName: z.string().min(1, "Last name is required"),
-  email: z.string().email("Invalid email address"),
-  username: z.string().min(3, "Username must be at least 3 characters"),
+  firstName: z.string().min(1, "Първото име е задължително"),
+  lastName: z.string().min(1, "Фамилията е задължителна"),
+  email: z.string().email("Невалидна имейл адреса"),
+  username: z.string().min(3, "Потребителското име трябва да бъде минимум 3 символа"),
   currentPassword: z.string().optional(),
   newPassword: z.string().optional(),
   confirmPassword: z.string().optional(),
@@ -52,9 +52,9 @@ export default function AccountSettings() {
     <BaseLayout>
       <div className="space-y-6 px-4 lg:px-6">
         <div>
-          <h1 className="text-3xl font-bold">Account Settings</h1>
+          <h1 className="text-3xl font-bold">Настройки на акаунта</h1>
           <p className="text-muted-foreground">
-            Manage your account settings and preferences.
+            Управлявайте настройките и предпочетанията на вашия акаунт.
           </p>
         </div>
 
@@ -62,9 +62,9 @@ export default function AccountSettings() {
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
             <Card>
               <CardHeader>
-                <CardTitle>Personal Information</CardTitle>
+                <CardTitle>Лична информация</CardTitle>
                 <CardDescription>
-                  Update your personal information that will be displayed on your profile.
+                  Обновете вашата лична информация, която ще бъде показана в профила ви.
                 </CardDescription>
               </CardHeader>
               <CardContent className="space-y-4">
@@ -74,9 +74,9 @@ export default function AccountSettings() {
                     name="firstName"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>First Name</FormLabel>
+                        <FormLabel>Първо име</FormLabel>
                         <FormControl>
-                          <Input placeholder="Enter your first name" {...field} />
+                          <Input placeholder="Въведете вашето първо име" {...field} />
                         </FormControl>
                         <FormMessage />
                       </FormItem>
@@ -87,9 +87,9 @@ export default function AccountSettings() {
                     name="lastName"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Last Name</FormLabel>
+                        <FormLabel>Фамилия</FormLabel>
                         <FormControl>
-                          <Input placeholder="Enter your last name" {...field} />
+                          <Input placeholder="Въведете вашата фамилия" {...field} />
                         </FormControl>
                         <FormMessage />
                       </FormItem>
@@ -101,9 +101,9 @@ export default function AccountSettings() {
                   name="email"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Email Address</FormLabel>
+                      <FormLabel>Имейл адреса</FormLabel>
                       <FormControl>
-                        <Input type="email" placeholder="Enter your email" {...field} />
+                        <Input type="email" placeholder="Въведете вашия имейл" {...field} />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
@@ -114,9 +114,9 @@ export default function AccountSettings() {
                   name="username"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Username</FormLabel>
+                      <FormLabel>Потребителско име</FormLabel>
                       <FormControl>
-                        <Input placeholder="Enter your username" {...field} />
+                        <Input placeholder="Въведете вашето потребителско име" {...field} />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
@@ -127,9 +127,9 @@ export default function AccountSettings() {
 
             <Card>
               <CardHeader>
-                <CardTitle>Change Password</CardTitle>
+                <CardTitle>Промяна на парола</CardTitle>
                 <CardDescription>
-                  Update your password to keep your account secure.
+                  Обновете вашата парола, за да поддържате акаунта си защитен.
                 </CardDescription>
               </CardHeader>
               <CardContent className="space-y-4">
@@ -138,9 +138,9 @@ export default function AccountSettings() {
                   name="currentPassword"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Current Password</FormLabel>
+                      <FormLabel>Текуща парола</FormLabel>
                       <FormControl>
-                        <Input type="password" placeholder="Enter current password" {...field} />
+                        <Input type="password" placeholder="Въведете текущата парола" {...field} />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
@@ -151,9 +151,9 @@ export default function AccountSettings() {
                   name="newPassword"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>New Password</FormLabel>
+                      <FormLabel>Нова парола</FormLabel>
                       <FormControl>
-                        <Input type="password" placeholder="Enter new password" {...field} />
+                        <Input type="password" placeholder="Въведете нова парола" {...field} />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
@@ -164,9 +164,9 @@ export default function AccountSettings() {
                   name="confirmPassword"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Confirm New Password</FormLabel>
+                      <FormLabel>Потвърдете новата парола</FormLabel>
                       <FormControl>
-                        <Input type="password" placeholder="Confirm new password" {...field} />
+                        <Input type="password" placeholder="Потвърдете новата парола" {...field} />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
@@ -177,30 +177,30 @@ export default function AccountSettings() {
 
             <Card>
               <CardHeader>
-                <CardTitle>Danger Zone</CardTitle>
+                <CardTitle>Опасна зона</CardTitle>
                 <CardDescription>
-                  Irreversible and destructive actions.
+                  Необратими и деструктивни действия.
                 </CardDescription>
               </CardHeader>
               <CardContent className="space-y-4">
                 <Separator />
                 <div className="flex flex-wrap gap-2 items-center justify-between">
                   <div>
-                    <h4 className="font-semibold">Delete Account</h4>
+                    <h4 className="font-semibold">Изтриване на акаунт</h4>
                     <p className="text-sm text-muted-foreground">
-                      Permanently delete your account and all associated data.
+                      Трайно изтриване на вашия акаунт и всички свързани данни.
                     </p>
                   </div>
                   <Button variant="destructive" type="button" className="cursor-pointer">
-                    Delete Account
+                    Изтриване на акаунт
                   </Button>
                 </div>
               </CardContent>
             </Card>
 
             <div className="flex space-x-2">
-              <Button type="submit" className="cursor-pointer">Save Changes</Button>
-              <Button variant="outline" type="reset" className="cursor-pointer">Cancel</Button>
+              <Button type="submit" className="cursor-pointer">Запазване на промените</Button>
+              <Button variant="outline" type="reset" className="cursor-pointer">Отказ</Button>
             </div>
           </form>
         </Form>

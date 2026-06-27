@@ -54,7 +54,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { UserFormDialog } from "./user-form-dialog";
-import type { User, UserFormValues } from "../types";
+import type { User } from "../types";
 import { Eye, Pencil } from "lucide-react";
 import { UserDetailsDialog } from "./user-details-dialog";
 import { UserEditDialog } from "./user-edit-dialog";
@@ -65,7 +65,6 @@ interface DataTableProps {
   users: User[];
   loading: boolean;
   onDeleteUser: (id: string) => void;
-  onAddUser: (userData: UserFormValues) => void;
   onUpdateScopes: (id: string, scopes: string[]) => void;
 }
 
@@ -81,7 +80,6 @@ export function DataTable({
   users,
   loading,
   onDeleteUser,
-  onAddUser,
   onUpdateScopes,
 }: DataTableProps) {
   const { mutate: escalateScopes } = useUpdateScopes();
@@ -356,7 +354,7 @@ export function DataTable({
             <Download className="mr-2 size-4" />
             Експорт
           </Button>
-          <UserFormDialog onAddUser={onAddUser} />
+          <UserFormDialog />
         </div>
       </div>
 

@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { toast } from "sonner";
 import { Loader2, Plus, Trash2, CalendarX, Pencil, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
@@ -104,22 +105,36 @@ export function PropertyUnavailabilityDialog({
       reason: formData.reason.trim() || null,
     };
 
+    const mutationOptions = {
+      onSuccess: resetForm,
+      onError: () => {
+        toast.error("Грешка при запазване. Моля, опитайте отново.");
+      },
+    };
+
     if (editingId) {
       updateUnavailability(
         { propertyId: property.id, unavailabilityId: editingId, data },
-        { onSuccess: resetForm },
+        mutationOptions,
       );
     } else {
       createUnavailability(
         { propertyId: property.id, data },
-        { onSuccess: resetForm },
+        mutationOptions,
       );
     }
   };
 
   const handleDelete = (id: string) => {
     if (!property) return;
-    deleteUnavailability({ propertyId: property.id, unavailabilityId: id });
+    deleteUnavailability(
+      { propertyId: property.id, unavailabilityId: id },
+      {
+        onError: () => {
+          toast.error("Грешка при изтриване. Моля, опитайте отново.");
+        },
+      },
+    );
   };
 
   const isPending = isCreating || isUpdating || isDeleting;

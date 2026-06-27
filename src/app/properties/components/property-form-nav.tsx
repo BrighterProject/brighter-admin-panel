@@ -2,14 +2,15 @@ import { cn } from '@/lib/utils';
 import type { SectionStates, SectionState } from '../use-section-completion';
 
 export const FORM_SECTIONS = [
-  { id: 'section-basic-info',        label: 'Basic Info',          key: 'basicInfo' as const },
-  { id: 'section-translations',      label: 'Translations',        key: 'translations' as const },
-  { id: 'section-location',          label: 'Location',            key: 'location' as const },
-  { id: 'section-rooms-capacity',    label: 'Rooms & Capacity',    key: 'roomsCapacity' as const },
-  { id: 'section-pricing-policies',  label: 'Pricing & Policies',  key: 'pricingPolicies' as const },
-  { id: 'section-amenities',         label: 'Amenities',           key: 'amenities' as const },
-  { id: 'section-photos',            label: 'Photos',              key: 'photos' as const },
-  { id: 'section-dynamic-pricing',  label: 'Dynamic Pricing',     key: 'dynamicPricing' as const },
+  { id: 'section-basic-info',        label: 'Основна информация',      key: 'basicInfo' as const },
+  { id: 'section-translations',      label: 'Преводи',                 key: 'translations' as const },
+  { id: 'section-location',          label: 'Местоположение',          key: 'location' as const },
+  { id: 'section-rooms-capacity',    label: 'Стаи и капацитет',        key: 'roomsCapacity' as const },
+  { id: 'section-pricing-policies',  label: 'Цени и условия',          key: 'pricingPolicies' as const },
+  { id: 'section-amenities',         label: 'Удобства',                key: 'amenities' as const },
+  { id: 'section-photos',            label: 'Снимки',                  key: 'photos' as const },
+  { id: 'section-dynamic-pricing',   label: 'Ценови календар',         key: 'dynamicPricing' as const },
+  { id: 'section-payment-config',    label: 'Платежна конфигурация',   key: 'paymentConfig' as const },
 ] as const;
 
 interface PropertyFormNavProps {

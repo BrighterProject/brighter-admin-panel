@@ -1,4 +1,4 @@
-import { useRef, useState } from 'react';
+import { useRef, useState, useEffect } from 'react';
 import { type UseFormReturn, useController } from 'react-hook-form';
 import {
   DndContext,
@@ -15,13 +15,20 @@ import {
   arrayMove,
 } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
-import { GripVertical, Loader2, Plus, Star, Trash2, Upload } from 'lucide-react';
+import { Clock, GripVertical, Loader2, Plus, Star, Trash2, Upload } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { FormItem, FormLabel, FormMessage } from '@/components/ui/form';
+import { Badge } from '@/components/ui/badge';
 import { cn } from '@/lib/utils';
 import type { PropertyFormSchema } from '../../property-form.schema';
 import { useUploadPropertyImage } from '../../hooks';
+
+interface PendingFile {
+  id: string;
+  file: File;
+  previewUrl: string;
+}
 
 interface ImageItem {
   url: string;
@@ -71,7 +78,7 @@ function SortableImage({
       <button
         type="button"
         onClick={onSetThumbnail}
-        title="Set as thumbnail"
+        title="Задай като миниатюра"
         className={cn(
           'p-1 rounded',
           item.is_thumbnail
@@ -92,14 +99,22 @@ function SortableImage({
 interface PhotosSectionProps {
   form: UseFormReturn<PropertyFormSchema>;
   propertyId?: string;
+  onPendingFilesChange?: (files: File[]) => void;
 }
 
-export function PhotosSection({ form, propertyId }: PhotosSectionProps) {
+export function PhotosSection({ form, propertyId, onPendingFilesChange }: PhotosSectionProps) {
   const [urlInput, setUrlInput] = useState('');
   const [uploadError, setUploadError] = useState<string | null>(null);
+  const [pendingFiles, setPendingFiles] = useState<PendingFile[]>([]);
+  const pendingFilesRef = useRef(pendingFiles);
+  pendingFilesRef.current = pendingFiles;
   const fileInputRef = useRef<HTMLInputElement>(null);
   const { field, fieldState } = useController({ control: form.control, name: 'images' });
   const uploadMutation = useUploadPropertyImage();
+
+  useEffect(() => {
+    return () => { pendingFilesRef.current.forEach((p) => URL.revokeObjectURL(p.previewUrl)); };
+  }, []);
 
   const images: ImageItem[] = field.value ?? [];
 
@@ -118,8 +133,19 @@ export function PhotosSection({ form, propertyId }: PhotosSectionProps) {
 
   const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
-    if (!file || !propertyId) return;
+    if (!file) return;
     setUploadError(null);
+
+    if (!propertyId) {
+      const previewUrl = URL.createObjectURL(file);
+      const id = crypto.randomUUID();
+      const updated = [...pendingFiles, { id, file, previewUrl }];
+      setPendingFiles(updated);
+      onPendingFilesChange?.(updated.map((p) => p.file));
+      if (fileInputRef.current) fileInputRef.current.value = '';
+      return;
+    }
+
     try {
       const uploaded = await uploadMutation.mutateAsync({ propertyId, file });
       const hasThumbnail = images.some((img) => img.is_thumbnail);
@@ -128,10 +154,20 @@ export function PhotosSection({ form, propertyId }: PhotosSectionProps) {
         { url: uploaded.url, is_thumbnail: !hasThumbnail, order: images.length },
       ]);
     } catch {
-      setUploadError('Upload failed. Check file type (JPEG/PNG/WebP) and size (max 5 MB).');
+      setUploadError('Неуспешно качване. Проверете вида (JPEG/PNG/WebP) и размера (макс. 5 MB).');
     } finally {
       if (fileInputRef.current) fileInputRef.current.value = '';
     }
+  };
+
+  const removePendingFile = (id: string) => {
+    setPendingFiles((prev) => {
+      const item = prev.find((p) => p.id === id);
+      if (item) URL.revokeObjectURL(item.previewUrl);
+      const updated = prev.filter((p) => p.id !== id);
+      onPendingFilesChange?.(updated.map((p) => p.file));
+      return updated;
+    });
   };
 
   const removeImage = (index: number) => {
@@ -161,48 +197,69 @@ export function PhotosSection({ form, propertyId }: PhotosSectionProps) {
   return (
     <section id="section-photos" className="space-y-4 scroll-mt-20">
       <div>
-        <h3 className="text-base font-semibold">Photos</h3>
+        <h3 className="text-base font-semibold">Снимки</h3>
         <p className="text-sm text-muted-foreground mt-0.5">
-          Upload photos or add URLs. Drag to reorder. Click the star to set the thumbnail.
-          At least one photo required.
+          Качете снимки или добавете URL адреси. Плъзнете за пренареждане. Натиснете звездата за миниатюра.
+          Необходима е поне една снимка.
         </p>
       </div>
 
-      {propertyId && (
-        <FormItem>
-          <FormLabel>Upload photo</FormLabel>
-          <div className="flex items-center gap-2">
-            <input
-              ref={fileInputRef}
-              type="file"
-              accept="image/jpeg,image/png,image/webp"
-              className="hidden"
-              onChange={handleFileChange}
-            />
-            <Button
-              type="button"
-              variant="outline"
-              disabled={uploadMutation.isPending}
-              onClick={() => fileInputRef.current?.click()}
-            >
-              {uploadMutation.isPending ? (
-                <Loader2 className="size-4 animate-spin" />
-              ) : (
-                <Upload className="size-4" />
-              )}
-              <span className="ml-2">
-                {uploadMutation.isPending ? 'Uploading…' : 'Choose file'}
-              </span>
-            </Button>
-          </div>
-          {uploadError && (
-            <p className="text-sm text-destructive mt-1">{uploadError}</p>
-          )}
-        </FormItem>
+      <FormItem>
+        <FormLabel>Качи снимка</FormLabel>
+        <div className="flex items-center gap-2">
+          <input
+            ref={fileInputRef}
+            type="file"
+            accept="image/jpeg,image/png,image/webp"
+            className="hidden"
+            onChange={handleFileChange}
+          />
+          <Button
+            type="button"
+            variant="outline"
+            disabled={uploadMutation.isPending}
+            onClick={() => fileInputRef.current?.click()}
+          >
+            {uploadMutation.isPending ? (
+              <Loader2 className="size-4 animate-spin" />
+            ) : (
+              <Upload className="size-4" />
+            )}
+            <span className="ml-2">
+              {uploadMutation.isPending ? 'Качване…' : 'Избери файл'}
+            </span>
+          </Button>
+        </div>
+        {uploadError && (
+          <p className="text-sm text-destructive mt-1">{uploadError}</p>
+        )}
+      </FormItem>
+
+      {!propertyId && pendingFiles.length > 0 && (
+        <div className="space-y-2">
+          <p className="text-xs text-muted-foreground flex items-center gap-1">
+            <Clock className="size-3" />
+            Тези файлове ще бъдат качени след запазване на имота.
+          </p>
+          {pendingFiles.map((p) => (
+            <div key={p.id} className="flex items-center gap-2 rounded-md border p-2">
+              <img
+                src={p.previewUrl}
+                alt={p.file.name}
+                className="size-12 rounded object-cover shrink-0"
+              />
+              <span className="text-xs text-muted-foreground flex-1 truncate">{p.file.name}</span>
+              <Badge variant="secondary" className="text-xs shrink-0">Изчакващ</Badge>
+              <Button type="button" variant="ghost" size="icon" onClick={() => removePendingFile(p.id)}>
+                <Trash2 className="size-4 text-destructive" />
+              </Button>
+            </div>
+          ))}
+        </div>
       )}
 
       <FormItem>
-        <FormLabel>Add photo URL</FormLabel>
+        <FormLabel>Добави URL на снимка</FormLabel>
         <div className="flex gap-2">
           <Input
             placeholder="https://example.com/photo.jpg"

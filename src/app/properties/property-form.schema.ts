@@ -52,7 +52,11 @@ export const propertyFormSchema = z.object({
     ],
     { required_error: "Property type is required" },
   ),
-  city: z.string().min(1, "City is required"),
+  registration_number: z
+    .string()
+    .min(1, "Регистрационният номер е задължителен"),
+  region_code: z.string().min(1, "Region is required"),
+  settlement_ekatte: z.string().min(1, "Settlement is required"),
   lat: z
     .string()
     .regex(/^[-+]?\d*\.?\d*$/, "Invalid latitude")
@@ -101,6 +105,21 @@ export const propertyFormSchema = z.object({
     ]),
   ),
   images: z.array(imageCreateSchema),
+  enable_gap_filler: z.boolean().default(false),
+  gap_tax_pct: z.coerce.number().min(-100).max(100).default(10),
+  gap_last_minute_window: z.coerce.number().min(1).max(90).default(7),
+  payment_config: z
+    .object({
+      accepted_methods: z
+        .array(z.enum(["card", "bank_transfer", "cash"]))
+        .default(["card"]),
+      deposit_pct: z.number().min(20).max(100).default(100),
+      remaining_method: z
+        .enum(["card", "bank_transfer", "cash"])
+        .nullable()
+        .optional(),
+    })
+    .default({}),
   translations: z.object({
     bg: z.object({
       name: z.string().min(2, "Name must be at least 2 characters"),
@@ -117,9 +136,68 @@ export const propertyFormSchema = z.object({
 
 export type PropertyFormSchema = z.infer<typeof propertyFormSchema>;
 
+export const DEV_PROPERTY_DEFAULTS: PropertyFormSchema = {
+  property_type: "apartment",
+  registration_number: "REG-DEV-001",
+  region_code: "",
+  settlement_ekatte: "",
+  lat: "42.6977",
+  lng: "23.3219",
+  has_parking: true,
+  price_per_night: "80",
+  currency: "EUR",
+  min_nights: 1,
+  max_nights: 30,
+  check_in_time: "14:00",
+  check_out_time: "11:00",
+  cancellation_policy: "free",
+  bedrooms: 2,
+  bathrooms: 1,
+  beds: 2,
+  max_guests: 4,
+  rooms: [
+    {
+      room_type: "bedroom",
+      count: 1,
+      beds: [{ bed_type: "double", count: 1 }],
+    },
+    { room_type: "living_room", count: 1, beds: [] },
+    { room_type: "bathroom", count: 1, beds: [] },
+  ],
+  amenities: ["wifi", "air_conditioning", "kitchen"],
+  images: [],
+  enable_gap_filler: false,
+  gap_tax_pct: 10,
+  gap_last_minute_window: 7,
+  payment_config: {
+    accepted_methods: ["cash"],
+    deposit_pct: 100,
+    remaining_method: null,
+  },
+  translations: {
+    bg: {
+      name: "Тест апартамент София",
+      description:
+        "Уютен апартамент в центъра на София с прекрасна гледка към Витоша. Напълно обзаведен с модерна кухня и всички необходими удобства.",
+      address: "ул. Витоша 1, ет. 3, ап. 7",
+      house_rules: "Не се пуши. Домашни любимци с предварително съгласие.",
+    },
+    en: {
+      name: "Test Apartment Sofia",
+      description:
+        "Cozy apartment in the centre of Sofia with a lovely view of Vitosha mountain. Fully furnished with a modern kitchen and all necessary amenities.",
+      address: "1 Vitosha Str, fl. 3, apt. 7",
+      house_rules: "No smoking. Pets allowed with prior agreement.",
+    },
+    ru: { name: "", description: "", address: "", house_rules: "" },
+  },
+};
+
 export const PROPERTY_FORM_DEFAULTS: PropertyFormSchema = {
   property_type: "apartment",
-  city: "",
+  registration_number: "",
+  region_code: "",
+  settlement_ekatte: "",
   lat: "",
   lng: "",
   has_parking: false,
@@ -137,6 +215,14 @@ export const PROPERTY_FORM_DEFAULTS: PropertyFormSchema = {
   rooms: [],
   amenities: [],
   images: [],
+  enable_gap_filler: false,
+  gap_tax_pct: 10,
+  gap_last_minute_window: 7,
+  payment_config: {
+    accepted_methods: ["cash"],
+    deposit_pct: 100,
+    remaining_method: null,
+  },
   translations: {
     bg: { name: "", description: "", address: "", house_rules: "" },
     en: { name: "", description: "", address: "", house_rules: "" },
