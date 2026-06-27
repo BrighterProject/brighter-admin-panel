@@ -108,11 +108,18 @@ export const propertyFormSchema = z.object({
   enable_gap_filler: z.boolean().default(false),
   gap_tax_pct: z.coerce.number().min(-100).max(100).default(10),
   gap_last_minute_window: z.coerce.number().min(1).max(90).default(7),
-  payment_config: z.object({
-    accepted_methods: z.array(z.enum(["card", "bank_transfer", "cash"])).default(["card"]),
-    deposit_pct: z.number().min(20).max(100).default(100),
-    remaining_method: z.enum(["card", "bank_transfer", "cash"]).nullable().optional(),
-  }).default({}),
+  payment_config: z
+    .object({
+      accepted_methods: z
+        .array(z.enum(["card", "bank_transfer", "cash"]))
+        .default(["card"]),
+      deposit_pct: z.number().min(20).max(100).default(100),
+      remaining_method: z
+        .enum(["card", "bank_transfer", "cash"])
+        .nullable()
+        .optional(),
+    })
+    .default({}),
   translations: z.object({
     bg: z.object({
       name: z.string().min(2, "Name must be at least 2 characters"),
@@ -149,7 +156,11 @@ export const DEV_PROPERTY_DEFAULTS: PropertyFormSchema = {
   beds: 2,
   max_guests: 4,
   rooms: [
-    { room_type: "bedroom", count: 1, beds: [{ bed_type: "double", count: 1 }] },
+    {
+      room_type: "bedroom",
+      count: 1,
+      beds: [{ bed_type: "double", count: 1 }],
+    },
     { room_type: "living_room", count: 1, beds: [] },
     { room_type: "bathroom", count: 1, beds: [] },
   ],
@@ -159,20 +170,22 @@ export const DEV_PROPERTY_DEFAULTS: PropertyFormSchema = {
   gap_tax_pct: 10,
   gap_last_minute_window: 7,
   payment_config: {
-    accepted_methods: ["card"],
+    accepted_methods: ["cash"],
     deposit_pct: 100,
     remaining_method: null,
   },
   translations: {
     bg: {
       name: "Тест апартамент София",
-      description: "Уютен апартамент в центъра на София с прекрасна гледка към Витоша. Напълно обзаведен с модерна кухня и всички необходими удобства.",
+      description:
+        "Уютен апартамент в центъра на София с прекрасна гледка към Витоша. Напълно обзаведен с модерна кухня и всички необходими удобства.",
       address: "ул. Витоша 1, ет. 3, ап. 7",
       house_rules: "Не се пуши. Домашни любимци с предварително съгласие.",
     },
     en: {
       name: "Test Apartment Sofia",
-      description: "Cozy apartment in the centre of Sofia with a lovely view of Vitosha mountain. Fully furnished with a modern kitchen and all necessary amenities.",
+      description:
+        "Cozy apartment in the centre of Sofia with a lovely view of Vitosha mountain. Fully furnished with a modern kitchen and all necessary amenities.",
       address: "1 Vitosha Str, fl. 3, apt. 7",
       house_rules: "No smoking. Pets allowed with prior agreement.",
     },
@@ -206,7 +219,7 @@ export const PROPERTY_FORM_DEFAULTS: PropertyFormSchema = {
   gap_tax_pct: 10,
   gap_last_minute_window: 7,
   payment_config: {
-    accepted_methods: ["card"],
+    accepted_methods: ["cash"],
     deposit_pct: 100,
     remaining_method: null,
   },
