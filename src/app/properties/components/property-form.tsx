@@ -1,24 +1,28 @@
-import { useState, useEffect, useCallback } from 'react';
-import { useForm, type Resolver } from 'react-hook-form';
-import { zodResolver } from '@hookform/resolvers/zod';
-import { Loader2 } from 'lucide-react';
-import { Form } from '@/components/ui/form';
-import { Button } from '@/components/ui/button';
-import { Separator } from '@/components/ui/separator';
-import { Badge } from '@/components/ui/badge';
-import { propertyFormSchema, PROPERTY_FORM_DEFAULTS, type PropertyFormSchema } from '../property-form.schema';
-import { useSectionCompletion } from '../use-section-completion';
-import { PropertyFormNav, FORM_SECTIONS } from './property-form-nav';
-import { BasicInfoSection } from './sections/basic-info-section';
-import { TranslationsSection } from './sections/translations-section';
-import { LocationSection } from './sections/location-section';
-import { RoomsCapacitySection } from './sections/rooms-capacity-section';
-import { PricingPoliciesSection } from './sections/pricing-policies-section';
-import { AmenitiesSection } from './sections/amenities-section';
-import { PhotosSection } from './sections/photos-section';
-import { DynamicPricingSection } from './sections/dynamic-pricing-section';
-import { PaymentConfigSection } from './sections/payment-config-section';
-import type { Property, DatePriceOverride } from '../types';
+import { useState, useEffect, useCallback } from "react";
+import { useForm, type Resolver } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { Loader2 } from "lucide-react";
+import { Form } from "@/components/ui/form";
+import { Button } from "@/components/ui/button";
+import { Separator } from "@/components/ui/separator";
+import { Badge } from "@/components/ui/badge";
+import {
+  propertyFormSchema,
+  PROPERTY_FORM_DEFAULTS,
+  type PropertyFormSchema,
+} from "../property-form.schema";
+import { useSectionCompletion } from "../use-section-completion";
+import { PropertyFormNav, FORM_SECTIONS } from "./property-form-nav";
+import { BasicInfoSection } from "./sections/basic-info-section";
+import { TranslationsSection } from "./sections/translations-section";
+import { LocationSection } from "./sections/location-section";
+import { RoomsCapacitySection } from "./sections/rooms-capacity-section";
+import { PricingPoliciesSection } from "./sections/pricing-policies-section";
+import { AmenitiesSection } from "./sections/amenities-section";
+import { PhotosSection } from "./sections/photos-section";
+import { DynamicPricingSection } from "./sections/dynamic-pricing-section";
+import { PaymentConfigSection } from "./sections/payment-config-section";
+import type { Property, DatePriceOverride } from "../types";
 
 interface PendingOverride {
   start_date: string;
@@ -39,17 +43,17 @@ interface PropertyFormProps {
 }
 
 function propertyToFormValues(property: Property): PropertyFormSchema {
-  const bgTranslation = property.translations.find((t) => t.locale === 'bg');
-  const enTranslation = property.translations.find((t) => t.locale === 'en');
-  const ruTranslation = property.translations.find((t) => t.locale === 'ru');
+  const bgTranslation = property.translations.find((t) => t.locale === "bg");
+  const enTranslation = property.translations.find((t) => t.locale === "en");
+  const ruTranslation = property.translations.find((t) => t.locale === "ru");
 
   return {
     property_type: property.property_type,
-    registration_number: property.registration_number ?? '',
-    region_code: property.region_code ?? '',
-    settlement_ekatte: property.settlement_ekatte ?? '',
-    lat: property.lat?.toString() ?? '',
-    lng: property.lng?.toString() ?? '',
+    registration_number: property.registration_number ?? "",
+    region_code: property.region_code ?? "",
+    settlement_ekatte: property.settlement_ekatte ?? "",
+    lat: property.lat?.toString() ?? "",
+    lng: property.lng?.toString() ?? "",
     has_parking: property.has_parking,
     price_per_night: property.price_per_night,
     currency: property.currency,
@@ -73,25 +77,25 @@ function propertyToFormValues(property: Property): PropertyFormSchema {
     gap_tax_pct: property.gap_tax_pct ?? 10,
     gap_last_minute_window: property.gap_last_minute_window ?? 7,
     payment_config: property.payment_config ?? {
-      accepted_methods: ["card"],
+      accepted_methods: ["cash"],
       deposit_pct: 100,
       remaining_method: null,
     },
     translations: {
       bg: {
-        name: bgTranslation?.name ?? '',
-        description: bgTranslation?.description ?? '',
-        address: bgTranslation?.address ?? '',
+        name: bgTranslation?.name ?? "",
+        description: bgTranslation?.description ?? "",
+        address: bgTranslation?.address ?? "",
       },
       en: {
-        name: enTranslation?.name ?? '',
-        description: enTranslation?.description ?? '',
-        address: enTranslation?.address ?? '',
+        name: enTranslation?.name ?? "",
+        description: enTranslation?.description ?? "",
+        address: enTranslation?.address ?? "",
       },
       ru: {
-        name: ruTranslation?.name ?? '',
-        description: ruTranslation?.description ?? '',
-        address: ruTranslation?.address ?? '',
+        name: ruTranslation?.name ?? "",
+        description: ruTranslation?.description ?? "",
+        address: ruTranslation?.address ?? "",
       },
     },
   };
@@ -99,27 +103,42 @@ function propertyToFormValues(property: Property): PropertyFormSchema {
 
 export { propertyToFormValues };
 
-export function PropertyForm({ initialValues, onSubmit, isPending, propertyId, dateOverrides, onPendingFilesChange, onPendingOverridesChange }: PropertyFormProps) {
+export function PropertyForm({
+  initialValues,
+  onSubmit,
+  isPending,
+  propertyId,
+  dateOverrides,
+  onPendingFilesChange,
+  onPendingOverridesChange,
+}: PropertyFormProps) {
   const form = useForm<PropertyFormSchema>({
     resolver: zodResolver(propertyFormSchema) as Resolver<PropertyFormSchema>,
     defaultValues: { ...PROPERTY_FORM_DEFAULTS, ...initialValues },
-    mode: 'onTouched',
+    mode: "onTouched",
   });
 
   const [pendingFilesCount, setPendingFilesCount] = useState(0);
   const [pendingOverridesCount, setPendingOverridesCount] = useState(0);
 
-  const sectionStates = useSectionCompletion(form, { pendingFilesCount, pendingOverridesCount });
-  const completedCount = Object.values(sectionStates).filter((s) => s === 'complete').length;
+  const sectionStates = useSectionCompletion(form, {
+    pendingFilesCount,
+    pendingOverridesCount,
+  });
+  const completedCount = Object.values(sectionStates).filter(
+    (s) => s === "complete",
+  ).length;
   const allRequiredComplete = [
     sectionStates.basicInfo,
     sectionStates.location,
     sectionStates.roomsCapacity,
     sectionStates.pricingPolicies,
     sectionStates.photos,
-  ].every((s) => s === 'complete');
+  ].every((s) => s === "complete");
 
-  const [activeSection, setActiveSection] = useState<string>(FORM_SECTIONS[0].id);
+  const [activeSection, setActiveSection] = useState<string>(
+    FORM_SECTIONS[0].id,
+  );
 
   // Track active section via IntersectionObserver
   useEffect(() => {
@@ -128,7 +147,9 @@ export function PropertyForm({ initialValues, onSubmit, isPending, propertyId, d
       const el = document.getElementById(id);
       if (!el) return;
       const observer = new IntersectionObserver(
-        ([entry]) => { if (entry.isIntersecting) setActiveSection(id); },
+        ([entry]) => {
+          if (entry.isIntersecting) setActiveSection(id);
+        },
         { threshold: 0.3 },
       );
       observer.observe(el);
@@ -141,7 +162,10 @@ export function PropertyForm({ initialValues, onSubmit, isPending, propertyId, d
     <div className="flex gap-8 max-w-5xl mx-auto px-4 pb-24">
       {/* Section nav */}
       <div className="w-52 shrink-0">
-        <PropertyFormNav sectionStates={sectionStates} activeSection={activeSection} />
+        <PropertyFormNav
+          sectionStates={sectionStates}
+          activeSection={activeSection}
+        />
       </div>
 
       {/* Form content */}
@@ -165,21 +189,27 @@ export function PropertyForm({ initialValues, onSubmit, isPending, propertyId, d
           <PhotosSection
             form={form}
             propertyId={propertyId}
-            onPendingFilesChange={useCallback((files: File[]) => {
-              setPendingFilesCount(files.length);
-              onPendingFilesChange?.(files);
-            }, [onPendingFilesChange])}
+            onPendingFilesChange={useCallback(
+              (files: File[]) => {
+                setPendingFilesCount(files.length);
+                onPendingFilesChange?.(files);
+              },
+              [onPendingFilesChange],
+            )}
           />
           <Separator />
           <DynamicPricingSection
             propertyId={propertyId}
-            basePricePerNight={form.watch('price_per_night')}
-            currency={form.watch('currency') || 'EUR'}
+            basePricePerNight={form.watch("price_per_night")}
+            currency={form.watch("currency") || "EUR"}
             dateOverrides={dateOverrides}
-            onPendingOverridesChange={useCallback((overrides) => {
-              setPendingOverridesCount(overrides.length);
-              onPendingOverridesChange?.(overrides);
-            }, [onPendingOverridesChange])}
+            onPendingOverridesChange={useCallback(
+              (overrides) => {
+                setPendingOverridesCount(overrides.length);
+                onPendingOverridesChange?.(overrides);
+              },
+              [onPendingOverridesChange],
+            )}
           />
           <Separator />
           <PaymentConfigSection form={form} />
