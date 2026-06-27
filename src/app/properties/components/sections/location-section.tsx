@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Check, ChevronsUpDown } from 'lucide-react';
 import { type UseFormReturn } from 'react-hook-form';
 
@@ -19,8 +19,9 @@ import { Input } from '@/components/ui/input';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Switch } from '@/components/ui/switch';
 
-import { useRegions, useSettlements } from '../../hooks';
+import { useRegions, useSettlements, useSettlementCenter } from '../../hooks';
 import type { PropertyFormSchema } from '../../property-form.schema';
+import { LocationPicker } from './location-picker';
 
 interface LocationSectionProps {
   form: UseFormReturn<PropertyFormSchema>;
@@ -29,9 +30,35 @@ interface LocationSectionProps {
 export function LocationSection({ form }: LocationSectionProps) {
   const [regionOpen, setRegionOpen] = useState(false);
   const [settlementOpen, setSettlementOpen] = useState(false);
+  // Set only on an explicit settlement pick so editing an existing property
+  // never overrides its saved coordinates with the settlement center.
+  const [pendingEkatte, setPendingEkatte] = useState<string | null>(null);
+  const [mapCenter, setMapCenter] = useState<{ lat: number; lng: number } | null>(null);
 
   const regionCode = form.watch('region_code');
   const settlementEkatte = form.watch('settlement_ekatte');
+  const latValue = form.watch('lat');
+  const lngValue = form.watch('lng');
+
+  const { data: settlementCenter } = useSettlementCenter(pendingEkatte);
+
+  useEffect(() => {
+    if (settlementCenter?.lat != null && settlementCenter.lon != null) {
+      setMapCenter({ lat: settlementCenter.lat, lng: settlementCenter.lon });
+    }
+    if (settlementCenter) setPendingEkatte(null);
+  }, [settlementCenter]);
+
+  const parseCoord = (v: string | undefined): number | null => {
+    if (v == null || v === '') return null;
+    const n = Number(v);
+    return Number.isFinite(n) ? n : null;
+  };
+
+  const handlePinMove = (lat: number, lng: number) => {
+    form.setValue('lat', String(lat), { shouldDirty: true });
+    form.setValue('lng', String(lng), { shouldDirty: true });
+  };
 
   const { data: regions = [], isLoading: regionsLoading } = useRegions('bg');
   const { data: settlements = [], isLoading: settlementsLoading } = useSettlements(
@@ -144,6 +171,7 @@ export function LocationSection({ form }: LocationSectionProps) {
                           value={`${s.tvm ? `${s.tvm} ` : ''}${s.name}`}
                           onSelect={() => {
                             field.onChange(s.ekatte);
+                            setPendingEkatte(s.ekatte);
                             setSettlementOpen(false);
                           }}
                         >
@@ -180,37 +208,53 @@ export function LocationSection({ form }: LocationSectionProps) {
         )}
       />
 
-      <div className="grid grid-cols-2 gap-4">
-        <FormField
-          control={form.control}
-          name="lat"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Ширина (незадължително)</FormLabel>
-              <FormControl>
-                <Input placeholder="42.6977" {...field} />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
+      <div className="space-y-2">
+        <FormLabel>Местоположение на картата</FormLabel>
+        <LocationPicker
+          lat={parseCoord(latValue)}
+          lng={parseCoord(lngValue)}
+          center={mapCenter}
+          onChange={handlePinMove}
         />
-        <FormField
-          control={form.control}
-          name="lng"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Дължина (незадължително)</FormLabel>
-              <FormControl>
-                <Input placeholder="23.3219" {...field} />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
+        <p className="text-xs text-muted-foreground">
+          Изберете населено място, след което плъзнете маркера до точното място на
+          обекта.
+        </p>
       </div>
-      <p className="text-xs text-muted-foreground -mt-2">
-        Използва се за показване на имота на картата.
-      </p>
+
+      <details className="rounded-lg border p-3">
+        <summary className="cursor-pointer text-sm text-muted-foreground">
+          Въведете координати ръчно
+        </summary>
+        <div className="grid grid-cols-2 gap-4 pt-3">
+          <FormField
+            control={form.control}
+            name="lat"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Ширина (незадължително)</FormLabel>
+                <FormControl>
+                  <Input placeholder="42.6977" {...field} />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+          <FormField
+            control={form.control}
+            name="lng"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Дължина (незадължително)</FormLabel>
+                <FormControl>
+                  <Input placeholder="23.3219" {...field} />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+        </div>
+      </details>
 
       <FormField
         control={form.control}
