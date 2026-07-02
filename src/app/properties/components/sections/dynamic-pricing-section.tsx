@@ -166,6 +166,16 @@ export function DynamicPricingSection({
   const [viewDate, setViewDate] = useState(new Date(today.getFullYear(), today.getMonth(), 1));
   const [editingDate, setEditingDate] = useState<string | null>(null);
   const [offlineOverrides, setOfflineOverrides] = useState<Map<string, string>>(new Map());
+  // Edit-mode overlay: reflects just-saved overrides immediately without waiting
+  // for the property refetch (which can be served stale from the HTTP cache).
+  // null value = the day's override was deleted this session.
+  const [editOverrides, setEditOverrides] = useState<
+    Map<string, DatePriceOverride | null>
+  >(new Map());
+
+  const applyEdit = (date: string, value: DatePriceOverride | null) => {
+    setEditOverrides((prev) => new Map(prev).set(date, value));
+  };
 
   const create = useCreateDateOverride(propertyId ?? '');
   const update = useUpdateDateOverride(propertyId ?? '');
@@ -190,10 +200,15 @@ export function DynamicPricingSection({
   };
 
   // In create mode: use offline overrides; in edit mode: use API-backed overrides
+  // merged with the local edit overlay (so saves show instantly).
   const singleDayMap = new Map<string, DatePriceOverride>();
   if (propertyId) {
     for (const o of dateOverrides) {
       if (o.start_date === o.end_date) singleDayMap.set(o.start_date, o);
+    }
+    for (const [d, o] of editOverrides) {
+      if (o === null) singleDayMap.delete(d);
+      else singleDayMap.set(d, o);
     }
   } else {
     for (const [date, price] of offlineOverrides.entries()) {
@@ -330,15 +345,18 @@ export function DynamicPricingSection({
                     overrideId={override?.id ?? null}
                     onCreate={async (p) => {
                       if (!propertyId) { setOffline(date, p); return; }
-                      await create.mutateAsync({ start_date: date, end_date: date, price: p });
+                      const created = await create.mutateAsync({ start_date: date, end_date: date, price: p });
+                      applyEdit(date, created);
                     }}
                     onUpdate={async (p) => {
                       if (!propertyId) { setOffline(date, p); return; }
-                      await update.mutateAsync({ overrideId: override!.id, price: p });
+                      const updated = await update.mutateAsync({ overrideId: override!.id, price: p });
+                      applyEdit(date, updated);
                     }}
                     onDelete={async () => {
                       if (!propertyId) { deleteOffline(date); return; }
                       await del.mutateAsync(override!.id);
+                      applyEdit(date, null);
                     }}
                     onClose={() => setEditingDate(null)}
                   />
