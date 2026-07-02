@@ -68,9 +68,8 @@ export const propertyFormSchema = z.object({
     .optional()
     .or(z.literal("")),
   has_parking: z.boolean().default(false),
-  price_per_night: z
-    .string()
-    .regex(/^\d+(\.\d{1,2})?$/, "Невалидна цена — използвайте формат като 80 или 80.50"),
+  // Base price is no longer entered here — it is derived server-side as the
+  // cheapest night in the pricing calendar (dynamic-pricing section below).
   currency: z.string().length(3, "Трябва да е 3 символа").default("EUR"),
   min_nights: z.coerce.number().min(1, "Минимум 1 нощувка").default(1),
   max_nights: z.coerce.number().min(1, "Минимум 1 нощувка").default(30),
@@ -177,7 +176,6 @@ export const DEV_PROPERTY_DEFAULTS: PropertyFormSchema = {
   lat: "42.6977",
   lng: "23.3219",
   has_parking: true,
-  price_per_night: "80",
   currency: "EUR",
   min_nights: 1,
   max_nights: 30,
@@ -234,7 +232,6 @@ export const PROPERTY_FORM_DEFAULTS: PropertyFormSchema = {
   lat: "",
   lng: "",
   has_parking: false,
-  price_per_night: "",
   currency: "EUR",
   min_nights: 1,
   max_nights: 30,

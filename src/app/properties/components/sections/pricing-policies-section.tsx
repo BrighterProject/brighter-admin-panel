@@ -38,24 +38,12 @@ export function PricingPoliciesSection({ form }: PricingPoliciesSectionProps) {
       <div>
         <h3 className="text-base font-semibold">Цени и условия</h3>
         <p className="text-sm text-muted-foreground mt-0.5">
-          Нощна цена, ограничения за престой и условия за отказ.
+          Ограничения за престой и условия за отказ. Цената на нощувка се задава
+          в ценовия календар по-долу.
         </p>
       </div>
 
       <div className="grid grid-cols-2 gap-4">
-        <FormField
-          control={form.control}
-          name="price_per_night"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Цена на нощ (EUR) *</FormLabel>
-              <FormControl>
-                <Input placeholder="80.00" {...field} />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
         <FormItem>
           <FormLabel>Валута</FormLabel>
           <Input value="EUR" disabled />

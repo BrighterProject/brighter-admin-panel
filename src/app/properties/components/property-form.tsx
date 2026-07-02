@@ -55,7 +55,6 @@ function propertyToFormValues(property: Property): PropertyFormSchema {
     lat: property.lat?.toString() ?? "",
     lng: property.lng?.toString() ?? "",
     has_parking: property.has_parking,
-    price_per_night: property.price_per_night,
     currency: property.currency,
     min_nights: property.min_nights,
     max_nights: property.max_nights,
@@ -200,7 +199,6 @@ export function PropertyForm({
           <Separator />
           <DynamicPricingSection
             propertyId={propertyId}
-            basePricePerNight={form.watch("price_per_night")}
             currency={form.watch("currency") || "EUR"}
             dateOverrides={dateOverrides}
             onPendingOverridesChange={useCallback(

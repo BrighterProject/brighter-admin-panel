@@ -15,7 +15,6 @@ describe('propertyFormSchema', () => {
     lat: '',
     lng: '',
     has_parking: false,
-    price_per_night: '80.00',
     currency: 'EUR',
     min_nights: 1,
     max_nights: 30,

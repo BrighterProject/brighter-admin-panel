@@ -41,7 +41,6 @@ function addMonths(date: Date, n: number): Date {
 interface DayEditPopoverProps {
   date: string;
   currentPrice: string | null;
-  basePrice: string;
   currency: string;
   overrideId: string | null;
   onCreate: (price: string) => Promise<void>;
@@ -53,7 +52,6 @@ interface DayEditPopoverProps {
 function DayEditPopover({
   date,
   currentPrice,
-  basePrice,
   currency,
   overrideId,
   onCreate,
@@ -117,7 +115,7 @@ function DayEditPopover({
           value={price}
           onChange={(e) => { setPrice(e.target.value); setError(null); }}
           onKeyDown={(e) => { if (e.key === "Enter") handleSave(); if (e.key === "Escape") onClose(); }}
-          placeholder={basePrice}
+          placeholder="0.00"
           className="h-7 text-sm"
         />
         <span className="text-xs text-muted-foreground shrink-0">{currency}</span>
@@ -149,7 +147,6 @@ interface PendingOverride {
 
 interface DynamicPricingSectionProps {
   propertyId: string | undefined;
-  basePricePerNight?: string;
   currency?: string;
   dateOverrides?: DatePriceOverride[];
   onPendingOverridesChange?: (overrides: PendingOverride[]) => void;
@@ -157,7 +154,6 @@ interface DynamicPricingSectionProps {
 
 export function DynamicPricingSection({
   propertyId,
-  basePricePerNight = "0",
   currency = "EUR",
   dateOverrides = [],
   onPendingOverridesChange,
@@ -340,7 +336,6 @@ export function DynamicPricingSection({
                   <DayEditPopover
                     date={date}
                     currentPrice={override ? String(override.price) : null}
-                    basePrice={basePricePerNight}
                     currency={currency}
                     overrideId={override?.id ?? null}
                     onCreate={async (p) => {
