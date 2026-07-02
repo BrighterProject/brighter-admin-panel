@@ -219,7 +219,7 @@ export function PropertyForm({
       {/* Sticky footer */}
       <div className="fixed bottom-0 left-0 right-0 z-20 bg-background border-t px-4 py-3 flex items-center justify-between gap-4">
         <Badge variant="outline" className="text-xs">
-          {completedCount}/{FORM_SECTIONS.length} sections complete
+          {completedCount}/{FORM_SECTIONS.length} завършени секции
         </Badge>
         <div className="flex gap-2">
           <Button
@@ -228,7 +228,7 @@ export function PropertyForm({
             disabled={isPending}
             onClick={() => form.handleSubmit(onSubmit)()}
           >
-            Save Draft
+            Запази чернова
           </Button>
           <Button
             type="button"
@@ -236,7 +236,7 @@ export function PropertyForm({
             onClick={form.handleSubmit(onSubmit)}
           >
             {isPending && <Loader2 className="mr-2 size-4 animate-spin" />}
-            Submit for Review
+            Изпрати за одобрение
           </Button>
         </div>
       </div>

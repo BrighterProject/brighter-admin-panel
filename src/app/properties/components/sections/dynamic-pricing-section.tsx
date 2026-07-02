@@ -223,7 +223,8 @@ export function DynamicPricingSection({
     const o = singleDayMap.get(date);
     if (o) return { price: Number(o.price).toFixed(0), isCustom: true };
     if (rangeCoveredDates.has(date)) return { price: "range", isCustom: true };
-    return { price: Number(basePricePerNight).toFixed(0), isCustom: false };
+    // No price set for this day => not bookable.
+    return { price: "", isCustom: false };
   }
 
   return (
@@ -231,8 +232,9 @@ export function DynamicPricingSection({
       <div>
         <h3 className="text-base font-semibold">Ценови календар</h3>
         <p className="text-sm text-muted-foreground mt-0.5">
-          Натиснете върху дата за задаване на персонализирана цена. Базовата цена ({Number(basePricePerNight).toFixed(0)} {currency}) важи в останалите случаи.
-          {!propertyId && <span className="ml-1 text-amber-600 dark:text-amber-400">(Замените ще бъдат запазени при изпращане.)</span>}
+          Натиснете върху дата, за да зададете цена за нощувка. Дните без зададена
+          цена са недостъпни за резервация.
+          {!propertyId && <span className="ml-1 text-amber-600 dark:text-amber-400">(Цените ще бъдат запазени при изпращане.)</span>}
         </p>
       </div>
 
@@ -313,10 +315,10 @@ export function DynamicPricingSection({
                     "text-[10px] leading-none",
                     isCustom && !isRange ? "text-emerald-600 dark:text-emerald-400 font-semibold" : "",
                     isRange ? "text-amber-500 dark:text-amber-400 font-medium" : "",
-                    !isCustom ? "text-muted-foreground" : "",
+                    !isCustom ? "text-muted-foreground/50" : "",
                   ].join(" ")}
                 >
-                  {isRange ? "обхват" : `${price}`}
+                  {isRange ? "обхват" : isCustom ? price : "—"}
                 </span>
 
                 {isEditing && (
@@ -351,11 +353,11 @@ export function DynamicPricingSection({
       <div className="flex flex-wrap gap-4 text-xs text-muted-foreground">
         <span className="flex items-center gap-1.5">
           <span className="size-2.5 rounded-sm bg-muted border" />
-          Базова цена
+          Без цена (недостъпно)
         </span>
         <span className="flex items-center gap-1.5">
           <span className="size-2.5 rounded-sm bg-emerald-100 dark:bg-emerald-900 border border-emerald-300" />
-          Персонализирана цена
+          Зададена цена
         </span>
         {rangeOverrides.length > 0 && (
           <span className="flex items-center gap-1.5">
