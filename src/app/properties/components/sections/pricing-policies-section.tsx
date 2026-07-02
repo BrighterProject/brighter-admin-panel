@@ -43,14 +43,14 @@ export function PricingPoliciesSection({ form }: PricingPoliciesSectionProps) {
         </p>
       </div>
 
-      <div className="grid grid-cols-2 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
         <FormItem>
           <FormLabel>Валута</FormLabel>
           <Input value="EUR" disabled />
         </FormItem>
       </div>
 
-      <div className="grid grid-cols-2 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
         <FormField
           control={form.control}
           name="check_in_time"
@@ -79,7 +79,7 @@ export function PricingPoliciesSection({ form }: PricingPoliciesSectionProps) {
         />
       </div>
 
-      <div className="grid grid-cols-2 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
         <FormField
           control={form.control}
           name="min_nights"

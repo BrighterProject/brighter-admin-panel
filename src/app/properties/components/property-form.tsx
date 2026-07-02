@@ -158,9 +158,9 @@ export function PropertyForm({
   }, []);
 
   return (
-    <div className="flex gap-8 max-w-5xl mx-auto px-4 pb-24">
-      {/* Section nav */}
-      <div className="w-52 shrink-0">
+    <div className="flex flex-col lg:flex-row lg:gap-8 max-w-5xl mx-auto px-4 pb-28">
+      {/* Section nav — sticky sidebar on desktop, horizontal pills on mobile */}
+      <div className="w-full lg:w-52 lg:shrink-0">
         <PropertyFormNav
           sectionStates={sectionStates}
           activeSection={activeSection}
@@ -215,14 +215,15 @@ export function PropertyForm({
       </Form>
 
       {/* Sticky footer */}
-      <div className="fixed bottom-0 left-0 right-0 z-20 bg-background border-t px-4 py-3 flex items-center justify-between gap-4">
-        <Badge variant="outline" className="text-xs">
+      <div className="fixed bottom-0 left-0 right-0 z-20 bg-background border-t px-4 py-3 flex items-center justify-end sm:justify-between gap-3">
+        <Badge variant="outline" className="hidden text-xs sm:inline-flex">
           {completedCount}/{FORM_SECTIONS.length} завършени секции
         </Badge>
-        <div className="flex gap-2">
+        <div className="flex w-full gap-2 sm:w-auto">
           <Button
             type="button"
             variant="outline"
+            className="flex-1 sm:flex-none"
             disabled={isPending}
             onClick={() => form.handleSubmit(onSubmit)()}
           >
@@ -230,6 +231,7 @@ export function PropertyForm({
           </Button>
           <Button
             type="button"
+            className="flex-1 sm:flex-none"
             disabled={!allRequiredComplete || isPending}
             onClick={form.handleSubmit(onSubmit)}
           >
