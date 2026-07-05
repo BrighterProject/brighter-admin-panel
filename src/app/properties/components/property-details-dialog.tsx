@@ -99,7 +99,7 @@ function DetailRow({
   return (
     <div className="flex justify-between items-start gap-4 py-1">
       <span className="text-sm text-muted-foreground shrink-0">{label}</span>
-      <span className="text-sm text-right">{value}</span>
+      <span className="min-w-0 break-words text-sm text-right">{value}</span>
     </div>
   );
 }

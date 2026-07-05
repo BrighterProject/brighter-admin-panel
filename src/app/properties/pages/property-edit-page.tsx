@@ -4,6 +4,7 @@ import { Loader2 } from 'lucide-react';
 import { BaseLayout } from '@/components/layouts/base-layout';
 import { PropertyForm, propertyToFormValues } from '../components/property-form';
 import { useProperty, useUpdateProperty } from '../hooks';
+import { clearPropertyDraft } from '../use-property-draft';
 import type { PropertyFormSchema } from '../property-form.schema';
 
 export default function PropertyEditPage() {
@@ -18,6 +19,7 @@ export default function PropertyEditPage() {
       { id, data },
       {
         onSuccess: () => {
+          clearPropertyDraft(id);
           toast.success('Обект обновен. Чакащ одобрението на администратор.');
           navigate('/properties');
         },
@@ -56,6 +58,7 @@ export default function PropertyEditPage() {
         onSubmit={handleSubmit}
         isPending={isPending}
         propertyId={id}
+        propertyStatus={property.status}
         dateOverrides={property.date_price_overrides}
       />
     </BaseLayout>

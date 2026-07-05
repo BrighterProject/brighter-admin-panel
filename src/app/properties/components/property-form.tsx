@@ -2,6 +2,7 @@ import { useState, useEffect, useCallback } from "react";
 import { useForm, type Resolver } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Loader2 } from "lucide-react";
+import { toast } from "sonner";
 import { Form } from "@/components/ui/form";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
@@ -12,6 +13,7 @@ import {
   type PropertyFormSchema,
 } from "../property-form.schema";
 import { useSectionCompletion } from "../use-section-completion";
+import { usePropertyDraft, readPropertyDraft } from "../use-property-draft";
 import { PropertyFormNav, FORM_SECTIONS } from "./property-form-nav";
 import { BasicInfoSection } from "./sections/basic-info-section";
 import { TranslationsSection } from "./sections/translations-section";
@@ -37,6 +39,8 @@ interface PropertyFormProps {
   isPending: boolean;
   /** Existing property id — enables dynamic pricing controls in edit mode */
   propertyId?: string;
+  /** Current status of the property being edited — controls submit button label */
+  propertyStatus?: Property["status"];
   dateOverrides?: DatePriceOverride[];
   onPendingFilesChange?: (files: File[]) => void;
   onPendingOverridesChange?: (overrides: PendingOverride[]) => void;
@@ -107,15 +111,30 @@ export function PropertyForm({
   onSubmit,
   isPending,
   propertyId,
+  propertyStatus,
   dateOverrides,
   onPendingFilesChange,
   onPendingOverridesChange,
 }: PropertyFormProps) {
+  const draftKey = propertyId ?? "new";
+  const isEdit = !!initialValues;
+
   const form = useForm<PropertyFormSchema>({
     resolver: zodResolver(propertyFormSchema) as Resolver<PropertyFormSchema>,
-    defaultValues: { ...PROPERTY_FORM_DEFAULTS, ...initialValues },
+    defaultValues: {
+      ...PROPERTY_FORM_DEFAULTS,
+      ...initialValues,
+      ...readPropertyDraft(draftKey),
+    },
     mode: "onTouched",
   });
+
+  const { saveDraftNow } = usePropertyDraft(draftKey, form);
+
+  const handleSaveDraft = useCallback(() => {
+    saveDraftNow();
+    toast.success("Черновата е запазена локално в браузъра.");
+  }, [saveDraftNow]);
 
   const [pendingFilesCount, setPendingFilesCount] = useState(0);
   const [pendingOverridesCount, setPendingOverridesCount] = useState(0);
@@ -173,7 +192,7 @@ export function PropertyForm({
           onSubmit={form.handleSubmit(onSubmit)}
           className="flex-1 space-y-10 min-w-0"
         >
-          <BasicInfoSection form={form} isEdit={!!initialValues} />
+          <BasicInfoSection form={form} isEdit={isEdit} />
           <Separator />
           <TranslationsSection form={form} />
           <Separator />
@@ -225,7 +244,7 @@ export function PropertyForm({
             variant="outline"
             className="flex-1 sm:flex-none"
             disabled={isPending}
-            onClick={() => form.handleSubmit(onSubmit)()}
+            onClick={handleSaveDraft}
           >
             Запази чернова
           </Button>
@@ -236,7 +255,9 @@ export function PropertyForm({
             onClick={form.handleSubmit(onSubmit)}
           >
             {isPending && <Loader2 className="mr-2 size-4 animate-spin" />}
-            Изпрати за одобрение
+            {isEdit && propertyStatus === "active"
+              ? "Запази промените"
+              : "Изпрати за одобрение"}
           </Button>
         </div>
       </div>
