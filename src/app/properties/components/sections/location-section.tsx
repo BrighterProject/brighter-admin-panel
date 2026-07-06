@@ -199,7 +199,7 @@ export function LocationSection({ form }: LocationSectionProps) {
         name="translations.bg.address"
         render={({ field }) => (
           <FormItem>
-            <FormLabel>Адрес (Български) *</FormLabel>
+            <FormLabel>Адрес (Български)</FormLabel>
             <FormControl>
               <Input placeholder="ул. Витоша 1" {...field} />
             </FormControl>

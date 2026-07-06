@@ -126,7 +126,7 @@ export const propertyFormSchema = z.object({
       description: z
         .string()
         .min(10, "Description must be at least 10 characters"),
-      address: z.string().min(1, "Address is required"),
+      address: z.string(),
       house_rules: z.string().optional(),
     }),
     en: translationLocaleSchema,
