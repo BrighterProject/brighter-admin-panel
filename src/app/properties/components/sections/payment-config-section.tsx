@@ -108,6 +108,8 @@ export function PaymentConfigSection({ form }: PaymentConfigSectionProps) {
                         {blocker.message}{" "}
                         <Link
                           to={blocker.linkTo}
+                          target="_blank"
+                          rel="noopener noreferrer"
                           className="underline font-medium hover:text-amber-700 dark:hover:text-amber-300"
                         >
                           {blocker.linkLabel}
