@@ -1,6 +1,11 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 
-import type { Booking, BookingStatus, BookingFilters } from "./types";
+import type {
+  Booking,
+  BookingStatus,
+  BookingFilters,
+  GuestIdentity,
+} from "./types";
 import { api } from "@/lib/api";
 
 const BOOKINGS_KEY = ["bookings"];
@@ -27,6 +32,20 @@ export function useBooking(id: string | null) {
 
 const fetchBooking = (id: string) =>
   api.get<Booking>(`/bookings/${id}`).then((r) => r.data);
+
+/**
+ * Full decrypted guest roster for a booking. Both hosts and admins receive
+ * the full EGN/document data (backend audit-logs every access). Only fetched
+ * when a booking id is present (i.e. the details dialog is open).
+ */
+export function useGuestIdentities(id: string | null) {
+  return useQuery({
+    queryKey: [...BOOKINGS_KEY, id, "guests"],
+    queryFn: () =>
+      api.get<GuestIdentity[]>(`/bookings/${id}/guests`).then((r) => r.data),
+    enabled: !!id,
+  });
+}
 
 // ─── Mutations ────────────────────────────────────────────────────────────────
 

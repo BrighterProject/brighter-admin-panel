@@ -15,6 +15,7 @@ import { Separator } from "@/components/ui/separator";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { ExternalLink } from "lucide-react";
 import type { Booking } from "../types";
+import { GuestRoster } from "./guest-roster";
 import { useUser } from "@/app/users/hooks";
 import { UserDetailsDialog } from "@/app/users/components/user-details-dialog";
 
@@ -171,6 +172,10 @@ export function BookingDetailsDialog({
                   <Separator />
                 </>
               )}
+
+              <GuestRoster bookingId={booking.id} />
+
+              <Separator />
 
               <div className="space-y-1">
                 <p className="text-sm font-medium">Справки</p>
