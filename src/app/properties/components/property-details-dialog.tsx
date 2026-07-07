@@ -11,7 +11,6 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { Separator } from "@/components/ui/separator";
-import { ScrollArea } from "@/components/ui/scroll-area";
 import { Skeleton } from "@/components/ui/skeleton";
 import type { PropertyListItem, AmenityType, CancellationPolicy } from "../types";
 import { AMENITY_LABELS } from "../types";
@@ -128,7 +127,7 @@ export function PropertyDetailsDialog({
           </DialogDescription>
         </DialogHeader>
 
-        <ScrollArea className="max-h-[65vh]">
+        <div className="max-h-[65vh] overflow-x-hidden overflow-y-auto">
           {isLoading ? (
             <div className="space-y-4 pr-4">
               <div className="flex gap-4">
@@ -486,7 +485,7 @@ export function PropertyDetailsDialog({
               </div>
             </div>
           )}
-        </ScrollArea>
+        </div>
 
         <DialogFooter>
           <Button

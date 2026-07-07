@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback } from "react";
 import { useForm, type Resolver } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { Loader2 } from "lucide-react";
+import { Loader2, RotateCcw } from "lucide-react";
 import { toast } from "sonner";
 import { Form } from "@/components/ui/form";
 import { Button } from "@/components/ui/button";
@@ -13,7 +13,11 @@ import {
   type PropertyFormSchema,
 } from "../property-form.schema";
 import { useSectionCompletion } from "../use-section-completion";
-import { usePropertyDraft, readPropertyDraft } from "../use-property-draft";
+import {
+  usePropertyDraft,
+  readPropertyDraft,
+  clearPropertyDraft,
+} from "../use-property-draft";
 import { PropertyFormNav, FORM_SECTIONS } from "./property-form-nav";
 import { BasicInfoSection } from "./sections/basic-info-section";
 import { TranslationsSection } from "./sections/translations-section";
@@ -136,6 +140,19 @@ export function PropertyForm({
     toast.success("Черновата е запазена локално в браузъра.");
   }, [saveDraftNow]);
 
+  const handleClearFields = useCallback(() => {
+    if (
+      !window.confirm(
+        "Сигурни ли сте, че искате да изчистите всички попълнени полета? Това действие не може да бъде отменено.",
+      )
+    ) {
+      return;
+    }
+    clearPropertyDraft(draftKey);
+    form.reset({ ...PROPERTY_FORM_DEFAULTS, ...initialValues });
+    toast.success("Полетата са изчистени.");
+  }, [draftKey, form, initialValues]);
+
   const [pendingFilesCount, setPendingFilesCount] = useState(0);
   const [pendingOverridesCount, setPendingOverridesCount] = useState(0);
 
@@ -235,10 +252,33 @@ export function PropertyForm({
 
       {/* Sticky footer */}
       <div className="fixed bottom-0 left-0 right-0 z-20 bg-background border-t px-4 py-3 flex items-center justify-end sm:justify-between gap-3">
-        <Badge variant="outline" className="hidden text-xs sm:inline-flex">
-          {completedCount}/{FORM_SECTIONS.length} завършени секции
-        </Badge>
+        <div className="hidden items-center gap-3 sm:flex">
+          <Badge variant="outline" className="text-xs">
+            {completedCount}/{FORM_SECTIONS.length} завършени секции
+          </Badge>
+          <Button
+            type="button"
+            variant="ghost"
+            className="text-muted-foreground"
+            disabled={isPending}
+            onClick={handleClearFields}
+          >
+            <RotateCcw className="mr-2 size-4" />
+            Изчисти полетата
+          </Button>
+        </div>
         <div className="flex w-full gap-2 sm:w-auto">
+          <Button
+            type="button"
+            variant="ghost"
+            size="icon"
+            className="shrink-0 text-muted-foreground sm:hidden"
+            disabled={isPending}
+            onClick={handleClearFields}
+            aria-label="Изчисти полетата"
+          >
+            <RotateCcw className="size-4" />
+          </Button>
           <Button
             type="button"
             variant="outline"
