@@ -4,6 +4,7 @@ import { toast } from 'sonner';
 import { BaseLayout } from '@/components/layouts/base-layout';
 import { PropertyForm } from '../components/property-form';
 import { useAddProperty } from '../hooks';
+import { clearPropertyDraft } from '../use-property-draft';
 import { api } from '@/lib/api';
 import { DEV_PROPERTY_DEFAULTS, type PropertyFormSchema } from '../property-form.schema';
 
@@ -41,6 +42,7 @@ export default function PropertyNewPage() {
         ),
       ]);
 
+      clearPropertyDraft('new');
       toast.success('Обект сохранен. Чакащ одобрението на администратор.');
       navigate('/properties');
     } catch {

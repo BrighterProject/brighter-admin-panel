@@ -1,7 +1,8 @@
 import { useState, useEffect, useCallback } from "react";
 import { useForm, type Resolver } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { Loader2 } from "lucide-react";
+import { Loader2, RotateCcw } from "lucide-react";
+import { toast } from "sonner";
 import { Form } from "@/components/ui/form";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
@@ -12,6 +13,11 @@ import {
   type PropertyFormSchema,
 } from "../property-form.schema";
 import { useSectionCompletion } from "../use-section-completion";
+import {
+  usePropertyDraft,
+  readPropertyDraft,
+  clearPropertyDraft,
+} from "../use-property-draft";
 import { PropertyFormNav, FORM_SECTIONS } from "./property-form-nav";
 import { BasicInfoSection } from "./sections/basic-info-section";
 import { TranslationsSection } from "./sections/translations-section";
@@ -37,6 +43,8 @@ interface PropertyFormProps {
   isPending: boolean;
   /** Existing property id — enables dynamic pricing controls in edit mode */
   propertyId?: string;
+  /** Current status of the property being edited — controls submit button label */
+  propertyStatus?: Property["status"];
   dateOverrides?: DatePriceOverride[];
   onPendingFilesChange?: (files: File[]) => void;
   onPendingOverridesChange?: (overrides: PendingOverride[]) => void;
@@ -55,7 +63,6 @@ function propertyToFormValues(property: Property): PropertyFormSchema {
     lat: property.lat?.toString() ?? "",
     lng: property.lng?.toString() ?? "",
     has_parking: property.has_parking,
-    price_per_night: property.price_per_night,
     currency: property.currency,
     min_nights: property.min_nights,
     max_nights: property.max_nights,
@@ -108,15 +115,43 @@ export function PropertyForm({
   onSubmit,
   isPending,
   propertyId,
+  propertyStatus,
   dateOverrides,
   onPendingFilesChange,
   onPendingOverridesChange,
 }: PropertyFormProps) {
+  const draftKey = propertyId ?? "new";
+  const isEdit = !!initialValues;
+
   const form = useForm<PropertyFormSchema>({
     resolver: zodResolver(propertyFormSchema) as Resolver<PropertyFormSchema>,
-    defaultValues: { ...PROPERTY_FORM_DEFAULTS, ...initialValues },
+    defaultValues: {
+      ...PROPERTY_FORM_DEFAULTS,
+      ...initialValues,
+      ...readPropertyDraft(draftKey),
+    },
     mode: "onTouched",
   });
+
+  const { saveDraftNow } = usePropertyDraft(draftKey, form);
+
+  const handleSaveDraft = useCallback(() => {
+    saveDraftNow();
+    toast.success("Черновата е запазена локално в браузъра.");
+  }, [saveDraftNow]);
+
+  const handleClearFields = useCallback(() => {
+    if (
+      !window.confirm(
+        "Сигурни ли сте, че искате да изчистите всички попълнени полета? Това действие не може да бъде отменено.",
+      )
+    ) {
+      return;
+    }
+    clearPropertyDraft(draftKey);
+    form.reset({ ...PROPERTY_FORM_DEFAULTS, ...initialValues });
+    toast.success("Полетата са изчистени.");
+  }, [draftKey, form, initialValues]);
 
   const [pendingFilesCount, setPendingFilesCount] = useState(0);
   const [pendingOverridesCount, setPendingOverridesCount] = useState(0);
@@ -159,9 +194,9 @@ export function PropertyForm({
   }, []);
 
   return (
-    <div className="flex gap-8 max-w-5xl mx-auto px-4 pb-24">
-      {/* Section nav */}
-      <div className="w-52 shrink-0">
+    <div className="flex flex-col lg:flex-row lg:gap-8 max-w-5xl mx-auto px-4 pb-28">
+      {/* Section nav — sticky sidebar on desktop, horizontal pills on mobile */}
+      <div className="w-full lg:w-52 lg:shrink-0 min-w-0">
         <PropertyFormNav
           sectionStates={sectionStates}
           activeSection={activeSection}
@@ -174,7 +209,7 @@ export function PropertyForm({
           onSubmit={form.handleSubmit(onSubmit)}
           className="flex-1 space-y-10 min-w-0"
         >
-          <BasicInfoSection form={form} isEdit={!!initialValues} />
+          <BasicInfoSection form={form} isEdit={isEdit} />
           <Separator />
           <TranslationsSection form={form} />
           <Separator />
@@ -200,7 +235,6 @@ export function PropertyForm({
           <Separator />
           <DynamicPricingSection
             propertyId={propertyId}
-            basePricePerNight={form.watch("price_per_night")}
             currency={form.watch("currency") || "EUR"}
             dateOverrides={dateOverrides}
             onPendingOverridesChange={useCallback(
@@ -217,26 +251,53 @@ export function PropertyForm({
       </Form>
 
       {/* Sticky footer */}
-      <div className="fixed bottom-0 left-0 right-0 z-20 bg-background border-t px-4 py-3 flex items-center justify-between gap-4">
-        <Badge variant="outline" className="text-xs">
-          {completedCount}/{FORM_SECTIONS.length} sections complete
-        </Badge>
-        <div className="flex gap-2">
+      <div className="fixed bottom-0 left-0 right-0 z-20 bg-background border-t px-4 py-3 flex items-center justify-end sm:justify-between gap-3">
+        <div className="hidden items-center gap-3 sm:flex">
+          <Badge variant="outline" className="text-xs">
+            {completedCount}/{FORM_SECTIONS.length} завършени секции
+          </Badge>
           <Button
             type="button"
-            variant="outline"
+            variant="ghost"
+            className="text-muted-foreground"
             disabled={isPending}
-            onClick={() => form.handleSubmit(onSubmit)()}
+            onClick={handleClearFields}
           >
-            Save Draft
+            <RotateCcw className="mr-2 size-4" />
+            Изчисти полетата
+          </Button>
+        </div>
+        <div className="flex w-full gap-2 sm:w-auto">
+          <Button
+            type="button"
+            variant="ghost"
+            size="icon"
+            className="shrink-0 text-muted-foreground sm:hidden"
+            disabled={isPending}
+            onClick={handleClearFields}
+            aria-label="Изчисти полетата"
+          >
+            <RotateCcw className="size-4" />
           </Button>
           <Button
             type="button"
+            variant="outline"
+            className="flex-1 sm:flex-none"
+            disabled={isPending}
+            onClick={handleSaveDraft}
+          >
+            Запази чернова
+          </Button>
+          <Button
+            type="button"
+            className="flex-1 sm:flex-none"
             disabled={!allRequiredComplete || isPending}
             onClick={form.handleSubmit(onSubmit)}
           >
             {isPending && <Loader2 className="mr-2 size-4 animate-spin" />}
-            Submit for Review
+            {isEdit && propertyStatus === "active"
+              ? "Запази промените"
+              : "Изпрати за одобрение"}
           </Button>
         </div>
       </div>

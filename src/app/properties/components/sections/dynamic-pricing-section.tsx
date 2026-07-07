@@ -41,7 +41,6 @@ function addMonths(date: Date, n: number): Date {
 interface DayEditPopoverProps {
   date: string;
   currentPrice: string | null;
-  basePrice: string;
   currency: string;
   overrideId: string | null;
   onCreate: (price: string) => Promise<void>;
@@ -53,7 +52,6 @@ interface DayEditPopoverProps {
 function DayEditPopover({
   date,
   currentPrice,
-  basePrice,
   currency,
   overrideId,
   onCreate,
@@ -117,7 +115,7 @@ function DayEditPopover({
           value={price}
           onChange={(e) => { setPrice(e.target.value); setError(null); }}
           onKeyDown={(e) => { if (e.key === "Enter") handleSave(); if (e.key === "Escape") onClose(); }}
-          placeholder={basePrice}
+          placeholder="0.00"
           className="h-7 text-sm"
         />
         <span className="text-xs text-muted-foreground shrink-0">{currency}</span>
@@ -149,7 +147,6 @@ interface PendingOverride {
 
 interface DynamicPricingSectionProps {
   propertyId: string | undefined;
-  basePricePerNight?: string;
   currency?: string;
   dateOverrides?: DatePriceOverride[];
   onPendingOverridesChange?: (overrides: PendingOverride[]) => void;
@@ -157,7 +154,6 @@ interface DynamicPricingSectionProps {
 
 export function DynamicPricingSection({
   propertyId,
-  basePricePerNight = "0",
   currency = "EUR",
   dateOverrides = [],
   onPendingOverridesChange,
@@ -166,6 +162,16 @@ export function DynamicPricingSection({
   const [viewDate, setViewDate] = useState(new Date(today.getFullYear(), today.getMonth(), 1));
   const [editingDate, setEditingDate] = useState<string | null>(null);
   const [offlineOverrides, setOfflineOverrides] = useState<Map<string, string>>(new Map());
+  // Edit-mode overlay: reflects just-saved overrides immediately without waiting
+  // for the property refetch (which can be served stale from the HTTP cache).
+  // null value = the day's override was deleted this session.
+  const [editOverrides, setEditOverrides] = useState<
+    Map<string, DatePriceOverride | null>
+  >(new Map());
+
+  const applyEdit = (date: string, value: DatePriceOverride | null) => {
+    setEditOverrides((prev) => new Map(prev).set(date, value));
+  };
 
   const create = useCreateDateOverride(propertyId ?? '');
   const update = useUpdateDateOverride(propertyId ?? '');
@@ -190,10 +196,15 @@ export function DynamicPricingSection({
   };
 
   // In create mode: use offline overrides; in edit mode: use API-backed overrides
+  // merged with the local edit overlay (so saves show instantly).
   const singleDayMap = new Map<string, DatePriceOverride>();
   if (propertyId) {
     for (const o of dateOverrides) {
       if (o.start_date === o.end_date) singleDayMap.set(o.start_date, o);
+    }
+    for (const [d, o] of editOverrides) {
+      if (o === null) singleDayMap.delete(d);
+      else singleDayMap.set(d, o);
     }
   } else {
     for (const [date, price] of offlineOverrides.entries()) {
@@ -223,7 +234,8 @@ export function DynamicPricingSection({
     const o = singleDayMap.get(date);
     if (o) return { price: Number(o.price).toFixed(0), isCustom: true };
     if (rangeCoveredDates.has(date)) return { price: "range", isCustom: true };
-    return { price: Number(basePricePerNight).toFixed(0), isCustom: false };
+    // No price set for this day => not bookable.
+    return { price: "", isCustom: false };
   }
 
   return (
@@ -231,8 +243,9 @@ export function DynamicPricingSection({
       <div>
         <h3 className="text-base font-semibold">Ценови календар</h3>
         <p className="text-sm text-muted-foreground mt-0.5">
-          Натиснете върху дата за задаване на персонализирана цена. Базовата цена ({Number(basePricePerNight).toFixed(0)} {currency}) важи в останалите случаи.
-          {!propertyId && <span className="ml-1 text-amber-600 dark:text-amber-400">(Замените ще бъдат запазени при изпращане.)</span>}
+          Натиснете върху дата, за да зададете цена за нощувка. Дните без зададена
+          цена са недостъпни за резервация.
+          {!propertyId && <span className="ml-1 text-amber-600 dark:text-amber-400">(Цените ще бъдат запазени при изпращане.)</span>}
         </p>
       </div>
 
@@ -313,30 +326,32 @@ export function DynamicPricingSection({
                     "text-[10px] leading-none",
                     isCustom && !isRange ? "text-emerald-600 dark:text-emerald-400 font-semibold" : "",
                     isRange ? "text-amber-500 dark:text-amber-400 font-medium" : "",
-                    !isCustom ? "text-muted-foreground" : "",
+                    !isCustom ? "text-muted-foreground/50" : "",
                   ].join(" ")}
                 >
-                  {isRange ? "обхват" : `${price}`}
+                  {isRange ? "обхват" : isCustom ? price : "—"}
                 </span>
 
                 {isEditing && (
                   <DayEditPopover
                     date={date}
                     currentPrice={override ? String(override.price) : null}
-                    basePrice={basePricePerNight}
                     currency={currency}
                     overrideId={override?.id ?? null}
                     onCreate={async (p) => {
                       if (!propertyId) { setOffline(date, p); return; }
-                      await create.mutateAsync({ start_date: date, end_date: date, price: p });
+                      const created = await create.mutateAsync({ start_date: date, end_date: date, price: p });
+                      applyEdit(date, created);
                     }}
                     onUpdate={async (p) => {
                       if (!propertyId) { setOffline(date, p); return; }
-                      await update.mutateAsync({ overrideId: override!.id, price: p });
+                      const updated = await update.mutateAsync({ overrideId: override!.id, price: p });
+                      applyEdit(date, updated);
                     }}
                     onDelete={async () => {
                       if (!propertyId) { deleteOffline(date); return; }
                       await del.mutateAsync(override!.id);
+                      applyEdit(date, null);
                     }}
                     onClose={() => setEditingDate(null)}
                   />
@@ -351,11 +366,11 @@ export function DynamicPricingSection({
       <div className="flex flex-wrap gap-4 text-xs text-muted-foreground">
         <span className="flex items-center gap-1.5">
           <span className="size-2.5 rounded-sm bg-muted border" />
-          Базова цена
+          Без цена (недостъпно)
         </span>
         <span className="flex items-center gap-1.5">
           <span className="size-2.5 rounded-sm bg-emerald-100 dark:bg-emerald-900 border border-emerald-300" />
-          Персонализирана цена
+          Зададена цена
         </span>
         {rangeOverrides.length > 0 && (
           <span className="flex items-center gap-1.5">
