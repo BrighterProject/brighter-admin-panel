@@ -179,7 +179,7 @@ export function PropertyForm({
   return (
     <div className="flex flex-col lg:flex-row lg:gap-8 max-w-5xl mx-auto px-4 pb-28">
       {/* Section nav — sticky sidebar on desktop, horizontal pills on mobile */}
-      <div className="w-full lg:w-52 lg:shrink-0">
+      <div className="w-full lg:w-52 lg:shrink-0 min-w-0">
         <PropertyFormNav
           sectionStates={sectionStates}
           activeSection={activeSection}
