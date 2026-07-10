@@ -42,7 +42,7 @@ export function GapFillerSection({ form }: GapFillerSectionProps) {
       />
 
       <div className={enabled ? undefined : "pointer-events-none opacity-40"}>
-        <div className="grid grid-cols-2 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <FormField
             control={form.control}
             name="gap_tax_pct"

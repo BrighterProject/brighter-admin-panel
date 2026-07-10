@@ -56,9 +56,9 @@ export function computeSectionStates(
       hasError('max_guests', 'bedrooms', 'bathrooms', 'beds'),
     ),
     pricingPolicies: deriveSectionState(
-      /* touchedValues */ [values.price_per_night],
-      /* requiredValues */ [values.price_per_night, values.check_in_time, values.check_out_time, values.cancellation_policy],
-      hasError('price_per_night', 'check_in_time', 'check_out_time', 'cancellation_policy'),
+      /* touchedValues */ [values.check_in_time, values.check_out_time],
+      /* requiredValues */ [values.check_in_time, values.check_out_time, values.cancellation_policy],
+      hasError('check_in_time', 'check_out_time', 'cancellation_policy'),
     ),
     amenities: deriveOptionalSectionState([values.amenities?.length]),
     photos: deriveSectionState(

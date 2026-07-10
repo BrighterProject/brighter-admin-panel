@@ -226,7 +226,7 @@ export function LocationSection({ form }: LocationSectionProps) {
         <summary className="cursor-pointer text-sm text-muted-foreground">
           Въведете координати ръчно
         </summary>
-        <div className="grid grid-cols-2 gap-4 pt-3">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-3">
           <FormField
             control={form.control}
             name="lat"

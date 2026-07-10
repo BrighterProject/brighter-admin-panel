@@ -1,3 +1,4 @@
+import { useEffect } from "react";
 import { type UseFormReturn } from "react-hook-form";
 import { AlertTriangle } from "lucide-react";
 import { Link } from "react-router-dom";
@@ -63,6 +64,27 @@ interface PaymentConfigSectionProps {
 export function PaymentConfigSection({ form }: PaymentConfigSectionProps) {
   const { data: caps } = usePaymentCapabilities();
 
+  // A deposit can only be collected if the owner can take an online prepayment —
+  // i.e. Stripe (card) or a configured bank account. With only cash (or nothing)
+  // configured, there is no way for a guest to prepay or leave a digital deposit,
+  // so deposit configuration is meaningless and is locked to 100% (pay on arrival).
+  const canCollectDeposit = !!(
+    caps?.can_accept_card || caps?.can_accept_bank_transfer
+  );
+
+  useEffect(() => {
+    if (caps && !canCollectDeposit) {
+      if (form.getValues("payment_config.deposit_pct") !== 100)
+        form.setValue("payment_config.deposit_pct", 100, {
+          shouldValidate: true,
+        });
+      if (form.getValues("payment_config.remaining_method") != null)
+        form.setValue("payment_config.remaining_method", null, {
+          shouldValidate: true,
+        });
+    }
+  }, [caps, canCollectDeposit, form]);
+
   return (
     <section id="section-payment-config" className="space-y-4 scroll-mt-20">
       <div>
@@ -108,6 +130,8 @@ export function PaymentConfigSection({ form }: PaymentConfigSectionProps) {
                         {blocker.message}{" "}
                         <Link
                           to={blocker.linkTo}
+                          target="_blank"
+                          rel="noopener noreferrer"
                           className="underline font-medium hover:text-amber-700 dark:hover:text-amber-300"
                         >
                           {blocker.linkLabel}
@@ -123,6 +147,29 @@ export function PaymentConfigSection({ form }: PaymentConfigSectionProps) {
         )}
       />
 
+      {!canCollectDeposit && (
+        <div className="flex items-start gap-2 rounded-lg border border-amber-300 bg-amber-50 p-3 text-xs text-amber-700 dark:border-amber-800 dark:bg-amber-950/20 dark:text-amber-400">
+          <AlertTriangle className="mt-0.5 size-4 shrink-0" />
+          <div className="space-y-1">
+            <p className="font-medium">
+              Конфигурирането на депозит е недостъпно.
+            </p>
+            <p>
+              За да изисквате депозит, гостът трябва да може да плати онлайн.
+              Нямате нито активен Stripe (карта), нито банкова сметка, затова няма
+              начин за онлайн предплащане или дигитален депозит. Плащането е
+              заключено на 100% при пристигане.{" "}
+              <Link
+                to="/settings/payments"
+                className="font-medium underline hover:text-amber-800 dark:hover:text-amber-300"
+              >
+                Настрой методи за плащане →
+              </Link>
+            </p>
+          </div>
+        </div>
+      )}
+
       <FormField
         control={form.control}
         name="payment_config.deposit_pct"
@@ -135,6 +182,7 @@ export function PaymentConfigSection({ form }: PaymentConfigSectionProps) {
                 min={20}
                 max={100}
                 {...field}
+                disabled={!canCollectDeposit}
                 onChange={(e) => field.onChange(Number(e.target.value))}
                 className="max-w-40"
               />
@@ -156,6 +204,7 @@ export function PaymentConfigSection({ form }: PaymentConfigSectionProps) {
             <Select
               onValueChange={(v) => field.onChange(v === "none" ? null : v)}
               value={field.value ?? "none"}
+              disabled={!canCollectDeposit}
             >
               <FormControl>
                 <SelectTrigger className="max-w-64">

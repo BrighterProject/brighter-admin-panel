@@ -28,7 +28,7 @@ function LocaleFields({
   const label = LOCALE_LABELS[locale];
   return (
     <div className="space-y-3">
-      <h4 className="text-sm font-medium text-muted-foreground">{label} (optional)</h4>
+      <h4 className="text-sm font-medium text-muted-foreground">{label} (незадължително)</h4>
       <FormField
         control={form.control}
         name={`translations.${locale}.name`}

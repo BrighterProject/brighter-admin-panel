@@ -1,6 +1,7 @@
 import { BrowserRouter as Router } from "react-router-dom";
 import { ThemeProvider } from "@/components/theme-provider";
 import { AppRouter } from "@/components/router/app-router";
+import { Toaster } from "@/components/ui/sonner";
 import { useEffect } from "react";
 import { initGTM } from "@/utils/analytics";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
@@ -19,6 +20,7 @@ function App() {
         <Router basename={basename}>
           <AppRouter />
         </Router>
+        <Toaster richColors position="top-right" />
       </QueryClientProvider>
     </ThemeProvider>
   );

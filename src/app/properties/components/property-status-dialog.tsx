@@ -125,7 +125,12 @@ export function PropertyStatusDialog({ property, onClose }: PropertyStatusDialog
             <p className="mt-3 text-sm text-amber-600 flex items-center gap-1.5">
               <AlertTriangle className="size-4 shrink-0" />
               За да изпратиш обекта за одобрение, трябва първо да свържеш Stripe акаунт.{" "}
-              <Link to="/settings/payments" className="underline font-medium">
+              <Link
+                to="/settings/payments"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="underline font-medium"
+              >
                 Настройки за плащания
               </Link>
             </p>
