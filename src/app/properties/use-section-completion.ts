@@ -47,7 +47,7 @@ export function computeSectionStates(
     ]),
     location: deriveSectionState(
       /* touchedValues */ [values.translations.bg.address, values.region_code],
-      /* requiredValues */ [values.translations.bg.address, values.region_code, values.settlement_ekatte],
+      /* requiredValues */ [values.region_code, values.settlement_ekatte],
       hasError('translations.bg.address', 'region_code', 'settlement_ekatte'),
     ),
     roomsCapacity: deriveSectionState(
