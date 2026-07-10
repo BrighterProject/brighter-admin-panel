@@ -33,6 +33,27 @@ export type BookingStatusUpdate = {
   status: BookingStatus;
 };
 
+export type Gender = "male" | "female" | "other";
+
+export type DocumentType = "id_card" | "passport";
+
+/** Full decrypted guest identity — hosts and admins both receive this. */
+export type GuestIdentity = {
+  id: string;
+  booking_id: string;
+  first_name: string;
+  middle_name: string | null;
+  last_name: string;
+  date_of_birth: string | null;
+  gender: Gender | null;
+  citizenship: string | null;
+  document_type: DocumentType | null;
+  document_number: string | null;
+  document_issuing_country: string | null;
+  pin_egn: string | null;
+  created_at: string;
+};
+
 export type BookingFilters = {
   property_id?: string;
   status?: BookingStatus;
