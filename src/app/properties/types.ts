@@ -162,7 +162,9 @@ export interface Property {
   lat: number | null;
   lng: number | null;
   registration_number: string | null;
-  price_per_night: string;
+  // Derived cheapest nightly rate (system-owned); null when no pricing is set.
+  price_from: string | null;
+  has_valid_pricing: boolean;
   currency: string;
   bedrooms: number;
   bathrooms: number;
@@ -203,7 +205,7 @@ export interface PropertyListItem {
   city: string | null;
   name: string;
   description: string;
-  price_per_night: string;
+  price_from: string | null;
   currency: string;
   max_guests: number;
   bedrooms: number;
@@ -220,7 +222,6 @@ export interface PropertyFormValues {
   lat: string;
   lng: string;
   has_parking: boolean;
-  price_per_night: string;
   currency: string;
   min_nights: number;
   max_nights: number | null;
