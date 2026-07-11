@@ -124,8 +124,8 @@ export const propertyFormSchema = z.object({
       name: z.string().min(2, "Наименованието трябва да е поне 2 символа"),
       description: z
         .string()
-        .min(10, "Описанието трябва да е поне 10 символа"),
-      address: z.string().min(1, "Адресът е задължителен"),
+        .min(10, "Description must be at least 10 characters"),
+      address: z.string(),
       house_rules: z.string().optional(),
     }),
     en: translationLocaleSchema,

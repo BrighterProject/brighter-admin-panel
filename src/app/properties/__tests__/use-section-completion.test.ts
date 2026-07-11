@@ -61,6 +61,20 @@ describe('computeSectionStates', () => {
     expect(states.photos).toBe('complete');
   });
 
+  it('returns complete for location when region and settlement are filled but address is empty', () => {
+    const values = {
+      ...PROPERTY_FORM_DEFAULTS,
+      region_code: 'SOF',
+      settlement_ekatte: '68134',
+      translations: {
+        ...PROPERTY_FORM_DEFAULTS.translations,
+        bg: { name: '', description: '', address: '' },
+      },
+    };
+    const states = computeSectionStates(values, {});
+    expect(states.location).toBe('complete');
+  });
+
   it('always returns untouched for dynamicPricing (managed outside the form)', () => {
     const states = computeSectionStates(PROPERTY_FORM_DEFAULTS, {});
     expect(states.dynamicPricing).toBe('untouched');
