@@ -263,3 +263,26 @@ export interface DatePriceOverride {
   price: string;
   label: string | null;
 }
+
+// ─── Channel calendar sync (BTR-41) ────────────────────────────────────────────
+
+export type FeedSyncStatus = 'ok' | 'fetch_error' | 'parse_error';
+
+export interface CalendarFeed {
+  id: string;
+  property_id: string;
+  channel: 'booking_com';
+  url: string;
+  is_active: boolean;
+  last_synced_at: string | null;
+  last_status: FeedSyncStatus | null;
+  last_error: string | null;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface CalendarFeedCreate {
+  property_id: string;
+  channel?: 'booking_com';
+  url: string;
+}

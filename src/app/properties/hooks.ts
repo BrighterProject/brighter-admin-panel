@@ -15,6 +15,8 @@ import type {
   Region,
   Settlement,
   SettlementCenter,
+  CalendarFeed,
+  CalendarFeedCreate,
 } from './types';
 import type { PropertyFormSchema } from './property-form.schema';
 import { api } from '@/lib/api';
@@ -370,6 +372,58 @@ export function useDeleteDateOverride(propertyId: string) {
       api.delete(`/properties/${propertyId}/pricing/overrides/${overrideId}`),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: [...PROPERTIES_KEY, propertyId] });
+    },
+  });
+}
+
+// ─── Channel calendar sync (BTR-41) ────────────────────────────────────────────
+// Feeds live in bookings-ms under /bookings/calendar-feeds (Traefik strips /api).
+
+const CALENDAR_FEEDS_KEY = ['calendar-feeds'];
+
+export function useCalendarFeeds(propertyId: string | undefined) {
+  return useQuery({
+    queryKey: [...CALENDAR_FEEDS_KEY, propertyId],
+    queryFn: () =>
+      api
+        .get<CalendarFeed[]>('/bookings/calendar-feeds', {
+          params: { property_id: propertyId },
+        })
+        .then((r) => r.data),
+    enabled: !!propertyId,
+  });
+}
+
+export function useCreateCalendarFeed() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (data: CalendarFeedCreate) =>
+      api.post<CalendarFeed>('/bookings/calendar-feeds', data).then((r) => r.data),
+    onSuccess: (_, { property_id }) => {
+      qc.invalidateQueries({ queryKey: [...CALENDAR_FEEDS_KEY, property_id] });
+    },
+  });
+}
+
+export function useDeleteCalendarFeed(propertyId: string) {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (feedId: string) => api.delete(`/bookings/calendar-feeds/${feedId}`),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: [...CALENDAR_FEEDS_KEY, propertyId] });
+    },
+  });
+}
+
+export function useSyncCalendarFeed(propertyId: string) {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (feedId: string) =>
+      api
+        .post<CalendarFeed>(`/bookings/calendar-feeds/${feedId}/sync-now`)
+        .then((r) => r.data),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: [...CALENDAR_FEEDS_KEY, propertyId] });
     },
   });
 }

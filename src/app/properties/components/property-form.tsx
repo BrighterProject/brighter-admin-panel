@@ -28,6 +28,7 @@ import { AmenitiesSection } from "./sections/amenities-section";
 import { PhotosSection } from "./sections/photos-section";
 import { DynamicPricingSection } from "./sections/dynamic-pricing-section";
 import { PaymentConfigSection } from "./sections/payment-config-section";
+import { ChannelSyncSection } from "./sections/channel-sync-section";
 import type { Property, DatePriceOverride } from "../types";
 
 interface PendingOverride {
@@ -247,6 +248,8 @@ export function PropertyForm({
           />
           <Separator />
           <PaymentConfigSection form={form} />
+          <Separator />
+          <ChannelSyncSection propertyId={propertyId} />
         </form>
       </Form>
 
