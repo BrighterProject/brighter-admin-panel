@@ -268,10 +268,13 @@ export interface DatePriceOverride {
 
 export type FeedSyncStatus = 'ok' | 'fetch_error' | 'parse_error';
 
+/** Channels that expose an importable iCal feed (matches backend BookingChannel). */
+export type FeedChannel = 'booking_com' | 'airbnb';
+
 export interface CalendarFeed {
   id: string;
   property_id: string;
-  channel: 'booking_com';
+  channel: FeedChannel;
   url: string;
   is_active: boolean;
   last_synced_at: string | null;
@@ -283,6 +286,6 @@ export interface CalendarFeed {
 
 export interface CalendarFeedCreate {
   property_id: string;
-  channel?: 'booking_com';
+  channel: FeedChannel;
   url: string;
 }

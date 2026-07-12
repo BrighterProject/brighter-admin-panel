@@ -5,12 +5,19 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import {
   useCalendarFeeds,
   useCreateCalendarFeed,
   useDeleteCalendarFeed,
   useSyncCalendarFeed,
 } from "../../hooks";
-import type { CalendarFeed, FeedSyncStatus } from "../../types";
+import type { CalendarFeed, FeedChannel, FeedSyncStatus } from "../../types";
 
 interface ChannelSyncSectionProps {
   /** Existing property id — feeds require a saved property (edit mode only). */
@@ -21,6 +28,18 @@ const STATUS_LABEL: Record<FeedSyncStatus, string> = {
   ok: "OK",
   fetch_error: "Грешка при сваляне",
   parse_error: "Грешка при обработка",
+};
+
+/** Per-channel label + input hint. Mirror of the backend host allowlist. */
+const CHANNELS: Record<FeedChannel, { label: string; placeholder: string }> = {
+  booking_com: {
+    label: "Booking.com",
+    placeholder: "https://admin.booking.com/hotel/…/ical.html?t=…",
+  },
+  airbnb: {
+    label: "Airbnb",
+    placeholder: "https://www.airbnb.com/calendar/ical/….ics?s=…",
+  },
 };
 
 function StatusBadge({ feed }: { feed: CalendarFeed }) {
@@ -67,6 +86,7 @@ function getErrorMessage(error: unknown): string {
 
 export function ChannelSyncSection({ propertyId }: ChannelSyncSectionProps) {
   const [url, setUrl] = useState("");
+  const [channel, setChannel] = useState<FeedChannel>("booking_com");
   const feedsQuery = useCalendarFeeds(propertyId);
   const createFeed = useCreateCalendarFeed();
   const deleteFeed = useDeleteCalendarFeed(propertyId ?? "");
@@ -75,7 +95,7 @@ export function ChannelSyncSection({ propertyId }: ChannelSyncSectionProps) {
   const handleAdd = async () => {
     if (!propertyId || !url.trim()) return;
     try {
-      await createFeed.mutateAsync({ property_id: propertyId, url: url.trim() });
+      await createFeed.mutateAsync({ property_id: propertyId, channel, url: url.trim() });
       setUrl("");
       toast.success("Календарът е добавен");
     } catch (error) {
@@ -106,16 +126,16 @@ export function ChannelSyncSection({ propertyId }: ChannelSyncSectionProps) {
       <div>
         <h3 className="text-base font-semibold">Синхронизация с външен календар</h3>
         <p className="text-sm text-muted-foreground mt-0.5">
-          Импортирайте резервации от Booking.com, за да не се продава един и същ период два
-          пъти.
+          Импортирайте резервации от Booking.com или Airbnb, за да не се продава един и същ
+          период два пъти.
         </p>
       </div>
 
       <div className="flex items-start gap-2 rounded-lg border border-amber-300/60 bg-amber-50 p-3 text-sm text-amber-900 dark:border-amber-700/40 dark:bg-amber-950/30 dark:text-amber-200">
         <Info className="size-4 shrink-0 mt-0.5" />
         <span>
-          Само импорт: наличността в Booking.com продължава да се управлява ръчно от вас.
-          Свържете iCal експорта на <strong>една стая</strong> с този обект.
+          Само импорт: наличността в съответната платформа продължава да се управлява ръчно от
+          вас. Свържете iCal експорта на <strong>една стая</strong> с този обект.
         </span>
       </div>
 
@@ -141,6 +161,9 @@ export function ChannelSyncSection({ propertyId }: ChannelSyncSectionProps) {
                       {feed.url}
                     </p>
                     <div className="flex flex-wrap items-center gap-2">
+                      <Badge variant="secondary" className="text-xs">
+                        {CHANNELS[feed.channel]?.label ?? feed.channel}
+                      </Badge>
                       <StatusBadge feed={feed} />
                       <span className="text-xs text-muted-foreground">
                         Последно: {formatSyncedAt(feed.last_synced_at)}
@@ -182,10 +205,22 @@ export function ChannelSyncSection({ propertyId }: ChannelSyncSectionProps) {
           )}
 
           <div className="flex flex-col gap-2 sm:flex-row">
+            <Select value={channel} onValueChange={(v) => setChannel(v as FeedChannel)}>
+              <SelectTrigger className="sm:w-44">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                {(Object.keys(CHANNELS) as FeedChannel[]).map((key) => (
+                  <SelectItem key={key} value={key}>
+                    {CHANNELS[key].label}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
             <Input
               type="url"
               inputMode="url"
-              placeholder="https://admin.booking.com/hotel/…/ical.html?t=…"
+              placeholder={CHANNELS[channel].placeholder}
               value={url}
               onChange={(e) => setUrl(e.target.value)}
             />
