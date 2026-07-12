@@ -59,7 +59,7 @@ export default function PropertyEditPage() {
         isPending={isPending}
         propertyId={id}
         propertyStatus={property.status}
-        dateOverrides={property.date_price_overrides}
+        datePrices={property.date_prices}
       />
     </BaseLayout>
   );

@@ -28,13 +28,8 @@ import { AmenitiesSection } from "./sections/amenities-section";
 import { PhotosSection } from "./sections/photos-section";
 import { DynamicPricingSection } from "./sections/dynamic-pricing-section";
 import { PaymentConfigSection } from "./sections/payment-config-section";
-import type { Property, DatePriceOverride } from "../types";
-
-interface PendingOverride {
-  start_date: string;
-  end_date: string;
-  price: string;
-}
+import type { Property, DatePrice } from "../types";
+import type { PendingPriceRange } from "./sections/dynamic-pricing-section";
 
 interface PropertyFormProps {
   /** Provide to pre-populate for edit mode */
@@ -45,9 +40,9 @@ interface PropertyFormProps {
   propertyId?: string;
   /** Current status of the property being edited — controls submit button label */
   propertyStatus?: Property["status"];
-  dateOverrides?: DatePriceOverride[];
+  datePrices?: DatePrice[];
   onPendingFilesChange?: (files: File[]) => void;
-  onPendingOverridesChange?: (overrides: PendingOverride[]) => void;
+  onPendingPricesChange?: (ranges: PendingPriceRange[]) => void;
 }
 
 function propertyToFormValues(property: Property): PropertyFormSchema {
@@ -116,9 +111,9 @@ export function PropertyForm({
   isPending,
   propertyId,
   propertyStatus,
-  dateOverrides,
+  datePrices,
   onPendingFilesChange,
-  onPendingOverridesChange,
+  onPendingPricesChange,
 }: PropertyFormProps) {
   const draftKey = propertyId ?? "new";
   const isEdit = !!initialValues;
@@ -154,11 +149,11 @@ export function PropertyForm({
   }, [draftKey, form, initialValues]);
 
   const [pendingFilesCount, setPendingFilesCount] = useState(0);
-  const [pendingOverridesCount, setPendingOverridesCount] = useState(0);
+  const [pendingPricesCount, setPendingPricesCount] = useState(0);
 
   const sectionStates = useSectionCompletion(form, {
     pendingFilesCount,
-    pendingOverridesCount,
+    pendingPricesCount,
   });
   const completedCount = Object.values(sectionStates).filter(
     (s) => s === "complete",
@@ -236,13 +231,13 @@ export function PropertyForm({
           <DynamicPricingSection
             propertyId={propertyId}
             currency={form.watch("currency") || "EUR"}
-            dateOverrides={dateOverrides}
-            onPendingOverridesChange={useCallback(
-              (overrides) => {
-                setPendingOverridesCount(overrides.length);
-                onPendingOverridesChange?.(overrides);
+            datePrices={datePrices}
+            onPendingPricesChange={useCallback(
+              (ranges) => {
+                setPendingPricesCount(ranges.length);
+                onPendingPricesChange?.(ranges);
               },
-              [onPendingOverridesChange],
+              [onPendingPricesChange],
             )}
           />
           <Separator />
