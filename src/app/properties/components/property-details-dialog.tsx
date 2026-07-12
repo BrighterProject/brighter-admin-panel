@@ -288,7 +288,9 @@ export function PropertyDetailsDialog({
                 <div className="text-center p-3 rounded-lg bg-muted/50">
                   <div className="flex items-center justify-center gap-1 text-primary mb-1">
                     <span className="font-semibold">
-                      {property.price_per_night} {property.currency}
+                      {property.price_from
+                        ? `от ${property.price_from} ${property.currency}`
+                        : "—"}
                     </span>
                   </div>
                   <p className="text-xs text-muted-foreground">на нощ</p>

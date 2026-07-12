@@ -260,14 +260,14 @@ export function DataTable({
       },
     },
     {
-      accessorKey: "price_per_night",
+      accessorKey: "price_from",
       header: "Цена",
       cell: ({ row }) => {
-        const price = row.getValue("price_per_night") as string;
+        const price = row.getValue("price_from") as string | null;
         const currency = row.original.currency;
         return (
           <span className="font-medium">
-            {price} {currency}/нощ
+            {price ? `от ${price} ${currency}/нощ` : "—"}
           </span>
         );
       },
@@ -591,7 +591,7 @@ export function DataTable({
                         ? "Статус"
                         : col.id === "property_type"
                           ? "Тип обект"
-                          : col.id === "price_per_night"
+                          : col.id === "price_from"
                             ? "Цена"
                             : col.id === "max_guests"
                               ? "Макс. гости"
