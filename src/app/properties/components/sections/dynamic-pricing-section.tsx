@@ -82,7 +82,9 @@ export function DynamicPricingSection({
   onPendingPricesChange,
 }: DynamicPricingSectionProps) {
   const today = new Date();
-  const todayStr = today.toISOString().slice(0, 10);
+  // Build from local components (matching the calendar cells) so the "past"
+  // cutoff tracks the owner's local day, not UTC.
+  const todayStr = toIso(today.getFullYear(), today.getMonth(), today.getDate());
   const [viewDate, setViewDate] = useState(
     new Date(today.getFullYear(), today.getMonth(), 1),
   );
