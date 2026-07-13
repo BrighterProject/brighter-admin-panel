@@ -7,18 +7,13 @@ import { useAddProperty } from '../hooks';
 import { clearPropertyDraft } from '../use-property-draft';
 import { api } from '@/lib/api';
 import { DEV_PROPERTY_DEFAULTS, type PropertyFormSchema } from '../property-form.schema';
-
-interface PendingOverride {
-  start_date: string;
-  end_date: string;
-  price: string;
-}
+import type { PendingPriceRange } from '../components/sections/dynamic-pricing-section';
 
 export default function PropertyNewPage() {
   const navigate = useNavigate();
   const { mutateAsync: addProperty, isPending } = useAddProperty();
   const pendingFilesRef = useRef<File[]>([]);
-  const pendingOverridesRef = useRef<PendingOverride[]>([]);
+  const pendingPricesRef = useRef<PendingPriceRange[]>([]);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const handleSubmit = async (data: PropertyFormSchema) => {
@@ -27,7 +22,7 @@ export default function PropertyNewPage() {
       const property = await addProperty(data);
 
       const files = pendingFilesRef.current;
-      const overrides = pendingOverridesRef.current;
+      const priceRanges = pendingPricesRef.current;
 
       await Promise.all([
         ...files.map((file) => {
@@ -37,8 +32,8 @@ export default function PropertyNewPage() {
             headers: { 'Content-Type': 'multipart/form-data' },
           });
         }),
-        ...overrides.map((o) =>
-          api.post(`/properties/${property.id}/pricing/overrides`, o),
+        ...priceRanges.map((r) =>
+          api.put(`/properties/${property.id}/pricing/dates`, r),
         ),
       ]);
 
@@ -62,7 +57,7 @@ export default function PropertyNewPage() {
         isPending={isPending || isSubmitting}
         initialValues={import.meta.env.DEV ? DEV_PROPERTY_DEFAULTS : undefined}
         onPendingFilesChange={(files) => { pendingFilesRef.current = files; }}
-        onPendingOverridesChange={(overrides) => { pendingOverridesRef.current = overrides; }}
+        onPendingPricesChange={(ranges) => { pendingPricesRef.current = ranges; }}
       />
     </BaseLayout>
   );

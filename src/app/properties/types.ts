@@ -191,8 +191,7 @@ export interface Property {
   images: PropertyImage[];
   unavailabilities: PropertyUnavailability[];
   translations: PropertyTranslation[];
-  weekday_prices: WeekdayPrice[];
-  date_price_overrides: DatePriceOverride[];
+  date_prices: DatePrice[];
 }
 
 export interface PropertyListItem {
@@ -248,18 +247,9 @@ export interface PropertyStatusUpdate {
   status: PropertyStatus;
 }
 
-export interface WeekdayPrice {
+export interface DatePrice {
   id: string;
   property_id: string;
-  weekday: number;
+  date: string;
   price: string;
-}
-
-export interface DatePriceOverride {
-  id: string;
-  property_id: string;
-  start_date: string;
-  end_date: string;
-  price: string;
-  label: string | null;
 }
