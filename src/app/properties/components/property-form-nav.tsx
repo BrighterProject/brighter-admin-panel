@@ -11,6 +11,7 @@ export const FORM_SECTIONS = [
   { id: 'section-photos',            label: 'Снимки',                  key: 'photos' as const },
   { id: 'section-dynamic-pricing',   label: 'Ценови календар',         key: 'dynamicPricing' as const },
   { id: 'section-payment-config',    label: 'Платежна конфигурация',   key: 'paymentConfig' as const },
+  { id: 'section-channel-sync',      label: 'Външни календари',        key: 'channelSync' as const },
 ] as const;
 
 interface PropertyFormNavProps {

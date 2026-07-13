@@ -13,6 +13,7 @@ export interface SectionStates {
   photos: SectionState;
   dynamicPricing: SectionState;
   paymentConfig: SectionState;
+  channelSync: SectionState;
 }
 
 interface SectionExtras {
@@ -70,6 +71,8 @@ export function computeSectionStates(
     paymentConfig: deriveOptionalSectionState([
       values.payment_config?.accepted_methods?.length,
     ]),
+    // Managed via a separate API (bookings-ms), not the form schema — always neutral.
+    channelSync: 'untouched',
   };
 
   function deriveSectionState(

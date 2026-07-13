@@ -19,6 +19,12 @@ COPY . .
 ARG VITE_BASENAME=/admin
 ENV VITE_BASENAME=$VITE_BASENAME
 
+# Demo-only: offers the `dev` (ngrok) calendar channel in the property form.
+# Defaults OFF so production images never expose it — pass
+# --build-arg VITE_ENABLE_DEV_CALENDAR_CHANNEL=true only for demo builds.
+ARG VITE_ENABLE_DEV_CALENDAR_CHANNEL=
+ENV VITE_ENABLE_DEV_CALENDAR_CHANNEL=$VITE_ENABLE_DEV_CALENDAR_CHANNEL
+
 RUN --mount=type=cache,target=/root/.bun/install/cache \
     bun run build
 

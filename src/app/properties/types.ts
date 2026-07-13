@@ -253,3 +253,38 @@ export interface DatePrice {
   date: string;
   price: string;
 }
+
+export interface DatePriceOverride {
+  id: string;
+  property_id: string;
+  start_date: string;
+  end_date: string;
+  price: string;
+  label: string | null;
+}
+
+// ─── Channel calendar sync (BTR-41) ────────────────────────────────────────────
+
+export type FeedSyncStatus = "ok" | "fetch_error" | "parse_error";
+
+/** Channels that expose an importable iCal feed (matches backend BookingChannel). */
+export type FeedChannel = "booking_com" | "airbnb" | "dev";
+
+export interface CalendarFeed {
+  id: string;
+  property_id: string;
+  channel: FeedChannel;
+  url: string;
+  is_active: boolean;
+  last_synced_at: string | null;
+  last_status: FeedSyncStatus | null;
+  last_error: string | null;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface CalendarFeedCreate {
+  property_id: string;
+  channel: FeedChannel;
+  url: string;
+}
