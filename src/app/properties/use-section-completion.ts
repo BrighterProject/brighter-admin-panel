@@ -18,7 +18,7 @@ export interface SectionStates {
 
 interface SectionExtras {
   pendingFilesCount?: number;
-  pendingOverridesCount?: number;
+  pendingPricesCount?: number;
 }
 
 // Pure function exported for testing without React/form dependencies
@@ -67,7 +67,7 @@ export function computeSectionStates(
       /* requiredValues */ [values.images?.some((img) => img.is_thumbnail) || (extras?.pendingFilesCount ?? 0) > 0],
       hasError('images'),
     ),
-    dynamicPricing: (extras?.pendingOverridesCount ?? 0) > 0 ? 'complete' : 'untouched',
+    dynamicPricing: (extras?.pendingPricesCount ?? 0) > 0 ? 'complete' : 'untouched',
     paymentConfig: deriveOptionalSectionState([
       values.payment_config?.accepted_methods?.length,
     ]),

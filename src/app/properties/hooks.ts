@@ -10,8 +10,7 @@ import type {
   PropertyUnavailability,
   PropertyUnavailabilityCreate,
   PropertyUnavailabilityUpdate,
-  WeekdayPrice,
-  DatePriceOverride,
+  DatePrice,
   Region,
   Settlement,
   SettlementCenter,
@@ -307,14 +306,15 @@ export function useDeletePropertyUnavailability() {
   });
 }
 
-// ─── Dynamic Pricing ──────────────────────────────────────────────────────────
+// ─── Per-date Pricing ─────────────────────────────────────────────────────────
 
-export function useUpsertWeekdayPrices(propertyId: string) {
+/** Upsert one nightly price across an inclusive date range (one request). */
+export function useSetDatePrices(propertyId: string) {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: (rules: { weekday: number; price: string }[]) =>
+    mutationFn: (payload: { start_date: string; end_date: string; price: string }) =>
       api
-        .put<WeekdayPrice[]>(`/properties/${propertyId}/pricing/weekdays`, rules)
+        .put<DatePrice[]>(`/properties/${propertyId}/pricing/dates`, payload)
         .then((r) => r.data),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: [...PROPERTIES_KEY, propertyId] });
@@ -322,54 +322,12 @@ export function useUpsertWeekdayPrices(propertyId: string) {
   });
 }
 
-export function useCreateDateOverride(propertyId: string) {
+/** Clear pricing across an inclusive date range → those nights become unavailable. */
+export function useClearDatePrices(propertyId: string) {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: (payload: {
-      start_date: string;
-      end_date: string;
-      price: string;
-      label?: string | null;
-    }) =>
-      api
-        .post<DatePriceOverride>(`/properties/${propertyId}/pricing/overrides`, payload)
-        .then((r) => r.data),
-    onSuccess: () => {
-      qc.invalidateQueries({ queryKey: [...PROPERTIES_KEY, propertyId] });
-    },
-  });
-}
-
-export function useUpdateDateOverride(propertyId: string) {
-  const qc = useQueryClient();
-  return useMutation({
-    mutationFn: ({
-      overrideId,
-      ...payload
-    }: {
-      overrideId: string;
-      start_date?: string;
-      end_date?: string;
-      price?: string;
-      label?: string | null;
-    }) =>
-      api
-        .patch<DatePriceOverride>(
-          `/properties/${propertyId}/pricing/overrides/${overrideId}`,
-          payload,
-        )
-        .then((r) => r.data),
-    onSuccess: () => {
-      qc.invalidateQueries({ queryKey: [...PROPERTIES_KEY, propertyId] });
-    },
-  });
-}
-
-export function useDeleteDateOverride(propertyId: string) {
-  const qc = useQueryClient();
-  return useMutation({
-    mutationFn: (overrideId: string) =>
-      api.delete(`/properties/${propertyId}/pricing/overrides/${overrideId}`),
+    mutationFn: (range: { start_date: string; end_date: string }) =>
+      api.delete(`/properties/${propertyId}/pricing/dates`, { params: range }),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: [...PROPERTIES_KEY, propertyId] });
     },
