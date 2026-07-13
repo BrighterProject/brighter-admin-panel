@@ -135,6 +135,7 @@ No test suite exists for this service. When adding tests, use vitest + `@testing
 | Variable | Default | Description |
 |---|---|---|
 | `VITE_BASENAME` | `""` | Router basename — set to `/admin` when served behind Traefik |
+| `VITE_ENABLE_DEV_CALENDAR_CHANNEL` | `""` | Set `"true"` to offer the demo `dev` calendar channel in the property form's external-calendars picker. Mirror of bookings-ms `ENABLE_DEV_CALENDAR_CHANNEL` — leave unset in production. |
 
 ## Git & Branch Workflow
 

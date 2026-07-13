@@ -40,7 +40,24 @@ const CHANNELS: Record<FeedChannel, { label: string; placeholder: string }> = {
     label: "Airbnb",
     placeholder: "https://www.airbnb.com/calendar/ical/….ics?s=…",
   },
+  dev: {
+    label: "Demo",
+    placeholder: "https://{something}.ngrok-free.dev/airbnb/mock-feed.ics",
+  },
 };
+
+/**
+ * The demo (ngrok) channel is opt-in — mirror of the bookings-ms
+ * ENABLE_DEV_CALENDAR_CHANNEL flag. Off in production builds, so it is never
+ * offered in the picker (the backend rejects `dev` feeds anyway). ``CHANNELS``
+ * keeps its `dev` entry so existing demo feeds still render a label.
+ */
+const DEV_CHANNEL_ENABLED =
+  import.meta.env.VITE_ENABLE_DEV_CALENDAR_CHANNEL === "true";
+
+const SELECTABLE_CHANNELS = (Object.keys(CHANNELS) as FeedChannel[]).filter(
+  (key) => key !== "dev" || DEV_CHANNEL_ENABLED,
+);
 
 function StatusBadge({ feed }: { feed: CalendarFeed }) {
   if (feed.last_status === null) {
@@ -77,8 +94,8 @@ function getErrorMessage(error: unknown): string {
     "response" in error &&
     typeof (error as { response?: unknown }).response === "object"
   ) {
-    const detail = (error as { response?: { data?: { detail?: unknown } } }).response?.data
-      ?.detail;
+    const detail = (error as { response?: { data?: { detail?: unknown } } })
+      .response?.data?.detail;
     if (typeof detail === "string") return detail;
   }
   return "Възникна грешка. Опитайте отново.";
@@ -95,7 +112,11 @@ export function ChannelSyncSection({ propertyId }: ChannelSyncSectionProps) {
   const handleAdd = async () => {
     if (!propertyId || !url.trim()) return;
     try {
-      await createFeed.mutateAsync({ property_id: propertyId, channel, url: url.trim() });
+      await createFeed.mutateAsync({
+        property_id: propertyId,
+        channel,
+        url: url.trim(),
+      });
       setUrl("");
       toast.success("Календарът е добавен");
     } catch (error) {
@@ -124,18 +145,21 @@ export function ChannelSyncSection({ propertyId }: ChannelSyncSectionProps) {
   return (
     <section id="section-channel-sync" className="space-y-4 scroll-mt-20">
       <div>
-        <h3 className="text-base font-semibold">Синхронизация с външен календар</h3>
+        <h3 className="text-base font-semibold">
+          Синхронизация с външен календар
+        </h3>
         <p className="text-sm text-muted-foreground mt-0.5">
-          Импортирайте резервации от Booking.com или Airbnb, за да не се продава един и същ
-          период два пъти.
+          Импортирайте резервации от Booking.com или Airbnb, за да не се продава
+          един и същ период два пъти.
         </p>
       </div>
 
       <div className="flex items-start gap-2 rounded-lg border border-amber-300/60 bg-amber-50 p-3 text-sm text-amber-900 dark:border-amber-700/40 dark:bg-amber-950/30 dark:text-amber-200">
         <Info className="size-4 shrink-0 mt-0.5" />
         <span>
-          Само импорт: наличността в съответната платформа продължава да се управлява ръчно от
-          вас. Свържете iCal експорта на <strong>една стая</strong> с този обект.
+          Само импорт: наличността в съответната платформа продължава да се
+          управлява ръчно от вас. Свържете iCal експорта на{" "}
+          <strong>една стая</strong> с този обект.
         </span>
       </div>
 
@@ -157,7 +181,10 @@ export function ChannelSyncSection({ propertyId }: ChannelSyncSectionProps) {
                   className="flex flex-col gap-2 rounded-lg border p-3 sm:flex-row sm:items-center sm:justify-between"
                 >
                   <div className="min-w-0 space-y-1">
-                    <p className="truncate text-sm font-medium" title={feed.url}>
+                    <p
+                      className="truncate text-sm font-medium"
+                      title={feed.url}
+                    >
                       {feed.url}
                     </p>
                     <div className="flex flex-wrap items-center gap-2">
@@ -201,16 +228,21 @@ export function ChannelSyncSection({ propertyId }: ChannelSyncSectionProps) {
               ))}
             </ul>
           ) : (
-            <p className="text-sm text-muted-foreground">Няма добавени календари.</p>
+            <p className="text-sm text-muted-foreground">
+              Няма добавени календари.
+            </p>
           )}
 
           <div className="flex flex-col gap-2 sm:flex-row">
-            <Select value={channel} onValueChange={(v) => setChannel(v as FeedChannel)}>
+            <Select
+              value={channel}
+              onValueChange={(v) => setChannel(v as FeedChannel)}
+            >
               <SelectTrigger className="sm:w-44">
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
-                {(Object.keys(CHANNELS) as FeedChannel[]).map((key) => (
+                {SELECTABLE_CHANNELS.map((key) => (
                   <SelectItem key={key} value={key}>
                     {CHANNELS[key].label}
                   </SelectItem>
