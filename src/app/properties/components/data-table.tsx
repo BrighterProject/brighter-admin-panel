@@ -10,7 +10,6 @@ import {
   flexRender,
   getCoreRowModel,
   getFilteredRowModel,
-  getPaginationRowModel,
   getSortedRowModel,
   useReactTable,
 } from "@tanstack/react-table";
@@ -75,6 +74,10 @@ import { Eye, Pencil } from "lucide-react";
 interface DataTableProps {
   properties: PropertyListItem[];
   loading: boolean;
+  total: number;
+  pageIndex: number;
+  pageSize: number;
+  onPaginationChange: (pageIndex: number, pageSize: number) => void;
   onDeleteProperty: (id: string) => void;
   onEditProperty?: (property: PropertyListItem) => void;
   onAddProperty?: () => void;
@@ -132,6 +135,10 @@ const sportTypeIcons: Record<string, string> = {
 export function DataTable({
   properties,
   loading,
+  total,
+  pageIndex,
+  pageSize,
+  onPaginationChange,
   onDeleteProperty,
   onEditProperty,
   onAddProperty,
@@ -430,13 +437,23 @@ export function DataTable({
     },
   ];
 
+  const pageCount = Math.max(1, Math.ceil(total / pageSize));
+
   const table = useReactTable({
     data: properties,
     columns,
+    manualPagination: true,
+    pageCount,
+    onPaginationChange: (updater) => {
+      const next =
+        typeof updater === "function"
+          ? updater({ pageIndex, pageSize })
+          : updater;
+      onPaginationChange(next.pageIndex, next.pageSize);
+    },
     onSortingChange: setSorting,
     onColumnFiltersChange: setColumnFilters,
     getCoreRowModel: getCoreRowModel(),
-    getPaginationRowModel: getPaginationRowModel(),
     getSortedRowModel: getSortedRowModel(),
     getFilteredRowModel: getFilteredRowModel(),
     onColumnVisibilityChange: setColumnVisibility,
@@ -448,6 +465,7 @@ export function DataTable({
       columnVisibility,
       rowSelection,
       globalFilter,
+      pagination: { pageIndex, pageSize },
     },
   });
 
@@ -687,15 +705,14 @@ export function DataTable({
           </Select>
         </div>
         <div className="flex-1 text-sm text-muted-foreground hidden sm:block">
-          Избрани са {table.getFilteredSelectedRowModel().rows.length} от{" "}
-          {table.getFilteredRowModel().rows.length} реда.
+          Избрани са {table.getFilteredSelectedRowModel().rows.length} от общо{" "}
+          {total} обекта.
         </div>
         <div className="flex items-center space-x-2">
           <p className="text-sm font-medium hidden sm:block">
             Страница{" "}
             <strong>
-              {table.getState().pagination.pageIndex + 1} от{" "}
-              {table.getPageCount()}
+              {pageIndex + 1} от {pageCount}
             </strong>
           </p>
           <Button

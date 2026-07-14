@@ -17,15 +17,23 @@ export default function PropertiesPage() {
   const navigate = useNavigate();
   const { data: me } = useMe();
   const ownerOnly = me ? isPropertyOwner(me.scopes) : false;
-  const propertyParams = ownerOnly && me ? { owner_id: String(me.id) } : undefined;
-  const { data: properties = [], isLoading } = useProperties(propertyParams);
+  const [pageIndex, setPageIndex] = useState(0);
+  const [pageSize, setPageSize] = useState(10);
+  const propertyParams = {
+    ...(ownerOnly && me ? { owner_id: String(me.id) } : {}),
+    page: pageIndex + 1,
+    page_size: pageSize,
+  };
+  const { data, isLoading } = useProperties(propertyParams);
+  const properties = data?.items ?? [];
+  const total = data?.total ?? 0;
   const { data: subscription } = useMySubscription();
   const { mutate: deleteProperty } = useDeleteProperty();
 
   const maxListings = subscription?.plan.max_listings ?? -1;
-  const atQuota = ownerOnly && maxListings !== -1 && properties.length >= maxListings;
+  const atQuota = ownerOnly && maxListings !== -1 && total >= maxListings;
   const addDisabledReason = atQuota
-    ? `Достигнахте лимита на вашия план (${properties.length}/${maxListings} обекта)`
+    ? `Достигнахте лимита на вашия план (${total}/${maxListings} обекта)`
     : undefined;
 
   const [imagesProperty, setImagesProperty] = useState<PropertyListItem | null>(null);
@@ -45,6 +53,13 @@ export default function PropertiesPage() {
           <DataTable
             properties={properties}
             loading={isLoading}
+            total={total}
+            pageIndex={pageIndex}
+            pageSize={pageSize}
+            onPaginationChange={(nextPageIndex, nextPageSize) => {
+              setPageIndex(nextPageSize !== pageSize ? 0 : nextPageIndex);
+              setPageSize(nextPageSize);
+            }}
             onDeleteProperty={deleteProperty}
             onEditProperty={(property) =>
               navigate(`/properties/${property.id}/edit`)
