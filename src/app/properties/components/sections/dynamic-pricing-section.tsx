@@ -1,13 +1,9 @@
-import { useState, useRef, useEffect } from "react";
-import { ChevronLeft, ChevronRight, X, Check } from "lucide-react";
+import { useState } from "react";
+import { ChevronLeft, ChevronRight, Check, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import {
-  useCreateDateOverride,
-  useUpdateDateOverride,
-  useDeleteDateOverride,
-} from "../../hooks";
-import type { DatePriceOverride } from "../../types";
+import { useSetDatePrices, useClearDatePrices } from "../../hooks";
+import type { DatePrice } from "../../types";
 
 const WEEKDAY_HEADERS = ["Пон", "Вт", "Ср", "Чет", "Пет", "Съб", "Нед"];
 
@@ -38,108 +34,35 @@ function addMonths(date: Date, n: number): Date {
   return new Date(date.getFullYear(), date.getMonth() + n, 1);
 }
 
-interface DayEditPopoverProps {
-  date: string;
-  currentPrice: string | null;
-  currency: string;
-  overrideId: string | null;
-  onCreate: (price: string) => Promise<void>;
-  onUpdate: (price: string) => Promise<void>;
-  onDelete: () => Promise<void>;
-  onClose: () => void;
+function eachDay(start: string, end: string): string[] {
+  const days: string[] = [];
+  const d = new Date(start);
+  const last = new Date(end);
+  while (d <= last) {
+    days.push(d.toISOString().slice(0, 10));
+    d.setDate(d.getDate() + 1);
+  }
+  return days;
 }
 
-function DayEditPopover({
-  date,
-  currentPrice,
-  currency,
-  overrideId,
-  onCreate,
-  onUpdate,
-  onDelete,
-  onClose,
-}: DayEditPopoverProps) {
-  const [price, setPrice] = useState(currentPrice ?? "");
-  const [saving, setSaving] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-  const inputRef = useRef<HTMLInputElement>(null);
-
-  useEffect(() => {
-    inputRef.current?.focus();
-    inputRef.current?.select();
-  }, []);
-
-  async function handleSave() {
-    if (!price || isNaN(Number(price)) || Number(price) < 0) {
-      setError("Въведете валидна цена");
-      return;
-    }
-    setSaving(true);
-    setError(null);
-    try {
-      if (overrideId) {
-        await onUpdate(price);
-      } else {
-        await onCreate(price);
-      }
-      onClose();
-    } catch {
-      setError("Неуспешно запазване");
-    } finally {
-      setSaving(false);
+/** Coalesce a date→price map into contiguous same-price ranges. */
+function coalesce(prices: Map<string, string>): PendingPriceRange[] {
+  const sorted = Array.from(prices.entries()).sort(([a], [b]) => a.localeCompare(b));
+  const ranges: PendingPriceRange[] = [];
+  for (const [date, price] of sorted) {
+    const last = ranges[ranges.length - 1];
+    const nextDay = new Date(last?.end_date ?? "");
+    nextDay.setDate(nextDay.getDate() + 1);
+    if (last && last.price === price && nextDay.toISOString().slice(0, 10) === date) {
+      last.end_date = date;
+    } else {
+      ranges.push({ start_date: date, end_date: date, price });
     }
   }
-
-  async function handleClear() {
-    if (!overrideId) { onClose(); return; }
-    setSaving(true);
-    try {
-      await onDelete();
-      onClose();
-    } catch {
-      setError("Неуспешно изтриване");
-    } finally {
-      setSaving(false);
-    }
-  }
-
-  return (
-    <div className="absolute z-30 top-full left-1/2 -translate-x-1/2 mt-1 w-44 rounded-lg border bg-popover shadow-md p-3 space-y-2">
-      <div className="text-xs font-medium text-foreground">{date}</div>
-      <div className="flex items-center gap-1.5">
-        <Input
-          ref={inputRef}
-          type="number"
-          min="0"
-          step="0.01"
-          value={price}
-          onChange={(e) => { setPrice(e.target.value); setError(null); }}
-          onKeyDown={(e) => { if (e.key === "Enter") handleSave(); if (e.key === "Escape") onClose(); }}
-          placeholder="0.00"
-          className="h-7 text-sm"
-        />
-        <span className="text-xs text-muted-foreground shrink-0">{currency}</span>
-      </div>
-      {error && <p className="text-xs text-destructive">{error}</p>}
-      <div className="flex gap-1">
-        <Button size="sm" className="h-6 px-2 text-xs flex-1" disabled={saving} onClick={handleSave}>
-          <Check className="size-3 mr-1" />
-          Запази
-        </Button>
-        {overrideId && (
-          <Button size="sm" variant="ghost" className="h-6 px-2 text-xs text-destructive hover:text-destructive" disabled={saving} onClick={handleClear}>
-            <X className="size-3" />
-          </Button>
-        )}
-        <Button size="sm" variant="ghost" className="h-6 px-2 text-xs" disabled={saving} onClick={onClose}>
-          Esc
-        </Button>
-      </div>
-    </div>
-  );
+  return ranges;
 }
 
-interface PendingOverride {
+export interface PendingPriceRange {
   start_date: string;
   end_date: string;
   price: string;
@@ -148,104 +71,155 @@ interface PendingOverride {
 interface DynamicPricingSectionProps {
   propertyId: string | undefined;
   currency?: string;
-  dateOverrides?: DatePriceOverride[];
-  onPendingOverridesChange?: (overrides: PendingOverride[]) => void;
+  datePrices?: DatePrice[];
+  onPendingPricesChange?: (ranges: PendingPriceRange[]) => void;
 }
 
 export function DynamicPricingSection({
   propertyId,
   currency = "EUR",
-  dateOverrides = [],
-  onPendingOverridesChange,
+  datePrices = [],
+  onPendingPricesChange,
 }: DynamicPricingSectionProps) {
   const today = new Date();
-  const [viewDate, setViewDate] = useState(new Date(today.getFullYear(), today.getMonth(), 1));
-  const [editingDate, setEditingDate] = useState<string | null>(null);
-  const [offlineOverrides, setOfflineOverrides] = useState<Map<string, string>>(new Map());
-  // Edit-mode overlay: reflects just-saved overrides immediately without waiting
-  // for the property refetch (which can be served stale from the HTTP cache).
-  // null value = the day's override was deleted this session.
-  const [editOverrides, setEditOverrides] = useState<
-    Map<string, DatePriceOverride | null>
-  >(new Map());
+  // Build from local components (matching the calendar cells) so the "past"
+  // cutoff tracks the owner's local day, not UTC.
+  const todayStr = toIso(today.getFullYear(), today.getMonth(), today.getDate());
+  const [viewDate, setViewDate] = useState(
+    new Date(today.getFullYear(), today.getMonth(), 1),
+  );
 
-  const applyEdit = (date: string, value: DatePriceOverride | null) => {
-    setEditOverrides((prev) => new Map(prev).set(date, value));
-  };
+  // Range selection: first click sets the anchor, second extends it.
+  const [selStart, setSelStart] = useState<string | null>(null);
+  const [selEnd, setSelEnd] = useState<string | null>(null);
+  const [price, setPrice] = useState("");
+  const [error, setError] = useState<string | null>(null);
 
-  const create = useCreateDateOverride(propertyId ?? '');
-  const update = useUpdateDateOverride(propertyId ?? '');
-  const del = useDeleteDateOverride(propertyId ?? '');
+  // Create mode keeps prices offline until submit; edit mode calls the API and
+  // overlays just-saved values so the calendar updates before the refetch
+  // (which can be served stale from the HTTP cache). null = cleared this session.
+  const [offlinePrices, setOfflinePrices] = useState<Map<string, string>>(new Map());
+  const [editOverlay, setEditOverlay] = useState<Map<string, string | null>>(new Map());
 
-  const setOffline = (date: string, price: string) => {
-    setOfflineOverrides((prev) => {
-      const next = new Map(prev);
-      next.set(date, price);
-      onPendingOverridesChange?.(Array.from(next.entries()).map(([d, p]) => ({ start_date: d, end_date: d, price: p })));
-      return next;
-    });
-  };
+  const setPrices = useSetDatePrices(propertyId ?? "");
+  const clearPrices = useClearDatePrices(propertyId ?? "");
+  const saving = setPrices.isPending || clearPrices.isPending;
 
-  const deleteOffline = (date: string) => {
-    setOfflineOverrides((prev) => {
-      const next = new Map(prev);
-      next.delete(date);
-      onPendingOverridesChange?.(Array.from(next.entries()).map(([d, p]) => ({ start_date: d, end_date: d, price: p })));
-      return next;
-    });
-  };
-
-  // In create mode: use offline overrides; in edit mode: use API-backed overrides
-  // merged with the local edit overlay (so saves show instantly).
-  const singleDayMap = new Map<string, DatePriceOverride>();
+  // Effective date→price map for display.
+  const priceMap = new Map<string, string>();
   if (propertyId) {
-    for (const o of dateOverrides) {
-      if (o.start_date === o.end_date) singleDayMap.set(o.start_date, o);
-    }
-    for (const [d, o] of editOverrides) {
-      if (o === null) singleDayMap.delete(d);
-      else singleDayMap.set(d, o);
+    for (const p of datePrices) priceMap.set(p.date, p.price);
+    for (const [d, p] of editOverlay) {
+      if (p === null) priceMap.delete(d);
+      else priceMap.set(d, p);
     }
   } else {
-    for (const [date, price] of offlineOverrides.entries()) {
-      singleDayMap.set(date, { id: date, start_date: date, end_date: date, price, label: null } as DatePriceOverride);
-    }
+    for (const [d, p] of offlinePrices) priceMap.set(d, p);
   }
 
-  // Range overrides (start != end) — shown as info only (edit mode only)
-  const rangeOverrides = propertyId ? dateOverrides.filter((o) => o.start_date !== o.end_date) : [];
+  const emitOffline = (next: Map<string, string>) => {
+    onPendingPricesChange?.(coalesce(next));
+  };
 
-  // Determine which dates are covered by a range override
-  const rangeCoveredDates = new Set<string>();
-  for (const o of rangeOverrides) {
-    const start = new Date(o.start_date);
-    const end = new Date(o.end_date);
-    for (let d = new Date(start); d <= end; d.setDate(d.getDate() + 1)) {
-      rangeCoveredDates.add(d.toISOString().slice(0, 10));
+  const rangeBounds = (): { start: string; end: string } | null => {
+    if (!selStart) return null;
+    const a = selStart;
+    const b = selEnd ?? selStart;
+    return a <= b ? { start: a, end: b } : { start: b, end: a };
+  };
+
+  const resetSelection = () => {
+    setSelStart(null);
+    setSelEnd(null);
+    setPrice("");
+    setError(null);
+  };
+
+  const handleDayClick = (date: string) => {
+    if (date < todayStr) return;
+    setError(null);
+    // Start a fresh selection, or extend the current anchor to a range.
+    if (selStart === null || selEnd !== null) {
+      setSelStart(date);
+      setSelEnd(null);
+      const existing = priceMap.get(date);
+      setPrice(existing ? String(Number(existing)) : "");
+    } else {
+      setSelEnd(date);
     }
-  }
+  };
+
+  const applyPrice = async () => {
+    const bounds = rangeBounds();
+    if (!bounds) return;
+    if (!price || isNaN(Number(price)) || Number(price) < 0) {
+      setError("Въведете валидна цена");
+      return;
+    }
+    const value = Number(price).toFixed(2);
+    if (propertyId) {
+      await setPrices.mutateAsync({
+        start_date: bounds.start,
+        end_date: bounds.end,
+        price: value,
+      });
+      setEditOverlay((prev) => {
+        const next = new Map(prev);
+        for (const d of eachDay(bounds.start, bounds.end)) next.set(d, value);
+        return next;
+      });
+    } else {
+      setOfflinePrices((prev) => {
+        const next = new Map(prev);
+        for (const d of eachDay(bounds.start, bounds.end)) next.set(d, value);
+        emitOffline(next);
+        return next;
+      });
+    }
+    resetSelection();
+  };
+
+  const clearRange = async () => {
+    const bounds = rangeBounds();
+    if (!bounds) return;
+    if (propertyId) {
+      await clearPrices.mutateAsync({ start_date: bounds.start, end_date: bounds.end });
+      setEditOverlay((prev) => {
+        const next = new Map(prev);
+        for (const d of eachDay(bounds.start, bounds.end)) next.set(d, null);
+        return next;
+      });
+    } else {
+      setOfflinePrices((prev) => {
+        const next = new Map(prev);
+        for (const d of eachDay(bounds.start, bounds.end)) next.delete(d);
+        emitOffline(next);
+        return next;
+      });
+    }
+    resetSelection();
+  };
 
   const year = viewDate.getFullYear();
   const month = viewDate.getMonth();
   const cells = buildCalendarDays(year, month);
-  const todayStr = today.toISOString().slice(0, 10);
+  const bounds = rangeBounds();
 
-  function getPriceDisplay(date: string): { price: string; isCustom: boolean } {
-    const o = singleDayMap.get(date);
-    if (o) return { price: Number(o.price).toFixed(0), isCustom: true };
-    if (rangeCoveredDates.has(date)) return { price: "range", isCustom: true };
-    // No price set for this day => not bookable.
-    return { price: "", isCustom: false };
-  }
+  const inSelection = (date: string): boolean =>
+    bounds !== null && date >= bounds.start && date <= bounds.end;
 
   return (
     <section id="section-dynamic-pricing" className="space-y-4 scroll-mt-20">
       <div>
         <h3 className="text-base font-semibold">Ценови календар</h3>
         <p className="text-sm text-muted-foreground mt-0.5">
-          Натиснете върху дата, за да зададете цена за нощувка. Дните без зададена
+          Изберете дата или период и задайте цена за нощувка. Дните без зададена
           цена са недостъпни за резервация.
-          {!propertyId && <span className="ml-1 text-amber-600 dark:text-amber-400">(Цените ще бъдат запазени при изпращане.)</span>}
+          {!propertyId && (
+            <span className="ml-1 text-amber-600 dark:text-amber-400">
+              (Цените ще бъдат запазени при изпращане.)
+            </span>
+          )}
         </p>
       </div>
 
@@ -256,7 +230,7 @@ export function DynamicPricingSection({
           variant="outline"
           size="sm"
           className="h-8 w-8 p-0"
-          onClick={() => { setEditingDate(null); setViewDate((d) => addMonths(d, -1)); }}
+          onClick={() => setViewDate((d) => addMonths(d, -1))}
         >
           <ChevronLeft className="size-4" />
         </Button>
@@ -268,7 +242,7 @@ export function DynamicPricingSection({
           variant="outline"
           size="sm"
           className="h-8 w-8 p-0"
-          onClick={() => { setEditingDate(null); setViewDate((d) => addMonths(d, 1)); }}
+          onClick={() => setViewDate((d) => addMonths(d, 1))}
         >
           <ChevronRight className="size-4" />
         </Button>
@@ -276,42 +250,43 @@ export function DynamicPricingSection({
 
       {/* Calendar grid */}
       <div className="rounded-lg border overflow-hidden">
-        {/* Weekday headers */}
         <div className="grid grid-cols-7 border-b">
           {WEEKDAY_HEADERS.map((h) => (
-            <div key={h} className="py-1.5 text-center text-xs font-medium text-muted-foreground">
+            <div
+              key={h}
+              className="py-1.5 text-center text-xs font-medium text-muted-foreground"
+            >
               {h}
             </div>
           ))}
         </div>
 
-        {/* Day cells */}
         <div className="grid grid-cols-7">
           {cells.map((date, idx) => {
             if (!date) {
-              return <div key={`blank-${idx}`} className="aspect-square border-r border-b last:border-r-0 bg-muted/20" />;
+              return (
+                <div
+                  key={`blank-${idx}`}
+                  className="aspect-square border-r border-b last:border-r-0 bg-muted/20"
+                />
+              );
             }
 
             const isToday = date === todayStr;
-            const isEditing = editingDate === date;
-            const override = singleDayMap.get(date);
-            const { price, isCustom } = getPriceDisplay(date);
-            const isRange = rangeCoveredDates.has(date) && !override;
             const isPast = date < todayStr;
+            const priced = priceMap.get(date);
+            const selected = inSelection(date);
 
             return (
               <div
                 key={date}
                 className={[
-                  "relative aspect-square border-r border-b last:border-r-0 flex flex-col items-center justify-center gap-0.5 cursor-pointer select-none transition-colors",
-                  isPast ? "opacity-50" : "hover:bg-muted/50",
-                  isEditing ? "bg-primary/5 ring-1 ring-inset ring-primary" : "",
-                  isToday && !isEditing ? "bg-blue-50 dark:bg-blue-950/20" : "",
+                  "relative aspect-square border-r border-b last:border-r-0 flex flex-col items-center justify-center gap-0.5 select-none transition-colors",
+                  isPast ? "opacity-50 cursor-not-allowed" : "cursor-pointer hover:bg-muted/50",
+                  selected ? "bg-primary/10 ring-1 ring-inset ring-primary" : "",
+                  isToday && !selected ? "bg-blue-50 dark:bg-blue-950/20" : "",
                 ].join(" ")}
-                onClick={() => {
-                  if (isEditing) return;
-                  setEditingDate(date);
-                }}
+                onClick={() => handleDayClick(date)}
               >
                 <span
                   className={[
@@ -324,43 +299,83 @@ export function DynamicPricingSection({
                 <span
                   className={[
                     "text-[10px] leading-none",
-                    isCustom && !isRange ? "text-emerald-600 dark:text-emerald-400 font-semibold" : "",
-                    isRange ? "text-amber-500 dark:text-amber-400 font-medium" : "",
-                    !isCustom ? "text-muted-foreground/50" : "",
+                    priced
+                      ? "text-emerald-600 dark:text-emerald-400 font-semibold"
+                      : "text-muted-foreground/50",
                   ].join(" ")}
                 >
-                  {isRange ? "обхват" : isCustom ? price : "—"}
+                  {priced ? Number(priced).toFixed(0) : "—"}
                 </span>
-
-                {isEditing && (
-                  <DayEditPopover
-                    date={date}
-                    currentPrice={override ? String(override.price) : null}
-                    currency={currency}
-                    overrideId={override?.id ?? null}
-                    onCreate={async (p) => {
-                      if (!propertyId) { setOffline(date, p); return; }
-                      const created = await create.mutateAsync({ start_date: date, end_date: date, price: p });
-                      applyEdit(date, created);
-                    }}
-                    onUpdate={async (p) => {
-                      if (!propertyId) { setOffline(date, p); return; }
-                      const updated = await update.mutateAsync({ overrideId: override!.id, price: p });
-                      applyEdit(date, updated);
-                    }}
-                    onDelete={async () => {
-                      if (!propertyId) { deleteOffline(date); return; }
-                      await del.mutateAsync(override!.id);
-                      applyEdit(date, null);
-                    }}
-                    onClose={() => setEditingDate(null)}
-                  />
-                )}
               </div>
             );
           })}
         </div>
       </div>
+
+      {/* Apply / clear bar for the current selection */}
+      {bounds && (
+        <div className="rounded-lg border bg-muted/30 p-3 space-y-2">
+          <div className="text-xs font-medium text-foreground">
+            {bounds.start === bounds.end
+              ? bounds.start
+              : `${bounds.start} → ${bounds.end}`}
+          </div>
+          <div className="flex items-center gap-2">
+            <Input
+              type="number"
+              min="0"
+              step="0.01"
+              value={price}
+              autoFocus
+              onChange={(e) => {
+                setPrice(e.target.value);
+                setError(null);
+              }}
+              onKeyDown={(e) => {
+                if (e.key === "Enter") applyPrice();
+                if (e.key === "Escape") resetSelection();
+              }}
+              placeholder="0.00"
+              className="h-8 text-sm max-w-32"
+            />
+            <span className="text-xs text-muted-foreground shrink-0">
+              {currency} / нощ
+            </span>
+            <Button
+              type="button"
+              size="sm"
+              className="h-7 px-2 text-xs"
+              disabled={saving}
+              onClick={applyPrice}
+            >
+              <Check className="size-3 mr-1" />
+              Приложи
+            </Button>
+            <Button
+              type="button"
+              size="sm"
+              variant="ghost"
+              className="h-7 px-2 text-xs text-destructive hover:text-destructive"
+              disabled={saving}
+              onClick={clearRange}
+            >
+              <X className="size-3 mr-1" />
+              Изчисти
+            </Button>
+            <Button
+              type="button"
+              size="sm"
+              variant="ghost"
+              className="h-7 px-2 text-xs"
+              disabled={saving}
+              onClick={resetSelection}
+            >
+              Отказ
+            </Button>
+          </div>
+          {error && <p className="text-xs text-destructive">{error}</p>}
+        </div>
+      )}
 
       {/* Legend */}
       <div className="flex flex-wrap gap-4 text-xs text-muted-foreground">
@@ -372,41 +387,7 @@ export function DynamicPricingSection({
           <span className="size-2.5 rounded-sm bg-emerald-100 dark:bg-emerald-900 border border-emerald-300" />
           Зададена цена
         </span>
-        {rangeOverrides.length > 0 && (
-          <span className="flex items-center gap-1.5">
-            <span className="size-2.5 rounded-sm bg-amber-100 dark:bg-amber-900 border border-amber-300" />
-            Обхватна замяна
-          </span>
-        )}
       </div>
-
-      {/* Range overrides info */}
-      {rangeOverrides.length > 0 && (
-        <div className="rounded-lg border bg-amber-50 dark:bg-amber-950/20 p-3 space-y-1.5">
-          <p className="text-xs font-medium text-amber-700 dark:text-amber-400">
-            Обхватни замени (не се редактират в календара):
-          </p>
-          {rangeOverrides.map((o) => (
-            <div key={o.id} className="flex items-center justify-between text-xs">
-              <span className="text-foreground">
-                {o.start_date} → {o.end_date}
-                {o.label && <span className="ml-1 text-muted-foreground">({o.label})</span>}
-                {" — "}
-                <span className="font-medium">{Number(o.price).toFixed(0)} {currency}</span>
-              </span>
-              <Button
-                type="button"
-                variant="ghost"
-                size="sm"
-                className="h-5 px-1.5 text-xs text-destructive hover:text-destructive"
-                onClick={() => del.mutate(o.id)}
-              >
-                <X className="size-3" />
-              </Button>
-            </div>
-          ))}
-        </div>
-      )}
     </section>
   );
 }

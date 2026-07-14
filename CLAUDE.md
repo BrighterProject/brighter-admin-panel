@@ -113,6 +113,17 @@ Sections outside the form schema (separate API calls) return `'untouched'` from 
 
 API client: `api` from `@/lib/api` (not `apiClient` — that name is used in brighter-frontend).
 
+## Pricing — per-date calendar editor
+
+Owners price the calendar **day by day** in `components/sections/dynamic-pricing-section.tsx` (an edit-only section, gated on `propertyId`). The calendar is the sole source of price and availability — there are no recurring weekday rules and no base price. A day with a price is bookable at that price; a day with no price is unavailable.
+
+- **Data**: `useDatePrices(propertyId, from, to)` loads existing rows (`GET /pricing/dates`); the section keeps a local `Map<isoDate, price>` for editing.
+- **Set a day / range**: pick a single day or a range and apply one price → `useSetDatePrices` calls `PUT /pricing/dates` `{start_date, end_date, price}` (one request upserts every night in the inclusive range).
+- **Clear a day / range**: `useClearDatePrices` calls `DELETE /pricing/dates?start_date=&end_date=` → those nights become unpriced/unavailable.
+- `price_from` and `has_valid_pricing` on the property are **system-owned** projections recomputed by properties-ms on every calendar write — never sent from the form.
+
+Both hooks live in `src/app/properties/hooks.ts` and invalidate the property query on success.
+
 ## Adding a shadcn/ui component
 
 ```bash
@@ -135,6 +146,7 @@ No test suite exists for this service. When adding tests, use vitest + `@testing
 | Variable | Default | Description |
 |---|---|---|
 | `VITE_BASENAME` | `""` | Router basename — set to `/admin` when served behind Traefik |
+| `VITE_ENABLE_DEV_CALENDAR_CHANNEL` | `""` | Set `"true"` to offer the demo `dev` calendar channel in the property form's external-calendars picker. Mirror of bookings-ms `ENABLE_DEV_CALENDAR_CHANNEL` — leave unset in production. |
 
 ## Git & Branch Workflow
 

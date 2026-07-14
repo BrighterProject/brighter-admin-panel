@@ -1,4 +1,4 @@
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { useQuery, useMutation, useQueryClient, keepPreviousData } from '@tanstack/react-query';
 import type {
   Property,
   PropertyListItem,
@@ -10,11 +10,12 @@ import type {
   PropertyUnavailability,
   PropertyUnavailabilityCreate,
   PropertyUnavailabilityUpdate,
-  WeekdayPrice,
-  DatePriceOverride,
+  DatePrice,
   Region,
   Settlement,
   SettlementCenter,
+  CalendarFeed,
+  CalendarFeedCreate,
 } from './types';
 import type { PropertyFormSchema } from './property-form.schema';
 import { api } from '@/lib/api';
@@ -59,10 +60,34 @@ export function useSettlementCenter(ekatte: string | null) {
 
 // ─── Property Queries ─────────────────────────────────────────────────────────
 
-export function useProperties(params?: { owner_id?: string }) {
+export interface PropertiesQueryParams {
+  owner_id?: string;
+  page?: number;
+  page_size?: number;
+}
+
+export interface PropertiesResult {
+  items: PropertyListItem[];
+  total: number;
+}
+
+/**
+ * POSTs to `/properties/search` — an authenticated admin-panel listing.
+ * The public `GET /properties/` route (unauthenticated by design, so
+ * browsing works for anonymous visitors) hides drafts and unpriced
+ * properties; this endpoint runs through the JWT-authenticated router so
+ * admins see every property (any status) and owners see all of their own,
+ * including pending-approval/unpriced ones.
+ */
+export function useProperties(params?: PropertiesQueryParams) {
   return useQuery({
     queryKey: [...PROPERTIES_KEY, params],
-    queryFn: () => api.get<PropertyListItem[]>('/properties/', { params }).then((r) => r.data),
+    queryFn: async () => {
+      const res = await api.post<PropertyListItem[]>('/properties/search', undefined, { params });
+      const total = Number(res.headers['x-total-count'] ?? res.data.length);
+      return { items: res.data, total } satisfies PropertiesResult;
+    },
+    placeholderData: keepPreviousData,
   });
 }
 
@@ -305,14 +330,15 @@ export function useDeletePropertyUnavailability() {
   });
 }
 
-// ─── Dynamic Pricing ──────────────────────────────────────────────────────────
+// ─── Per-date Pricing ─────────────────────────────────────────────────────────
 
-export function useUpsertWeekdayPrices(propertyId: string) {
+/** Upsert one nightly price across an inclusive date range (one request). */
+export function useSetDatePrices(propertyId: string) {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: (rules: { weekday: number; price: string }[]) =>
+    mutationFn: (payload: { start_date: string; end_date: string; price: string }) =>
       api
-        .put<WeekdayPrice[]>(`/properties/${propertyId}/pricing/weekdays`, rules)
+        .put<DatePrice[]>(`/properties/${propertyId}/pricing/dates`, payload)
         .then((r) => r.data),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: [...PROPERTIES_KEY, propertyId] });
@@ -320,56 +346,66 @@ export function useUpsertWeekdayPrices(propertyId: string) {
   });
 }
 
-export function useCreateDateOverride(propertyId: string) {
+/** Clear pricing across an inclusive date range → those nights become unavailable. */
+export function useClearDatePrices(propertyId: string) {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: (payload: {
-      start_date: string;
-      end_date: string;
-      price: string;
-      label?: string | null;
-    }) =>
-      api
-        .post<DatePriceOverride>(`/properties/${propertyId}/pricing/overrides`, payload)
-        .then((r) => r.data),
+    mutationFn: (range: { start_date: string; end_date: string }) =>
+      api.delete(`/properties/${propertyId}/pricing/dates`, { params: range }),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: [...PROPERTIES_KEY, propertyId] });
     },
   });
 }
 
-export function useUpdateDateOverride(propertyId: string) {
+// ─── Channel calendar sync (BTR-41) ────────────────────────────────────────────
+// Feeds live in bookings-ms under /bookings/calendar-feeds (Traefik strips /api).
+
+const CALENDAR_FEEDS_KEY = ['calendar-feeds'];
+
+export function useCalendarFeeds(propertyId: string | undefined) {
+  return useQuery({
+    queryKey: [...CALENDAR_FEEDS_KEY, propertyId],
+    queryFn: () =>
+      api
+        .get<CalendarFeed[]>('/bookings/calendar-feeds', {
+          params: { property_id: propertyId },
+        })
+        .then((r) => r.data),
+    enabled: !!propertyId,
+  });
+}
+
+export function useCreateCalendarFeed() {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: ({
-      overrideId,
-      ...payload
-    }: {
-      overrideId: string;
-      start_date?: string;
-      end_date?: string;
-      price?: string;
-      label?: string | null;
-    }) =>
-      api
-        .patch<DatePriceOverride>(
-          `/properties/${propertyId}/pricing/overrides/${overrideId}`,
-          payload,
-        )
-        .then((r) => r.data),
-    onSuccess: () => {
-      qc.invalidateQueries({ queryKey: [...PROPERTIES_KEY, propertyId] });
+    mutationFn: (data: CalendarFeedCreate) =>
+      api.post<CalendarFeed>('/bookings/calendar-feeds', data).then((r) => r.data),
+    onSuccess: (_, { property_id }) => {
+      qc.invalidateQueries({ queryKey: [...CALENDAR_FEEDS_KEY, property_id] });
     },
   });
 }
 
-export function useDeleteDateOverride(propertyId: string) {
+export function useDeleteCalendarFeed(propertyId: string) {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: (overrideId: string) =>
-      api.delete(`/properties/${propertyId}/pricing/overrides/${overrideId}`),
+    mutationFn: (feedId: string) => api.delete(`/bookings/calendar-feeds/${feedId}`),
     onSuccess: () => {
-      qc.invalidateQueries({ queryKey: [...PROPERTIES_KEY, propertyId] });
+      qc.invalidateQueries({ queryKey: [...CALENDAR_FEEDS_KEY, propertyId] });
+    },
+  });
+}
+
+export function useSyncCalendarFeed(propertyId: string) {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (feedId: string) =>
+      api
+        .post<CalendarFeed>(`/bookings/calendar-feeds/${feedId}/sync-now`)
+        .then((r) => r.data),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: [...CALENDAR_FEEDS_KEY, propertyId] });
     },
   });
 }

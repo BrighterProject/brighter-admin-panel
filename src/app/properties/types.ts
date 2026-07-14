@@ -14,46 +14,233 @@ export type PropertyStatus =
   | "maintenance"
   | "pending_approval";
 
+// Flat amenity taxonomy mirroring the backend `AmenityType` enum (BTR-53).
+// Category grouping for the owner form lives in AMENITY_CATEGORIES below.
 export type AmenityType =
+  // Views & location
+  | "sea_view"
+  | "mountain_view"
+  | "lake_view"
+  | "beachfront"
+  | "ski_to_door"
+  | "city_center"
+  // Kitchen & dining
+  | "kitchen"
+  | "kitchenette"
+  | "coffee_machine"
+  | "dishwasher"
+  | "microwave"
+  | "oven"
+  | "restaurant"
+  // Comfort
   | "wifi"
   | "air_conditioning"
-  | "kitchen"
-  | "washing_machine"
+  | "heating"
   | "fireplace"
-  | "bbq"
-  | "mountain_view"
-  | "ski_storage"
-  | "breakfast_included"
-  | "reception_24h"
-  | "sea_view"
-  | "balcony"
+  | "washing_machine"
+  | "dryer"
+  | "iron"
+  | "tv"
+  | "workspace"
+  // Outdoors
   | "pool"
+  | "indoor_pool"
   | "garden"
+  | "bbq"
+  | "balcony"
+  | "terrace"
+  | "hot_tub"
+  // Family
   | "pet_friendly"
-  | "coffee_machine";
+  | "crib"
+  | "high_chair"
+  | "playground"
+  | "board_games"
+  // Wellness
+  | "sauna"
+  | "spa"
+  | "gym"
+  | "massage"
+  // Services
+  | "reception_24h"
+  | "breakfast_included"
+  | "airport_shuttle"
+  | "ev_charger"
+  | "luggage_storage"
+  | "daily_housekeeping"
+  | "ski_storage"
+  // Safety & accessibility
+  | "smoke_alarm"
+  | "fire_extinguisher"
+  | "first_aid_kit"
+  | "elevator"
+  | "ground_floor"
+  | "step_free_access";
 
 export const AMENITY_LABELS: Record<AmenityType, string> = {
+  // Views & location
+  sea_view: "Морска гледка",
+  mountain_view: "Планинска гледка",
+  lake_view: "Гледка към езеро",
+  beachfront: "На първа линия",
+  ski_to_door: "Ски до вратата",
+  city_center: "Център на града",
+  // Kitchen & dining
+  kitchen: "Кухня",
+  kitchenette: "Кухненски бокс",
+  coffee_machine: "Кафемашина",
+  dishwasher: "Съдомиялна",
+  microwave: "Микровълнова",
+  oven: "Фурна",
+  restaurant: "Ресторант",
+  // Comfort
   wifi: "Wi-Fi",
   air_conditioning: "Климатик",
-  kitchen: "Кухня",
-  washing_machine: "Пералня",
+  heating: "Отопление",
   fireplace: "Камина",
-  bbq: "Барбекю",
-  mountain_view: "Планинска гледка",
-  ski_storage: "Ски гардероб",
-  breakfast_included: "Закуска включена",
-  reception_24h: "Рецепция 24ч",
-  sea_view: "Морска гледка",
-  balcony: "Балкон",
+  washing_machine: "Пералня",
+  dryer: "Сушилня",
+  iron: "Ютия",
+  tv: "Телевизор",
+  workspace: "Работно място",
+  // Outdoors
   pool: "Басейн",
+  indoor_pool: "Закрит басейн",
   garden: "Градина",
+  bbq: "Барбекю",
+  balcony: "Балкон",
+  terrace: "Тераса",
+  hot_tub: "Джакузи",
+  // Family
   pet_friendly: "Домашни любимци",
-  coffee_machine: "Кафемашина",
+  crib: "Бебешко креватче",
+  high_chair: "Столче за хранене",
+  playground: "Детска площадка",
+  board_games: "Настолни игри",
+  // Wellness
+  sauna: "Сауна",
+  spa: "Спа",
+  gym: "Фитнес",
+  massage: "Масаж",
+  // Services
+  reception_24h: "Рецепция 24ч",
+  breakfast_included: "Закуска включена",
+  airport_shuttle: "Трансфер до летище",
+  ev_charger: "Зарядно за електромобил",
+  luggage_storage: "Съхранение на багаж",
+  daily_housekeeping: "Ежедневно почистване",
+  ski_storage: "Ски гардероб",
+  // Safety & accessibility
+  smoke_alarm: "Датчик за дим",
+  fire_extinguisher: "Пожарогасител",
+  first_aid_kit: "Аптечка",
+  elevator: "Асансьор",
+  ground_floor: "Партер",
+  step_free_access: "Достъп без стъпала",
 };
 
-export const ALL_AMENITIES: AmenityType[] = Object.keys(
-  AMENITY_LABELS,
-) as AmenityType[];
+// Category → amenity grouping for the owner form (BTR-53). Mirrors the public
+// frontend's AMENITY_CATEGORIES; keep both and the backend enum in sync.
+export interface AmenityCategory {
+  key: string;
+  label: string;
+  amenities: readonly AmenityType[];
+}
+
+export const AMENITY_CATEGORIES: readonly AmenityCategory[] = [
+  {
+    key: "views",
+    label: "Изгледи и локация",
+    amenities: [
+      "sea_view",
+      "mountain_view",
+      "lake_view",
+      "beachfront",
+      "ski_to_door",
+      "city_center",
+    ],
+  },
+  {
+    key: "kitchen",
+    label: "Кухня и хранене",
+    amenities: [
+      "kitchen",
+      "kitchenette",
+      "coffee_machine",
+      "dishwasher",
+      "microwave",
+      "oven",
+      "restaurant",
+    ],
+  },
+  {
+    key: "comfort",
+    label: "Комфорт",
+    amenities: [
+      "wifi",
+      "air_conditioning",
+      "heating",
+      "fireplace",
+      "washing_machine",
+      "dryer",
+      "iron",
+      "tv",
+      "workspace",
+    ],
+  },
+  {
+    key: "outdoors",
+    label: "На открито",
+    amenities: [
+      "pool",
+      "indoor_pool",
+      "garden",
+      "bbq",
+      "balcony",
+      "terrace",
+      "hot_tub",
+    ],
+  },
+  {
+    key: "family",
+    label: "Семейство",
+    amenities: ["pet_friendly", "crib", "high_chair", "playground", "board_games"],
+  },
+  {
+    key: "wellness",
+    label: "Уелнес",
+    amenities: ["sauna", "spa", "gym", "massage"],
+  },
+  {
+    key: "services",
+    label: "Услуги",
+    amenities: [
+      "reception_24h",
+      "breakfast_included",
+      "airport_shuttle",
+      "ev_charger",
+      "luggage_storage",
+      "daily_housekeeping",
+      "ski_storage",
+    ],
+  },
+  {
+    key: "safety",
+    label: "Безопасност и достъпност",
+    amenities: [
+      "smoke_alarm",
+      "fire_extinguisher",
+      "first_aid_kit",
+      "elevator",
+      "ground_floor",
+      "step_free_access",
+    ],
+  },
+];
+
+export const ALL_AMENITIES: AmenityType[] = AMENITY_CATEGORIES.flatMap(
+  (cat) => [...cat.amenities],
+);
 
 export type CancellationPolicy = "free" | "moderate" | "strict";
 
@@ -162,7 +349,9 @@ export interface Property {
   lat: number | null;
   lng: number | null;
   registration_number: string | null;
-  price_per_night: string;
+  // Derived cheapest nightly rate (system-owned); null when no pricing is set.
+  price_from: string | null;
+  has_valid_pricing: boolean;
   currency: string;
   bedrooms: number;
   bathrooms: number;
@@ -189,8 +378,7 @@ export interface Property {
   images: PropertyImage[];
   unavailabilities: PropertyUnavailability[];
   translations: PropertyTranslation[];
-  weekday_prices: WeekdayPrice[];
-  date_price_overrides: DatePriceOverride[];
+  date_prices: DatePrice[];
 }
 
 export interface PropertyListItem {
@@ -203,7 +391,7 @@ export interface PropertyListItem {
   city: string | null;
   name: string;
   description: string;
-  price_per_night: string;
+  price_from: string | null;
   currency: string;
   max_guests: number;
   bedrooms: number;
@@ -220,7 +408,6 @@ export interface PropertyFormValues {
   lat: string;
   lng: string;
   has_parking: boolean;
-  price_per_night: string;
   currency: string;
   min_nights: number;
   max_nights: number | null;
@@ -247,10 +434,10 @@ export interface PropertyStatusUpdate {
   status: PropertyStatus;
 }
 
-export interface WeekdayPrice {
+export interface DatePrice {
   id: string;
   property_id: string;
-  weekday: number;
+  date: string;
   price: string;
 }
 
@@ -261,4 +448,30 @@ export interface DatePriceOverride {
   end_date: string;
   price: string;
   label: string | null;
+}
+
+// ─── Channel calendar sync (BTR-41) ────────────────────────────────────────────
+
+export type FeedSyncStatus = "ok" | "fetch_error" | "parse_error";
+
+/** Channels that expose an importable iCal feed (matches backend BookingChannel). */
+export type FeedChannel = "booking_com" | "airbnb" | "dev";
+
+export interface CalendarFeed {
+  id: string;
+  property_id: string;
+  channel: FeedChannel;
+  url: string;
+  is_active: boolean;
+  last_synced_at: string | null;
+  last_status: FeedSyncStatus | null;
+  last_error: string | null;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface CalendarFeedCreate {
+  property_id: string;
+  channel: FeedChannel;
+  url: string;
 }

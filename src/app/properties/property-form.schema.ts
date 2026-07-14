@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { ALL_AMENITIES, type AmenityType } from "./types";
 
 const translationLocaleSchema = z.object({
   name: z.string(),
@@ -83,25 +84,9 @@ export const propertyFormSchema = z.object({
   beds: z.coerce.number().min(1, "Поне 1 легло"),
   max_guests: z.coerce.number().min(1, "Поне 1 гост"),
   rooms: z.array(roomEntrySchema),
+  // Enum derived from the shared taxonomy (BTR-53) so it never drifts.
   amenities: z.array(
-    z.enum([
-      "wifi",
-      "air_conditioning",
-      "kitchen",
-      "washing_machine",
-      "fireplace",
-      "bbq",
-      "mountain_view",
-      "ski_storage",
-      "breakfast_included",
-      "reception_24h",
-      "sea_view",
-      "balcony",
-      "pool",
-      "garden",
-      "pet_friendly",
-      "coffee_machine",
-    ]),
+    z.enum(ALL_AMENITIES as [AmenityType, ...AmenityType[]]),
   ),
   images: z.array(imageCreateSchema),
   enable_gap_filler: z.boolean().default(false),
@@ -124,8 +109,8 @@ export const propertyFormSchema = z.object({
       name: z.string().min(2, "Наименованието трябва да е поне 2 символа"),
       description: z
         .string()
-        .min(10, "Описанието трябва да е поне 10 символа"),
-      address: z.string().min(1, "Адресът е задължителен"),
+        .min(10, "Description must be at least 10 characters"),
+      address: z.string(),
       house_rules: z.string().optional(),
     }),
     en: translationLocaleSchema,
