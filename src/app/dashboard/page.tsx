@@ -20,8 +20,9 @@ export default function Page() {
 
   const propertyParams =
     owner && me ? { owner_id: String(me.id) } : undefined;
-  const { data: properties = [], isLoading: propertiesLoading } =
-    useProperties(propertyParams);
+  const { data: propertiesResult, isLoading: propertiesLoading } =
+    useProperties({ ...propertyParams, page_size: 100 });
+  const properties = propertiesResult?.items ?? [];
   const { data: bookings = [], isLoading: bookingsLoading } = useBookings();
   const { data: users = [], isLoading: usersLoading } = useUsers(admin);
 

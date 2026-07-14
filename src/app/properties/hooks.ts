@@ -1,4 +1,4 @@
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { useQuery, useMutation, useQueryClient, keepPreviousData } from '@tanstack/react-query';
 import type {
   Property,
   PropertyListItem,
@@ -60,10 +60,34 @@ export function useSettlementCenter(ekatte: string | null) {
 
 // ─── Property Queries ─────────────────────────────────────────────────────────
 
-export function useProperties(params?: { owner_id?: string }) {
+export interface PropertiesQueryParams {
+  owner_id?: string;
+  page?: number;
+  page_size?: number;
+}
+
+export interface PropertiesResult {
+  items: PropertyListItem[];
+  total: number;
+}
+
+/**
+ * POSTs to `/properties/search` — an authenticated admin-panel listing.
+ * The public `GET /properties/` route (unauthenticated by design, so
+ * browsing works for anonymous visitors) hides drafts and unpriced
+ * properties; this endpoint runs through the JWT-authenticated router so
+ * admins see every property (any status) and owners see all of their own,
+ * including pending-approval/unpriced ones.
+ */
+export function useProperties(params?: PropertiesQueryParams) {
   return useQuery({
     queryKey: [...PROPERTIES_KEY, params],
-    queryFn: () => api.get<PropertyListItem[]>('/properties/', { params }).then((r) => r.data),
+    queryFn: async () => {
+      const res = await api.post<PropertyListItem[]>('/properties/search', undefined, { params });
+      const total = Number(res.headers['x-total-count'] ?? res.data.length);
+      return { items: res.data, total } satisfies PropertiesResult;
+    },
+    placeholderData: keepPreviousData,
   });
 }
 
